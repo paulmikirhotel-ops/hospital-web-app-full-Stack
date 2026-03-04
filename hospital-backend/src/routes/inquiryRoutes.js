@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Inquiry = require('../models/inquiry'); // Ensure this matches your lowercase filename
+const Inquiry = require('../models/Inquiry'); // Ensure this matches your lowercase filename
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
 // --- 1. CREATE: Send a new inquiry (Public) ---
