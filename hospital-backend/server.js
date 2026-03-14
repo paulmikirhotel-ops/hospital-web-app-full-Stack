@@ -31,6 +31,7 @@ app.use(cors({
            'http://localhost:5173',
            'https://hospital-web-app-8slq.onrender.com',         // ✅ your frontend
            'https://hospital-web-app-full-stack-1.onrender.com', // ✅ your backend
+           'https://sjch-hospital.netlify.app/', // ✅ your frontend
 
          ], 
   credentials: true,               
