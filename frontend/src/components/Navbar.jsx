@@ -92,16 +92,16 @@ const Navbar = () => {
   const { user }  = useSelector((state) => state.auth);
   const theme     = NAV_THEMES[themeIdx];
 
-  const handleLogout = async () => {
-         const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-         axios.post(`${BASE_URL}/api/auth/logout`, {}, { withCredentials: true })
-    toast.promise(logoutPromise, {
-      loading: 'Disconnecting session...',
-      success: () => { dispatch(logout()); navigate('/login'); return <b>Logged out!</b>; },
-      error:   (err) => <b>Logout failed: {err.response?.data?.message || 'Server Error'}</b>,
-    });
-  };
-
+// ✅ Fixed code
+const handleLogout = async () => {
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+  const logoutPromise = axios.post(`${BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
+  toast.promise(logoutPromise, {
+    loading: 'Disconnecting session...',
+    success: () => { dispatch(logout()); navigate('/login'); return <b>Logged out!</b>; },
+    error: (err) => <b>Logout failed: {err.response?.data?.message || 'Server Error'}</b>,
+  });
+};
   const aboutLinks = [
     { name: 'Brief History', path: '/about/history',   icon: <IoTimeOutline /> },
     { name: 'Programs',      path: '/about/programs',  icon: <IoLibraryOutline /> },
