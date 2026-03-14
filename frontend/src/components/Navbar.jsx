@@ -95,11 +95,23 @@ const Navbar = () => {
 // ✅ Fixed code
 const handleLogout = async () => {
   const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-  const logoutPromise = axios.post(`${BASE_URL}/api/auth/logout`, {}, { withCredentials: true });
+  
+  const logoutPromise = axios.post(    // ✅ now properly assigned
+    `${BASE_URL}/api/auth/logout`, 
+    {}, 
+    { withCredentials: true }
+  );
+
   toast.promise(logoutPromise, {
     loading: 'Disconnecting session...',
-    success: () => { dispatch(logout()); navigate('/login'); return <b>Logged out!</b>; },
-    error: (err) => <b>Logout failed: {err.response?.data?.message || 'Server Error'}</b>,
+    success: () => {
+      dispatch(logout());
+      navigate('/login');
+      return <b>Logged out!</b>;
+    },
+    error: (err) => (
+      <b>Logout failed: {err.response?.data?.message || 'Server Error'}</b>
+    ),
   });
 };
   const aboutLinks = [
