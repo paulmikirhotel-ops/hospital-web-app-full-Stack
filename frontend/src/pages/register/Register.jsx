@@ -1,79 +1,231 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-// 🚀 IMPORT your customized API and the Redux action
-import { registerUser } from '../../redux/features/auth/authSlice'; 
+import { registerUser } from '../../redux/features/auth/authSlice';
+import {
+  IoPersonOutline, IoMailOutline, IoLockClosedOutline,
+  IoEyeOutline, IoEyeOffOutline, IoMedicalOutline,
+  IoCheckmarkCircleOutline, IoAlertCircleOutline,
+} from 'react-icons/io5';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'patient' 
-  });
+  const [formData, setFormData] = useState({ name:'', email:'', password:'', role:'patient' });
+  const [showPass, setShowPass] = useState(false);
+  const [agree, setAgree]       = useState(false);
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  
-  // Get loading and error states from Redux
-  const { loading, error } = useSelector((state) => state.auth);
+  const navigate        = useNavigate();
+  const dispatch        = useDispatch();
+  const { loading, error } = useSelector(state => state.auth);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
-    // 🛡️ Trigger the Redux Thunk
+    if (!agree) return;
     const result = await dispatch(registerUser(formData));
-    
-    // If registration is successful (fulfilled), move to login
     if (result.meta.requestStatus === 'fulfilled') {
       navigate('/login');
     }
   };
 
+  const passwordStrength = (p) => {
+    if (!p) return null;
+    if (p.length < 6)  return { label:'Too short', color:'#ef4444', width:'20%' };
+    if (p.length < 8)  return { label:'Weak',      color:'#f59e0b', width:'45%' };
+    if (!/[A-Z]/.test(p)||!/[0-9]/.test(p)) return { label:'Fair', color:'#3b82f6', width:'70%' };
+    return { label:'Strong', color:'#22c55e', width:'100%' };
+  };
+  const strength = passwordStrength(formData.password);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
-      <div className="max-w-md w-full bg-white p-10 rounded-[2rem] shadow-xl border border-slate-100">
-        <h2 className="text-3xl font-black text-slate-900 mb-2">Join SJCH</h2>
-        <p className="text-slate-400 mb-8 text-sm">Create your medical portal account.</p>
+    <>
+      <style>{`
+        .reg-root {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0ea5e9 100%);
+          padding: clamp(16px, 4vw, 32px);
+        }
+        .reg-card {
+          width: 100%;
+          max-width: 480px;
+          background: #fff;
+          border-radius: clamp(20px, 4vw, 32px);
+          padding: clamp(28px, 6vw, 48px) clamp(24px, 5vw, 44px);
+          box-shadow: 0 40px 80px rgba(0,0,0,0.3);
+        }
+        .reg-input-wrap { position: relative; width: 100%; }
+        .reg-input-wrap svg.icon {
+          position: absolute; left: 16px; top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8; pointer-events: none;
+        }
+        .reg-input {
+          width: 100%;
+          padding: 14px 16px 14px 46px;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          font-size: 16px;       /* prevents iOS zoom */
+          font-weight: 600;
+          color: #0f172a;
+          outline: none;
+          transition: border-color 0.25s, box-shadow 0.25s;
+          box-sizing: border-box;
+          font-family: inherit;
+        }
+        .reg-input:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+        }
+        .reg-toggle-pass {
+          position: absolute; right: 14px; top: 50%;
+          transform: translateY(-50%);
+          background: none; border: none;
+          cursor: pointer; color: #94a3b8; padding: 4px; display: flex;
+          transition: color 0.2s;
+        }
+        .reg-toggle-pass:hover { color: #475569; }
+        .reg-submit {
+          width: 100%; padding: 15px;
+          background: #2563eb; color: #fff;
+          border: none; border-radius: 14px;
+          font-size: 14px; font-weight: 800;
+          letter-spacing: 0.06em; cursor: pointer;
+          transition: background 0.25s, transform 0.15s;
+          font-family: inherit;
+        }
+        .reg-submit:hover:not(:disabled)  { background: #0f172a; }
+        .reg-submit:active:not(:disabled) { transform: scale(0.98); }
+        .reg-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+        .role-btn {
+          flex: 1; padding: 11px 8px;
+          border-radius: 12px; border: 1.5px solid #e2e8f0;
+          font-size: 12px; font-weight: 800;
+          text-transform: uppercase; letter-spacing: 0.1em;
+          cursor: pointer; transition: all 0.2s;
+          background: #f8fafc; color: #64748b;
+          font-family: inherit;
+        }
+        .role-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
 
-        {/* 🚀 Display Redux Error Message if it exists */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100">
-            {error}
+        @media (max-width: 400px) {
+          .reg-card { border-radius: 20px; }
+        }
+      `}</style>
+
+      <div className="reg-root">
+        <div className="reg-card">
+          {/* Logo */}
+          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:28 }}>
+            <div style={{ width:44, height:44, borderRadius:14, background:'linear-gradient(135deg,#1e3a8a,#0ea5e9)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <IoMedicalOutline size={22} style={{ color:'#fff' }} />
+            </div>
+            <div>
+              <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.22em', color:'#94a3b8', margin:0 }}>SJCH</p>
+              <p style={{ fontSize:12, fontWeight:700, color:'#0f172a', margin:0 }}>Saint Joseph's Catholic Hospital</p>
+            </div>
           </div>
-        )}
 
-        <form onSubmit={handleRegister} className="space-y-4">
-          <input 
-            type="text" placeholder="Full Name" required
-            className="w-full p-4 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-          />
-          <input 
-            type="email" placeholder="Email Address" required
-            className="w-full p-4 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-          />
-          <input 
-            type="password" placeholder="Password" required
-            className="w-full p-4 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-          />
-          
-          <button 
-            disabled={loading}
-            className={`w-full py-4 text-white rounded-xl font-bold transition-all shadow-lg 
-            ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-slate-900 shadow-blue-100'}`}
-          >
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-        </form>
+          <h2 style={{ fontSize:'clamp(1.6rem,4vw,2rem)', fontWeight:900, color:'#0f172a', letterSpacing:'-0.03em', margin:'0 0 6px' }}>Create Account</h2>
+          <p style={{ fontSize:13, color:'#64748b', margin:'0 0 24px' }}>Join the SJCH patient portal today.</p>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Already have an account? <Link to="/login" className="text-blue-600 font-bold">Login</Link>
-        </p>
+          {/* Error */}
+          {error && (
+            <div style={{ display:'flex', alignItems:'flex-start', gap:10, background:'#fef2f2', border:'1px solid #fecaca', borderRadius:12, padding:'12px 14px', marginBottom:18 }}>
+              <IoAlertCircleOutline size={17} style={{ color:'#ef4444', flexShrink:0, marginTop:1 }} />
+              <p style={{ fontSize:13, color:'#dc2626', fontWeight:600, margin:0 }}>{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleRegister} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            {/* Full Name */}
+            <div className="reg-input-wrap">
+              <IoPersonOutline size={18} className="icon" />
+              <input type="text" placeholder="Full name" required className="reg-input"
+                value={formData.name} onChange={e=>setFormData({...formData,name:e.target.value})} />
+            </div>
+
+            {/* Email */}
+            <div className="reg-input-wrap">
+              <IoMailOutline size={18} className="icon" />
+              <input type="email" placeholder="Email address" required className="reg-input"
+                value={formData.email} onChange={e=>setFormData({...formData,email:e.target.value})} />
+            </div>
+
+            {/* Password */}
+            <div>
+              <div className="reg-input-wrap">
+                <IoLockClosedOutline size={18} className="icon" />
+                <input type={showPass?'text':'password'} placeholder="Create a password" required className="reg-input"
+                  style={{ paddingRight:46 }}
+                  value={formData.password} onChange={e=>setFormData({...formData,password:e.target.value})} />
+                <button type="button" className="reg-toggle-pass" onClick={()=>setShowPass(s=>!s)}>
+                  {showPass?<IoEyeOffOutline size={18}/>:<IoEyeOutline size={18}/>}
+                </button>
+              </div>
+              {/* Strength bar */}
+              {strength && (
+                <div style={{ marginTop:8 }}>
+                  <div style={{ height:4, borderRadius:999, background:'#e2e8f0', overflow:'hidden' }}>
+                    <div style={{ height:'100%', borderRadius:999, background:strength.color, width:strength.width, transition:'width 0.3s, background 0.3s' }} />
+                  </div>
+                  <p style={{ fontSize:11, fontWeight:700, color:strength.color, marginTop:5 }}>{strength.label} password</p>
+                </div>
+              )}
+            </div>
+
+            {/* Role selector */}
+            <div>
+              <p style={{ fontSize:10, fontWeight:800, textTransform:'uppercase', letterSpacing:'0.18em', color:'#94a3b8', margin:'0 0 8px' }}>I am a</p>
+              <div style={{ display:'flex', gap:8 }}>
+                {['patient','doctor'].map(r=>(
+                  <button key={r} type="button" className={`role-btn ${formData.role===r?'active':''}`}
+                    onClick={()=>setFormData({...formData,role:r})}>
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Agree */}
+            <label style={{ display:'flex', alignItems:'flex-start', gap:10, cursor:'pointer', marginTop:4 }}>
+              <div onClick={()=>setAgree(a=>!a)}
+                style={{ width:20, height:20, borderRadius:6, border:`2px solid ${agree?'#2563eb':'#e2e8f0'}`, background:agree?'#2563eb':'#fff', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1, transition:'all 0.2s', cursor:'pointer' }}>
+                {agree && <IoCheckmarkCircleOutline size={14} style={{ color:'#fff' }} />}
+              </div>
+              <span style={{ fontSize:12, color:'#64748b', lineHeight:1.6 }}>
+                I agree to the{' '}
+                <Link to="/terms" style={{ color:'#2563eb', fontWeight:700, textDecoration:'none' }}>Terms of Service</Link>
+                {' '}and{' '}
+                <Link to="/privacy" style={{ color:'#2563eb', fontWeight:700, textDecoration:'none' }}>Privacy Policy</Link>
+              </span>
+            </label>
+
+            <button type="submit" disabled={loading||!agree} className="reg-submit">
+              {loading ? 'Creating Account…' : 'Create Account'}
+            </button>
+          </form>
+
+          <div style={{ display:'flex', alignItems:'center', gap:12, margin:'22px 0' }}>
+            <div style={{ flex:1, height:1, background:'#e2e8f0' }} />
+            <span style={{ fontSize:11, color:'#94a3b8', fontWeight:600 }}>Already a member?</span>
+            <div style={{ flex:1, height:1, background:'#e2e8f0' }} />
+          </div>
+
+          <Link to="/login" style={{
+            display:'block', width:'100%', padding:'13px',
+            background:'#f8fafc', border:'1.5px solid #e2e8f0',
+            borderRadius:14, textAlign:'center',
+            fontSize:13, fontWeight:800, color:'#0f172a',
+            textDecoration:'none', transition:'all 0.2s',
+            boxSizing:'border-box',
+          }}>
+            Sign In Instead
+          </Link>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
