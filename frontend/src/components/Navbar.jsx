@@ -46,8 +46,8 @@ const NAV_THEMES = [
 ];
 
 const Navbar = () => {
-  const [isOpen, setIsOpen]             = useState(false);
-  const [isAboutOpen, setIsAboutOpen]   = useState(false);
+  const [isOpen, setIsOpen]               = useState(false);
+  const [isAboutOpen, setIsAboutOpen]     = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const { themeIdx, cycleTheme } = useSiteTheme();
@@ -93,61 +93,69 @@ const Navbar = () => {
         @keyframes ping { 75%,100%{ transform:scale(2); opacity:0; } }
 
         /* Desktop nav links hidden on mobile */
-        .nav-desktop { display:flex; }
-        .nav-theme-label { display:inline; }
-        .mobile-menu-btn { display:none !important; }
+        .nav-desktop { display: flex; }
+        .mobile-menu-btn { display: none !important; }
+
+        /* Theme switcher — desktop shows dots + label, mobile shows single dot only */
+        .theme-btn-dots-all   { display: flex; }   /* all dots — desktop */
+        .theme-btn-dot-single { display: none; }   /* single active dot — mobile */
+        .theme-btn-label      { display: inline; }
 
         @media (max-width: 900px) {
-          .nav-desktop      { display:none !important; }
-          .mobile-menu-btn  { display:flex !important; }
-          .nav-theme-label  { display:none !important; }
-          .nav-book-btn span { display:none; }
+          .nav-desktop      { display: none !important; }
+          .mobile-menu-btn  { display: flex !important; }
+
+          /* On mobile: hide all dots, show only one active dot, hide label */
+          .theme-btn-dots-all   { display: none !important; }
+          .theme-btn-dot-single { display: block !important; }
+          .theme-btn-label      { display: none !important; }
         }
 
         @media (max-width: 480px) {
-          .nav-login-link { display:none !important; }
+          .nav-login-link { display: none !important; }
+          .nav-book-btn span { display: none; }
         }
       `}</style>
 
       <nav style={{
-        position:'fixed', top:0, width:'100%', zIndex:100,
+        position: 'fixed', top: 0, width: '100%', zIndex: 100,
         background: theme.navBg,
         borderBottom: `1px solid ${theme.border}`,
-        backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
-        boxShadow: theme.glow, transition:'all 0.4s ease',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: theme.glow, transition: 'all 0.4s ease',
       }}>
-        <div style={{ width:'100%', paddingLeft:'clamp(16px,4vw,48px)', paddingRight:'clamp(16px,4vw,48px)', boxSizing:'border-box' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', height:68, alignItems:'center', gap:12 }}>
+        <div style={{ width: '100%', paddingLeft: 'clamp(16px,4vw,48px)', paddingRight: 'clamp(16px,4vw,48px)', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', height: 68, alignItems: 'center', gap: 12 }}>
 
             {/* ── BRAND ── */}
-            <Link to="/" style={{ display:'flex', alignItems:'center', textDecoration:'none', flexShrink:0 }}>
-              <div style={{ position:'relative' }}>
-                <img src="/logo.jpeg" alt="Hospital Logo" style={{ height:'clamp(38px,5vw,52px)', width:'auto', objectFit:'contain' }} />
-                <span style={{ position:'absolute', top:-2, right:-6, width:12, height:12 }}>
-                  <span style={{ position:'absolute', inset:0, borderRadius:'50%', background:theme.dotColor, opacity:0.75, animation:'ping 1.5s cubic-bezier(0,0,0.2,1) infinite' }} />
-                  <span style={{ position:'relative', display:'flex', width:12, height:12, borderRadius:'50%', background:theme.dotColor, border:'2px solid rgba(255,255,255,0.3)' }} />
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{ position: 'relative' }}>
+                <img src="/logo.jpeg" alt="Hospital Logo" style={{ height: 'clamp(36px,5vw,52px)', width: 'auto', objectFit: 'contain' }} />
+                <span style={{ position: 'absolute', top: -2, right: -6, width: 12, height: 12 }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: theme.dotColor, opacity: 0.75, animation: 'ping 1.5s cubic-bezier(0,0,0.2,1) infinite' }} />
+                  <span style={{ position: 'relative', display: 'flex', width: 12, height: 12, borderRadius: '50%', background: theme.dotColor, border: '2px solid rgba(255,255,255,0.3)' }} />
                 </span>
               </div>
             </Link>
 
             {/* ── DESKTOP NAV ── */}
-            <div className="nav-desktop" style={{ alignItems:'center', gap:2, flexWrap:'nowrap', flex:1, justifyContent:'center', overflow:'hidden' }}>
+            <div className="nav-desktop" style={{ alignItems: 'center', gap: 2, flexWrap: 'nowrap', flex: 1, justifyContent: 'center', overflow: 'hidden' }}>
               <NavLink to="/" style={({ isActive }) => linkStyle(isActive)}>Home</NavLink>
 
               {/* About dropdown */}
-              <div style={{ position:'relative' }} onMouseEnter={()=>setIsAboutOpen(true)} onMouseLeave={()=>setIsAboutOpen(false)}>
-                <button style={{ display:'flex', alignItems:'center', gap:4, padding:'6px 10px', fontSize:13, fontWeight:700, color:isAboutOpen?theme.accent:theme.muted, background:'none', border:'none', cursor:'pointer', transition:'color 0.2s ease', borderRadius:8, whiteSpace:'nowrap' }}>
-                  About <IoChevronDown style={{ transition:'transform 0.2s', transform:isAboutOpen?'rotate(180deg)':'none' }} />
+              <div style={{ position: 'relative' }} onMouseEnter={() => setIsAboutOpen(true)} onMouseLeave={() => setIsAboutOpen(false)}>
+                <button style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', fontSize: 13, fontWeight: 700, color: isAboutOpen ? theme.accent : theme.muted, background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.2s ease', borderRadius: 8, whiteSpace: 'nowrap' }}>
+                  About <IoChevronDown style={{ transition: 'transform 0.2s', transform: isAboutOpen ? 'rotate(180deg)' : 'none' }} />
                 </button>
                 <AnimatePresence>
                   {isAboutOpen && (
-                    <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:10 }}
-                      style={{ position:'absolute', top:'100%', left:0, width:210, background:theme.dropdownBg, border:`1px solid ${theme.dropdownBorder}`, boxShadow:'0 20px 40px rgba(0,0,0,0.3)', borderRadius:20, padding:8, marginTop:4, backdropFilter:'blur(20px)', zIndex:200 }}>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                      style={{ position: 'absolute', top: '100%', left: 0, width: 210, background: theme.dropdownBg, border: `1px solid ${theme.dropdownBorder}`, boxShadow: '0 20px 40px rgba(0,0,0,0.3)', borderRadius: 20, padding: 8, marginTop: 4, backdropFilter: 'blur(20px)', zIndex: 200 }}>
                       {aboutLinks.map(link => (
                         <Link key={link.name} to={link.path} style={dropdownItemStyle}
-                          onMouseEnter={e=>{e.currentTarget.style.color=theme.accent;e.currentTarget.style.background=`${theme.accent}14`;}}
-                          onMouseLeave={e=>{e.currentTarget.style.color=theme.muted;e.currentTarget.style.background='transparent';}}>
-                          <span style={{ color:theme.accent }}>{link.icon}</span> {link.name}
+                          onMouseEnter={e => { e.currentTarget.style.color = theme.accent; e.currentTarget.style.background = `${theme.accent}14`; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = theme.muted; e.currentTarget.style.background = 'transparent'; }}>
+                          <span style={{ color: theme.accent }}>{link.icon}</span> {link.name}
                         </Link>
                       ))}
                     </motion.div>
@@ -162,94 +170,131 @@ const Navbar = () => {
               <NavLink to="/contact"        style={({ isActive }) => linkStyle(isActive)}>Contact</NavLink>
 
               <NavLink to="/triage" style={({ isActive }) => ({
-                display:'flex', alignItems:'center', gap:6, padding:'5px 10px', fontSize:12, fontWeight:900,
-                color:isActive?theme.badgeText:theme.accent, background:isActive?theme.accent:`${theme.accent}18`,
-                borderRadius:999, textDecoration:'none', border:`1px solid ${theme.accent}44`, transition:'all 0.2s', whiteSpace:'nowrap',
+                display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', fontSize: 12, fontWeight: 900,
+                color: isActive ? theme.badgeText : theme.accent, background: isActive ? theme.accent : `${theme.accent}18`,
+                borderRadius: 999, textDecoration: 'none', border: `1px solid ${theme.accent}44`, transition: 'all 0.2s', whiteSpace: 'nowrap',
               })}>
-                <IoMedicalOutline size={13}/> AI Triage
+                <IoMedicalOutline size={13} /> AI Triage
               </NavLink>
 
-              {user?.role==='admin' && (
-                <NavLink to="/admin/dashboard" style={()=>({ display:'flex', alignItems:'center', gap:6, padding:'4px 10px', fontSize:12, fontWeight:900, color:theme.adminText, background:theme.adminBg, borderRadius:999, textDecoration:'none', border:`1px solid ${theme.adminText}33`, whiteSpace:'nowrap' })}>
-                  <IoStatsChartOutline size={14}/> Admin Hub
+              {user?.role === 'admin' && (
+                <NavLink to="/admin/dashboard" style={() => ({ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', fontSize: 12, fontWeight: 900, color: theme.adminText, background: theme.adminBg, borderRadius: 999, textDecoration: 'none', border: `1px solid ${theme.adminText}33`, whiteSpace: 'nowrap' })}>
+                  <IoStatsChartOutline size={14} /> Admin Hub
                 </NavLink>
               )}
             </div>
 
             {/* ── RIGHT SIDE ── */}
-            <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
 
-              {/* Theme switcher */}
-              <motion.button onClick={cycleTheme} whileTap={{ scale:0.95 }}
-                style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 10px', borderRadius:999, background:'rgba(255,255,255,0.07)', border:`1px solid ${theme.border}`, cursor:'pointer', color:theme.text, fontSize:10, fontWeight:900, letterSpacing:'0.1em', textTransform:'uppercase', backdropFilter:'blur(8px)', transition:'all 0.3s ease' }}>
-                {NAV_THEMES.map((t,i) => (
-                  <span key={i} style={{ width:i===themeIdx?10:6, height:i===themeIdx?10:6, borderRadius:'50%', background:t.accent, border:i===themeIdx?`2px solid ${theme.text}`:'2px solid transparent', boxShadow:i===themeIdx?`0 0 6px ${t.accent}`:'none', transition:'all 0.3s ease', display:'inline-block', flexShrink:0 }}/>
-                ))}
-                <span className="nav-theme-label">{theme.name}</span>
+              {/* ── THEME SWITCHER ──
+                  Desktop: all dots + label
+                  Mobile:  single pulsing dot only (tappable) */}
+              <motion.button
+                onClick={cycleTheme}
+                whileTap={{ scale: 0.92 }}
+                title={`Theme: ${theme.name}`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 10px',
+                  borderRadius: 999,
+                  background: 'rgba(255,255,255,0.07)',
+                  border: `1px solid ${theme.border}`,
+                  cursor: 'pointer', color: theme.text,
+                  fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  backdropFilter: 'blur(8px)',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {/* Desktop: all theme dots */}
+                <span className="theme-btn-dots-all" style={{ gap: 5, alignItems: 'center' }}>
+                  {NAV_THEMES.map((t, i) => (
+                    <span key={i} style={{
+                      width: i === themeIdx ? 10 : 6,
+                      height: i === themeIdx ? 10 : 6,
+                      borderRadius: '50%',
+                      background: t.accent,
+                      border: i === themeIdx ? `2px solid ${theme.text}` : '2px solid transparent',
+                      boxShadow: i === themeIdx ? `0 0 6px ${t.accent}` : 'none',
+                      transition: 'all 0.3s ease',
+                      display: 'inline-block', flexShrink: 0,
+                    }} />
+                  ))}
+                </span>
+
+                {/* Mobile: single active dot */}
+                <span className="theme-btn-dot-single" style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  background: theme.accent,
+                  boxShadow: `0 0 8px ${theme.accent}`,
+                  flexShrink: 0,
+                }} />
+
+                <span className="theme-btn-label">{theme.name}</span>
               </motion.button>
 
               {/* Logged out */}
               {!user ? (
                 <>
-                  <Link to="/login" className="nav-login-link" style={{ fontSize:13, fontWeight:700, color:theme.muted, textDecoration:'none', whiteSpace:'nowrap' }}>Login</Link>
-                  <Link to="/doctors" className="nav-book-btn" style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', background:theme.badgeBg, color:theme.badgeText, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.16em', borderRadius:12, textDecoration:'none', transition:'all 0.3s ease', boxShadow:`0 0 16px ${theme.accent}44`, whiteSpace:'nowrap' }}>
-                    <IoCalendarOutline size={14}/> <span>Book Now</span>
+                  <Link to="/login" className="nav-login-link" style={{ fontSize: 13, fontWeight: 700, color: theme.muted, textDecoration: 'none', whiteSpace: 'nowrap' }}>Login</Link>
+                  <Link to="/doctors" className="nav-book-btn" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', background: theme.badgeBg, color: theme.badgeText, fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.16em', borderRadius: 12, textDecoration: 'none', transition: 'all 0.3s ease', boxShadow: `0 0 16px ${theme.accent}44`, whiteSpace: 'nowrap' }}>
+                    <IoCalendarOutline size={14} /> <span>Book Now</span>
                   </Link>
                 </>
               ) : (
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <NotificationBell />
                   {/* Profile dropdown */}
-                  <div style={{ position:'relative' }} onMouseEnter={()=>setIsProfileOpen(true)} onMouseLeave={()=>setIsProfileOpen(false)}>
-                    <button style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 4px 4px 10px', borderRadius:999, border:`1px solid ${theme.border}`, background:'rgba(255,255,255,0.05)', cursor:'pointer', transition:'all 0.3s ease' }}>
-                      <div style={{ textAlign:'right' }}>
-                        <span style={{ display:'block', fontSize:10, fontWeight:900, color:theme.text, textTransform:'uppercase', letterSpacing:'0.05em', maxWidth:80, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.name}</span>
-                        <span style={{ display:'block', fontSize:8, fontWeight:700, color:theme.accent, textTransform:'uppercase', letterSpacing:'0.1em' }}>{user.role}</span>
+                  <div style={{ position: 'relative' }} onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
+                    <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 4px 4px 10px', borderRadius: 999, border: `1px solid ${theme.border}`, background: 'rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'all 0.3s ease' }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ display: 'block', fontSize: 10, fontWeight: 900, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.05em', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
+                        <span style={{ display: 'block', fontSize: 8, fontWeight: 700, color: theme.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{user.role}</span>
                       </div>
-                      <div style={{ width:36, height:36, borderRadius:'50%', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', background:user.role==='admin'?theme.accent:theme.badgeBg, color:theme.badgeText, fontWeight:700, fontSize:14, flexShrink:0 }}>
-                        {user.image ? <img src={user.image} alt="Profile" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : user.role==='admin' ? <IoShieldCheckmarkOutline size={16}/> : user.name?.charAt(0)}
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: user.role === 'admin' ? theme.accent : theme.badgeBg, color: theme.badgeText, fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                        {user.image ? <img src={user.image} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : user.role === 'admin' ? <IoShieldCheckmarkOutline size={16} /> : user.name?.charAt(0)}
                       </div>
                     </button>
 
                     <AnimatePresence>
                       {isProfileOpen && (
-                        <motion.div initial={{ opacity:0, y:10, scale:0.95 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:10, scale:0.95 }}
-                          style={{ position:'absolute', top:'100%', right:0, width:260, background:theme.profileBg, border:`1px solid ${theme.dropdownBorder}`, boxShadow:'0 30px 60px rgba(0,0,0,0.4)', borderRadius:28, padding:12, marginTop:8, backdropFilter:'blur(24px)', zIndex:200 }}>
-                          <div style={{ padding:'12px 16px', background:`${theme.accent}14`, borderRadius:16, marginBottom:8 }}>
-                            <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:theme.muted, marginBottom:4 }}>Account</p>
-                            <p style={{ fontSize:13, fontWeight:700, color:theme.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', margin:0 }}>{user.email}</p>
+                        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          style={{ position: 'absolute', top: '100%', right: 0, width: 260, background: theme.profileBg, border: `1px solid ${theme.dropdownBorder}`, boxShadow: '0 30px 60px rgba(0,0,0,0.4)', borderRadius: 28, padding: 12, marginTop: 8, backdropFilter: 'blur(24px)', zIndex: 200 }}>
+                          <div style={{ padding: '12px 16px', background: `${theme.accent}14`, borderRadius: 16, marginBottom: 8 }}>
+                            <p style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: theme.muted, marginBottom: 4 }}>Account</p>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: theme.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{user.email}</p>
                           </div>
                           {[
-                            { to:'/profile',         icon:<IoPersonOutline size={17}/>,       label:'My Profile' },
-                            { to:'/my-appointments', icon:<IoCalendarOutline size={17}/>,     label:'My Appointments' },
-                            { to:'/medical-vault',   icon:<IoFileTrayFullOutline size={17}/>, label:'Medical Vault' },
-                            { to:'/triage',          icon:<IoMedicalOutline size={17}/>,      label:'AI Symptom Triage' },
-                            { to:'/edit-profile',    icon:<IoSettingsOutline size={17}/>,     label:'Settings' },
+                            { to: '/profile',         icon: <IoPersonOutline size={17} />,       label: 'My Profile' },
+                            { to: '/my-appointments', icon: <IoCalendarOutline size={17} />,     label: 'My Appointments' },
+                            { to: '/medical-vault',   icon: <IoFileTrayFullOutline size={17} />, label: 'Medical Vault' },
+                            { to: '/triage',          icon: <IoMedicalOutline size={17} />,      label: 'AI Symptom Triage' },
+                            { to: '/edit-profile',    icon: <IoSettingsOutline size={17} />,     label: 'Settings' },
                           ].map(item => (
                             <Link key={item.to} to={item.to} style={dropdownItemStyle}
-                              onMouseEnter={e=>{e.currentTarget.style.color=theme.accent;e.currentTarget.style.background=`${theme.accent}14`;}}
-                              onMouseLeave={e=>{e.currentTarget.style.color=theme.muted;e.currentTarget.style.background='transparent';}}>
-                              <span style={{ color:theme.accent }}>{item.icon}</span> {item.label}
+                              onMouseEnter={e => { e.currentTarget.style.color = theme.accent; e.currentTarget.style.background = `${theme.accent}14`; }}
+                              onMouseLeave={e => { e.currentTarget.style.color = theme.muted; e.currentTarget.style.background = 'transparent'; }}>
+                              <span style={{ color: theme.accent }}>{item.icon}</span> {item.label}
                             </Link>
                           ))}
-                          {user.role==='admin' && (
-                            <Link to="/admin/dashboard" style={{ ...dropdownItemStyle, color:theme.adminText }}
-                              onMouseEnter={e=>{e.currentTarget.style.background=`${theme.adminText}14`;}}
-                              onMouseLeave={e=>{e.currentTarget.style.background='transparent';}}>
-                              <IoGridOutline size={17}/> Admin Dashboard
+                          {user.role === 'admin' && (
+                            <Link to="/admin/dashboard" style={{ ...dropdownItemStyle, color: theme.adminText }}
+                              onMouseEnter={e => { e.currentTarget.style.background = `${theme.adminText}14`; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                              <IoGridOutline size={17} /> Admin Dashboard
                             </Link>
                           )}
-                          {user.role==='doctor' && (
+                          {user.role === 'doctor' && (
                             <Link to="/doctor/dashboard" style={dropdownItemStyle}
-                              onMouseEnter={e=>{e.currentTarget.style.color=theme.accent;e.currentTarget.style.background=`${theme.accent}14`;}}
-                              onMouseLeave={e=>{e.currentTarget.style.color=theme.muted;e.currentTarget.style.background='transparent';}}>
-                              <IoStatsChartOutline size={17}/> Doctor Dashboard
+                              onMouseEnter={e => { e.currentTarget.style.color = theme.accent; e.currentTarget.style.background = `${theme.accent}14`; }}
+                              onMouseLeave={e => { e.currentTarget.style.color = theme.muted; e.currentTarget.style.background = 'transparent'; }}>
+                              <IoStatsChartOutline size={17} /> Doctor Dashboard
                             </Link>
                           )}
-                          <button onClick={handleLogout} style={{ width:'100%', display:'flex', alignItems:'center', gap:12, padding:'10px 16px', fontSize:13, fontWeight:600, color:'#f87171', background:'none', border:'none', cursor:'pointer', borderRadius:12, transition:'all 0.2s ease', borderTop:`1px solid ${theme.border}`, marginTop:8 }}
-                            onMouseEnter={e=>{e.currentTarget.style.background='rgba(248,113,113,0.1)';}}
-                            onMouseLeave={e=>{e.currentTarget.style.background='transparent';}}>
-                            <IoLogOutOutline size={17}/> Sign Out
+                          <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', fontSize: 13, fontWeight: 600, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 12, transition: 'all 0.2s ease', borderTop: `1px solid ${theme.border}`, marginTop: 8 }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                            <IoLogOutOutline size={17} /> Sign Out
                           </button>
                         </motion.div>
                       )}
@@ -259,9 +304,9 @@ const Navbar = () => {
               )}
 
               {/* Hamburger — mobile only */}
-              <button onClick={()=>setIsOpen(!isOpen)} className="mobile-menu-btn"
-                style={{ padding:8, color:theme.accent, background:'none', border:'none', cursor:'pointer', borderRadius:10 }}>
-                {isOpen ? <IoClose size={26}/> : <IoMenu size={26}/>}
+              <button onClick={() => setIsOpen(!isOpen)} className="mobile-menu-btn"
+                style={{ padding: 8, color: theme.accent, background: 'none', border: 'none', cursor: 'pointer', borderRadius: 10 }}>
+                {isOpen ? <IoClose size={26} /> : <IoMenu size={26} />}
               </button>
             </div>
           </div>
@@ -270,75 +315,72 @@ const Navbar = () => {
         {/* ── MOBILE MENU ── */}
         <AnimatePresence>
           {isOpen && (
-            <motion.div initial={{ height:0 }} animate={{ height:'auto' }} exit={{ height:0 }}
-              style={{ background:theme.mobileBg, borderBottom:`1px solid ${theme.border}`, overflow:'hidden', backdropFilter:'blur(20px)' }}>
-              <div style={{ padding:'20px clamp(16px,6vw,48px) 28px', display:'flex', flexDirection:'column', gap:2 }}>
+            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
+              style={{ background: theme.mobileBg, borderBottom: `1px solid ${theme.border}`, overflow: 'hidden', backdropFilter: 'blur(20px)' }}>
+              <div style={{ padding: '20px clamp(16px,6vw,48px) 28px', display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-                {/* All nav links */}
                 {[
-                  { to:'/',               label:'Home' },
-                  { to:'/services',       label:'Services' },
-                  { to:'/doctors',        label:'Doctors' },
-                  { to:'/journal',        label:'Journal' },
-                  { to:'/new-cru-clinic', label:'New Cru Clinic' },
-                  { to:'/contact',        label:'Contact Us' },
-                  { to:'/triage',         label:'🩺 AI Symptom Triage' },
+                  { to: '/',               label: 'Home' },
+                  { to: '/services',       label: 'Services' },
+                  { to: '/doctors',        label: 'Doctors' },
+                  { to: '/journal',        label: 'Journal' },
+                  { to: '/new-cru-clinic', label: 'New Cru Clinic' },
+                  { to: '/contact',        label: 'Contact Us' },
+                  { to: '/triage',         label: '🩺 AI Symptom Triage' },
                 ].map(item => (
-                  <Link key={item.to} to={item.to} onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'12px 16px', fontSize:15, fontWeight:700, color:theme.muted, textDecoration:'none', borderRadius:12, transition:'color 0.2s ease' }}>
+                  <Link key={item.to} to={item.to} onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '12px 16px', fontSize: 15, fontWeight: 700, color: theme.muted, textDecoration: 'none', borderRadius: 12, transition: 'color 0.2s ease' }}>
                     {item.label}
                   </Link>
                 ))}
 
                 {/* About sub-links */}
-                <div style={{ borderTop:`1px solid ${theme.border}`, marginTop:6, paddingTop:6 }}>
-                  <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:theme.muted, opacity:0.6, padding:'6px 16px', margin:0 }}>About</p>
+                <div style={{ borderTop: `1px solid ${theme.border}`, marginTop: 6, paddingTop: 6 }}>
+                  <p style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: theme.muted, opacity: 0.6, padding: '6px 16px', margin: 0 }}>About</p>
                   {aboutLinks.map(link => (
-                    <Link key={link.path} to={link.path} onClick={()=>setIsOpen(false)} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 16px', fontSize:14, fontWeight:600, color:theme.muted, textDecoration:'none', borderRadius:12 }}>
-                      <span style={{ color:theme.accent }}>{link.icon}</span>{link.name}
+                    <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 14, fontWeight: 600, color: theme.muted, textDecoration: 'none', borderRadius: 12 }}>
+                      <span style={{ color: theme.accent }}>{link.icon}</span>{link.name}
                     </Link>
                   ))}
                 </div>
 
-                {/* Role-based links */}
-                {user?.role==='admin' && (
-                  <Link to="/admin/dashboard" onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'12px 16px', fontWeight:900, color:theme.adminText, textDecoration:'none', borderRadius:12 }}>
+                {user?.role === 'admin' && (
+                  <Link to="/admin/dashboard" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '12px 16px', fontWeight: 900, color: theme.adminText, textDecoration: 'none', borderRadius: 12 }}>
                     Admin Dashboard
                   </Link>
                 )}
-                {user?.role==='doctor' && (
-                  <Link to="/doctor/dashboard" onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'12px 16px', fontWeight:900, color:theme.accent, textDecoration:'none', borderRadius:12 }}>
+                {user?.role === 'doctor' && (
+                  <Link to="/doctor/dashboard" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '12px 16px', fontWeight: 900, color: theme.accent, textDecoration: 'none', borderRadius: 12 }}>
                     Doctor Dashboard
                   </Link>
                 )}
 
                 {/* Auth section */}
-                <div style={{ borderTop:`1px solid ${theme.border}`, marginTop:8, paddingTop:8, display:'flex', flexDirection:'column', gap:2 }}>
+                <div style={{ borderTop: `1px solid ${theme.border}`, marginTop: 8, paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {user ? (
                     <>
-                      {/* User info */}
-                      <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:`${theme.accent}14`, borderRadius:16, marginBottom:4 }}>
-                        <div style={{ width:40, height:40, borderRadius:'50%', background:theme.badgeBg, display:'flex', alignItems:'center', justifyContent:'center', color:theme.badgeText, fontWeight:700, fontSize:16, flexShrink:0, overflow:'hidden' }}>
-                          {user.image ? <img src={user.image} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : user.name?.charAt(0)}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: `${theme.accent}14`, borderRadius: 16, marginBottom: 4 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: theme.badgeBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.badgeText, fontWeight: 700, fontSize: 16, flexShrink: 0, overflow: 'hidden' }}>
+                          {user.image ? <img src={user.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : user.name?.charAt(0)}
                         </div>
                         <div>
-                          <p style={{ fontSize:13, fontWeight:800, color:theme.text, margin:0 }}>{user.name}</p>
-                          <p style={{ fontSize:10, color:theme.accent, margin:0, textTransform:'uppercase', letterSpacing:'0.1em' }}>{user.role}</p>
+                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.text, margin: 0 }}>{user.name}</p>
+                          <p style={{ fontSize: 10, color: theme.accent, margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{user.role}</p>
                         </div>
                       </div>
-                      <Link to="/my-appointments" onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'11px 16px', fontWeight:700, color:theme.accent, textDecoration:'none', borderRadius:12 }}>My Appointments</Link>
-                      <Link to="/medical-vault"   onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'11px 16px', fontWeight:700, color:theme.accent, textDecoration:'none', borderRadius:12 }}>Medical Vault</Link>
-                      <Link to="/profile"         onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'11px 16px', fontWeight:700, color:theme.accent, textDecoration:'none', borderRadius:12 }}>My Profile</Link>
-                      <button onClick={()=>{setIsOpen(false);handleLogout();}} style={{ display:'block', width:'100%', padding:'12px 16px', textAlign:'left', fontWeight:700, color:'#f87171', background:'none', border:'none', cursor:'pointer', fontSize:15, borderRadius:12 }}>
+                      <Link to="/my-appointments" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '11px 16px', fontWeight: 700, color: theme.accent, textDecoration: 'none', borderRadius: 12 }}>My Appointments</Link>
+                      <Link to="/medical-vault"   onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '11px 16px', fontWeight: 700, color: theme.accent, textDecoration: 'none', borderRadius: 12 }}>Medical Vault</Link>
+                      <Link to="/profile"         onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '11px 16px', fontWeight: 700, color: theme.accent, textDecoration: 'none', borderRadius: 12 }}>My Profile</Link>
+                      <button onClick={() => { setIsOpen(false); handleLogout(); }} style={{ display: 'block', width: '100%', padding: '12px 16px', textAlign: 'left', fontWeight: 700, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, borderRadius: 12 }}>
                         Sign Out
                       </button>
                     </>
                   ) : (
                     <>
-                      <Link to="/login"   onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'12px 16px', fontWeight:700, color:theme.accent, textDecoration:'none', borderRadius:12 }}>Sign In</Link>
-                      <Link to="/register" onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'12px 16px', fontWeight:700, color:theme.muted, textDecoration:'none', borderRadius:12 }}>Create Account</Link>
+                      <Link to="/login"    onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '12px 16px', fontWeight: 700, color: theme.accent, textDecoration: 'none', borderRadius: 12 }}>Sign In</Link>
+                      <Link to="/register" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '12px 16px', fontWeight: 700, color: theme.muted, textDecoration: 'none', borderRadius: 12 }}>Create Account</Link>
                     </>
                   )}
-                  <Link to="/doctors" onClick={()=>setIsOpen(false)} style={{ display:'block', padding:'14px 16px', fontWeight:900, color:theme.badgeText, background:theme.badgeBg, textDecoration:'none', borderRadius:14, textAlign:'center', marginTop:6, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase' }}>
+                  <Link to="/doctors" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '14px 16px', fontWeight: 900, color: theme.badgeText, background: theme.badgeBg, textDecoration: 'none', borderRadius: 14, textAlign: 'center', marginTop: 6, fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                     Book Appointment
                   </Link>
                 </div>
@@ -348,7 +390,7 @@ const Navbar = () => {
         </AnimatePresence>
       </nav>
 
-      <div style={{ height:68 }} />
+      <div style={{ height: 68 }} />
     </>
   );
 };

@@ -210,37 +210,37 @@ const ModernPagination = ({ total, active, onDotClick, onPrev, onNext, theme, im
   const progress = ((active+1)/total)*100;
   const RING_R = 24;
   return (
-    <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:20, padding:'0 16px 16px', display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:8, flexWrap:'wrap' }}>
+    <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:20, padding:'0 10px 10px', display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:6, flexWrap:'nowrap' }}>
       {/* Left: counter */}
-      <div style={{ background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:14, padding:'8px 14px', display:'flex', alignItems:'center', gap:10 }}>
+      <div style={{ background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'6px 10px', display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
         <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
           {Array.from({length:total}).map((_,i)=>(
-            <motion.div key={i} onClick={()=>onDotClick(i)} animate={{ height:active===i?18:4, backgroundColor:active===i?'#fff':'rgba(255,255,255,0.3)', opacity:active===i?1:0.6 }} transition={{ type:'spring', stiffness:300, damping:28 }} style={{ width:3, borderRadius:99, cursor:'pointer', overflow:'hidden', position:'relative' }}>
+            <motion.div key={i} onClick={()=>onDotClick(i)} animate={{ height:active===i?16:3, backgroundColor:active===i?'#fff':'rgba(255,255,255,0.3)', opacity:active===i?1:0.6 }} transition={{ type:'spring', stiffness:300, damping:28 }} style={{ width:3, borderRadius:99, cursor:'pointer', overflow:'hidden', position:'relative' }}>
               {active===i && <motion.div key={`fill-${active}`} initial={{ height:'0%' }} animate={{ height:'100%' }} transition={{ duration:4.5, ease:'linear' }} style={{ position:'absolute', top:0, left:0, right:0, background:theme.accent, borderRadius:99 }}/>}
             </motion.div>
           ))}
         </div>
         <div>
-          <div style={{ display:'flex', alignItems:'baseline', gap:3, marginBottom:2 }}>
+          <div style={{ display:'flex', alignItems:'baseline', gap:2, marginBottom:1 }}>
             <AnimatePresence mode="wait">
-              <motion.span key={active} initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:8 }} transition={{ duration:0.22 }} style={{ fontSize:20, fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>
+              <motion.span key={active} initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:8 }} transition={{ duration:0.22 }} style={{ fontSize:16, fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>
                 {String(active+1).padStart(2,'0')}
               </motion.span>
             </AnimatePresence>
-            <span style={{ fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.4)' }}>/{String(total).padStart(2,'0')}</span>
+            <span style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.4)' }}>/{String(total).padStart(2,'0')}</span>
           </div>
           <AnimatePresence mode="wait">
-            <motion.p key={active} initial={{ opacity:0, x:-6 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:6 }} transition={{ duration:0.2 }} style={{ fontSize:8, fontWeight:800, color:'rgba(255,255,255,0.55)', textTransform:'uppercase', letterSpacing:'0.16em', margin:0, whiteSpace:'nowrap' }}>
-              {slideLabels[active]||'SJCH Facility'}
+            <motion.p key={active} initial={{ opacity:0, x:-6 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:6 }} transition={{ duration:0.2 }} style={{ fontSize:7, fontWeight:800, color:'rgba(255,255,255,0.55)', textTransform:'uppercase', letterSpacing:'0.12em', margin:0, whiteSpace:'nowrap' }}>
+              {slideLabels[active]||'SJCH'}
             </motion.p>
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Middle: thumbnails — hidden on very small screens */}
-      <div className="hero-thumbs" style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:14, padding:'6px 8px', flex:1, overflow:'hidden', justifyContent:'center' }}>
+      {/* Middle: thumbnails */}
+      <div className="hero-thumbs" style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'5px 6px', flex:1, overflow:'hidden', justifyContent:'center', minWidth:0 }}>
         {images.map((img,i)=>(
-          <motion.button key={i} onClick={()=>onDotClick(i)} whileHover={{ scale:1.06 }} whileTap={{ scale:0.95 }} animate={{ opacity:active===i?1:0.45, scale:active===i?1:0.92 }} transition={{ type:'spring', stiffness:300, damping:25 }} style={{ all:'unset', cursor:'pointer', position:'relative', width:active===i?48:32, height:32, borderRadius:9, overflow:'hidden', flexShrink:0, border:active===i?`2px solid ${theme.accent}`:'2px solid transparent', boxSizing:'border-box', transition:'width 0.35s cubic-bezier(.4,0,.2,1)', boxShadow:active===i?`0 0 10px ${theme.glow}`:'none' }}>
+          <motion.button key={i} onClick={()=>onDotClick(i)} whileTap={{ scale:0.95 }} animate={{ opacity:active===i?1:0.45, scale:active===i?1:0.92 }} transition={{ type:'spring', stiffness:300, damping:25 }} style={{ all:'unset', cursor:'pointer', position:'relative', width:active===i?40:26, height:28, borderRadius:8, overflow:'hidden', flexShrink:0, border:active===i?`2px solid ${theme.accent}`:'2px solid transparent', boxSizing:'border-box', transition:'width 0.35s cubic-bezier(.4,0,.2,1)', boxShadow:active===i?`0 0 10px ${theme.glow}`:'none' }}>
             <img src={img} alt={`slide ${i+1}`} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }}/>
             {active===i&&<motion.div key={`thumb-p-${active}`} initial={{ scaleX:0 }} animate={{ scaleX:1 }} transition={{ duration:4.5, ease:'linear' }} style={{ position:'absolute', bottom:0, left:0, right:0, height:2, background:theme.accent, transformOrigin:'left', borderRadius:99 }}/>}
           </motion.button>
@@ -248,11 +248,11 @@ const ModernPagination = ({ total, active, onDotClick, onPrev, onNext, theme, im
       </div>
 
       {/* Right: prev/next */}
-      <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:14, padding:'7px 10px' }}>
-        <motion.button whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }} onClick={onPrev} style={{ width:32, height:32, borderRadius:'50%', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:14 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'6px 8px', flexShrink:0 }}>
+        <motion.button whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }} onClick={onPrev} style={{ width:28, height:28, borderRadius:'50%', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:13 }}>
           <IoChevronBack/>
         </motion.button>
-        <motion.button whileHover={{ scale:1.06 }} whileTap={{ scale:0.92 }} onClick={onNext} style={{ position:'relative', width:RING_R*2, height:RING_R*2, borderRadius:'50%', background:'rgba(255,255,255,0.08)', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:14 }}>
+        <motion.button whileHover={{ scale:1.06 }} whileTap={{ scale:0.92 }} onClick={onNext} style={{ position:'relative', width:RING_R*2, height:RING_R*2, borderRadius:'50%', background:'rgba(255,255,255,0.08)', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:13 }}>
           <ProgressRing radius={RING_R} stroke={2.5} progress={progress} color={theme.accent}/>
           <IoChevronForward style={{ position:'relative', zIndex:1 }}/>
         </motion.button>
@@ -279,91 +279,178 @@ const Hero = () => {
   return (
     <>
       <style>{`
-        .hero-section { position:relative; min-height:100vh; overflow:hidden; transition:background 0.5s ease; }
+        .hero-section {
+          position: relative;
+          overflow: hidden;
+          transition: background 0.5s ease;
+        }
 
-        /* Two-column layout on desktop */
+        /* ── Mobile first: single column ── */
         .hero-inner {
-          position:relative; z-index:2;
-          max-width:1440px; margin:0 auto;
-          padding:clamp(80px,10vw,112px) clamp(20px,4vw,64px) clamp(80px,10vw,100px);
-          display:flex; flex-direction:row;
-          align-items:center; gap:clamp(24px,4vw,40px);
-          min-height:100vh; box-sizing:border-box;
+          position: relative; z-index: 2;
+          max-width: 1440px; margin: 0 auto;
+          padding: 80px 20px 100px;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 28px;
+          min-height: 100vh;
+          box-sizing: border-box;
         }
-        .hero-left  { width:50%; padding-right:clamp(0px,2vw,4rem); }
-        .hero-right { width:50%; height:clamp(360px,50vw,620px); position:relative; }
 
-        /* Floating badges — hidden on small screens */
-        .hero-badge { display:flex !important; }
+        .hero-left  { width: 100%; }
+        .hero-right { width: 100%; height: 280px; position: relative; }
 
-        /* Stats bar */
-        .hero-stats-bar {
-          position:absolute; bottom:0; left:0; right:0; z-index:10;
-          backdrop-filter:blur(16px); border-top:1px solid rgba(255,255,255,0.06);
-          transition:background 0.5s ease;
-        }
-        .hero-stats-inner {
-          max-width:1440px; margin:0 auto;
-          padding:clamp(12px,2vw,18px) clamp(20px,4vw,64px);
-          display:flex; flex-wrap:wrap;
-          justify-content:space-between; align-items:center; gap:16px;
-        }
-        .hero-stats-item { display:flex; align-items:center; gap:14px; }
-        .hero-stat-divider { width:1px; height:24px; background:rgba(255,255,255,0.12); }
+        /* Badge hidden on mobile */
+        .hero-badge { display: none !important; }
 
-        /* Diagonal split overlay */
-        .hero-split {
-          position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:1;
+        /* Mobile headline sizes */
+        .hero-h1-small {
+          font-size: 1.05rem;
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          margin: 0 0 2px;
         }
-        .hero-split-bg {
-          position:absolute; top:0; right:0; width:55%; height:100%;
-          clip-path:polygon(12% 0,100% 0,100% 100%,0% 100%);
+        .hero-h1-big {
+          font-size: 2rem;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          line-height: 1.0;
+          margin: 0;
         }
-        .hero-split-strip {
-          position:absolute; top:0; right:0; width:55%; height:100%;
-          clip-path:polygon(12% 0,16% 0,4% 100%,0% 100%);
+
+        .hero-sub-text {
+          font-size: 13px;
+          line-height: 1.65;
+          margin-bottom: 6px;
+        }
+
+        .hero-quote {
+          font-size: 12px;
+          font-weight: 900;
+          font-style: italic;
+          margin-bottom: 20px;
         }
 
         /* Search bar */
         .hero-search-input {
-          width:100%; box-sizing:border-box;
-          padding-left:52px; padding-right:clamp(100px,15vw,140px);
-          padding-top:16px; padding-bottom:16px;
-          border-radius:18px; font-size:16px; font-weight:600;
-          outline:none; transition:all 0.3s ease;
+          width: 100%; box-sizing: border-box;
+          padding-left: 44px; padding-right: 90px;
+          padding-top: 14px; padding-bottom: 14px;
+          border-radius: 16px; font-size: 14px; font-weight: 600;
+          outline: none; transition: all 0.3s ease;
         }
 
-        /* Thumbnails — hide on very small to save space */
-        @media (max-width:480px) {
-          .hero-thumbs { display:none !important; }
+        /* Quick searches */
+        .hero-quick-btn {
+          font-size: 10px;
+          font-weight: 700;
+          padding: 5px 11px;
+          border-radius: 999px;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
 
-        /* ── TABLET: stack layout ── */
-        @media (max-width:900px) {
+        /* CTA buttons — stack on very small screens */
+        .hero-ctas {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .hero-cta-primary {
+          flex: 1 1 auto;
+          min-width: 140px;
+          justify-content: center;
+        }
+        .hero-cta-secondary {
+          flex: 1 1 auto;
+          min-width: 110px;
+          justify-content: center;
+        }
+
+        /* Thumbnails hidden on very small screens */
+        @media (max-width: 400px) {
+          .hero-thumbs { display: none !important; }
+          .hero-right  { height: 220px; }
+          .hero-h1-big { font-size: 1.7rem; }
+        }
+
+        /* Diagonal split overlay */
+        .hero-split { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+        .hero-split-bg {
+          position: absolute; top: 0; right: 0;
+          width: 100%; height: 45%;
+          clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+        .hero-split-strip {
+          position: absolute; top: 0; right: 0;
+          width: 100%; height: 45%;
+          clip-path: polygon(0 0, 6% 0, 0 100%);
+        }
+
+        /* Stats bar */
+        .hero-stats-bar {
+          position: relative;
+          z-index: 10;
+          backdrop-filter: blur(16px);
+          border-top: 1px solid rgba(255,255,255,0.06);
+          transition: background 0.5s ease;
+        }
+        .hero-stats-inner {
+          max-width: 1440px; margin: 0 auto;
+          padding: 14px 20px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: center;
+          gap: 16px 24px;
+        }
+        .hero-stats-item { display: flex; align-items: center; gap: 10px; }
+        .hero-stat-divider { display: none; }
+
+        /* ── TABLET and up: two-column ── */
+        @media (min-width: 768px) {
           .hero-inner {
-            flex-direction:column !important;
-            padding-top:clamp(60px,8vw,90px);
-            padding-bottom:clamp(100px,15vw,140px);
-            gap:32px;
-            align-items:stretch;
+            flex-direction: row;
+            align-items: center;
+            padding: 100px 40px 100px;
+            gap: 32px;
           }
-          .hero-left  { width:100% !important; padding-right:0 !important; }
-          .hero-right { width:100% !important; height:clamp(260px,55vw,420px); }
-          .hero-badge { display:none !important; }
-          .hero-stats-inner { justify-content:center; gap:12px; }
-          .hero-stat-divider { display:none; }
+          .hero-left  { width: 50%; padding-right: 2rem; }
+          .hero-right { width: 50%; height: 420px; }
+
+          .hero-badge { display: flex !important; }
+
+          .hero-h1-small { font-size: clamp(1.2rem, 2.5vw, 1.8rem); }
+          .hero-h1-big   { font-size: clamp(2.2rem, 4vw, 3.5rem); }
+          .hero-sub-text { font-size: 14px; }
+          .hero-quote    { font-size: 13px; }
+
+          /* Restore desktop split */
+          .hero-split-bg {
+            width: 55%; height: 100%;
+            clip-path: polygon(12% 0, 100% 0, 100% 100%, 0% 100%);
+          }
+          .hero-split-strip {
+            width: 55%; height: 100%;
+            clip-path: polygon(12% 0, 16% 0, 4% 100%, 0% 100%);
+          }
+
+          .hero-stats-inner {
+            padding: 16px 40px;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+          }
+          .hero-stat-divider { display: block; width: 1px; height: 24px; background: rgba(255,255,255,0.12); }
         }
 
-        /* ── MOBILE ── */
-        @media (max-width:600px) {
-          .hero-inner { gap:24px; }
-          .hero-right { height:clamp(220px,60vw,320px); }
-          .hero-stats-inner { padding:12px 16px; }
-          .hero-stats-link  { display:none; }
-        }
-
-        @media (max-width:400px) {
-          .hero-right { height:220px; }
+        @media (min-width: 1024px) {
+          .hero-inner { padding: 110px 64px 110px; gap: 40px; }
+          .hero-right { height: 560px; }
+          .hero-stats-inner { padding: 18px 64px; }
+          .hero-h1-small { font-size: clamp(1.3rem, 2vw, 2rem); }
+          .hero-h1-big   { font-size: clamp(2.8rem, 4.5vw, 4rem); }
         }
       `}</style>
 
@@ -376,7 +463,7 @@ const Hero = () => {
           <div className="hero-split-strip" style={{ background:theme.accentStrip, opacity:theme.isLight?0.9:0.85 }}/>
           {theme.isLight && (
             <motion.div animate={{ scale:[1,1.15,1], opacity:[0.12,0.2,0.12] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
-              style={{ position:'absolute', top:'25%', right:'10%', width:'clamp(200px,30vw,400px)', height:'clamp(200px,30vw,400px)', borderRadius:'50%', background:'#3b82f6', filter:'blur(120px)' }}/>
+              style={{ position:'absolute', top:'25%', right:'10%', width:'clamp(150px,25vw,400px)', height:'clamp(150px,25vw,400px)', borderRadius:'50%', background:'#3b82f6', filter:'blur(120px)' }}/>
           )}
         </div>
 
@@ -385,57 +472,59 @@ const Hero = () => {
           <div className="hero-left">
             {/* Badge */}
             <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.1 }}
-              style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'6px 16px', marginBottom:'clamp(16px,3vw,28px)', borderRadius:999, background:`${theme.accent}18`, border:`1px solid ${theme.accent}44` }}>
-              <IoShieldCheckmark style={{ color:theme.accent, fontSize:13 }}/>
-              <span style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', color:theme.accent }}>Serving Liberia since 1963</span>
+              style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'5px 13px', marginBottom:16, borderRadius:999, background:`${theme.accent}18`, border:`1px solid ${theme.accent}44` }}>
+              <IoShieldCheckmark style={{ color:theme.accent, fontSize:12 }}/>
+              <span style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', color:theme.accent }}>Serving Liberia since 1963</span>
             </motion.div>
 
             {/* Headline */}
-            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }} style={{ marginBottom:'clamp(12px,2vw,20px)' }}>
-              <h1 style={{ fontSize:'clamp(1.3rem,3vw,2.8rem)', fontWeight:900, letterSpacing:'-0.03em', lineHeight:1.05, color:theme.headlineColor, margin:'0 0 4px', whiteSpace:'nowrap' }}>
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }} style={{ marginBottom:12 }}>
+              <h1 className="hero-h1-small" style={{ color:theme.headlineColor }}>
                 ST. JOSEPH'S CATHOLIC
               </h1>
-              <h1 style={{ fontSize:'clamp(1.8rem,4.5vw,4rem)', fontWeight:900, letterSpacing:'-0.04em', lineHeight:1.0, margin:0 }}>
+              <h1 className="hero-h1-big" style={{ margin:0 }}>
                 <span style={{ background:theme.headlineAccent, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
                   HOSPITAL
                 </span>
               </h1>
             </motion.div>
 
-            <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.3 }}
-              style={{ fontSize:'clamp(13px,1.5vw,15px)', color:theme.subText, fontWeight:500, lineHeight:1.7, marginBottom:8, maxWidth:460 }}>
+            <motion.p className="hero-sub-text" initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.3 }}
+              style={{ color:theme.subText, fontWeight:500, lineHeight:1.7, marginBottom:6, maxWidth:460 }}>
               Providing holistic, affordable, quality health services to all people in Liberia and the world at large.
             </motion.p>
-            <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.35 }}
-              style={{ fontSize:13, fontWeight:900, color:theme.quoteColor, fontStyle:'italic', marginBottom:'clamp(18px,3vw,28px)' }}>
+
+            <motion.p className="hero-quote" initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.35 }}
+              style={{ color:theme.quoteColor, marginBottom:20 }}>
               "Your Life is Precious to Us!"
             </motion.p>
 
             {/* Search */}
             <motion.form initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }} onSubmit={handleSearch}
-              style={{ position:'relative', maxWidth:460, marginBottom:12, width:'100%' }}>
-              <div style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', color:theme.subText, zIndex:10 }}>
-                <IoSearchOutline size={19}/>
+              style={{ position:'relative', maxWidth:460, marginBottom:10, width:'100%' }}>
+              <div style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:theme.subText, zIndex:10 }}>
+                <IoSearchOutline size={17}/>
               </div>
               <input type="text" value={query} onChange={e=>setQuery(e.target.value)}
-                placeholder="Search services or departments..."
+                placeholder="Search services..."
                 className="hero-search-input"
                 style={{ background:theme.inputBg, border:`2px solid ${theme.inputBorder}`, color:theme.headlineColor, caretColor:theme.accent }}
               />
-              <button type="submit" style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, padding:'9px 16px', borderRadius:12, border:'none', cursor:'pointer', fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.16em', display:'flex', alignItems:'center', gap:5, whiteSpace:'nowrap' }}>
-                Find <IoArrowForward size={11}/>
+              <button type="submit" style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, padding:'8px 12px', borderRadius:11, border:'none', cursor:'pointer', fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
+                Find <IoArrowForward size={10}/>
               </button>
             </motion.form>
 
             {/* Quick searches */}
             <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.45 }}
-              style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:8, marginBottom:'clamp(20px,3vw,36px)' }}>
-              <span style={{ fontSize:9, fontWeight:900, color:theme.subText, textTransform:'uppercase', letterSpacing:'0.2em', display:'flex', alignItems:'center', gap:4 }}>
-                <IoFlashOutline style={{ color:'#f97316', fontSize:12 }}/> Popular:
+              style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:7, marginBottom:24 }}>
+              <span style={{ fontSize:9, fontWeight:900, color:theme.subText, textTransform:'uppercase', letterSpacing:'0.18em', display:'flex', alignItems:'center', gap:4 }}>
+                <IoFlashOutline style={{ color:'#f97316', fontSize:11 }}/> Popular:
               </span>
               {quickSearches.map(item=>(
-                <button key={item} onClick={()=>navigate('/services',{state:{initialSearch:item}})}
-                  style={{ fontSize:10, fontWeight:700, color:theme.subText, background:`${theme.accent}14`, padding:'5px 13px', borderRadius:999, border:`1px solid ${theme.accent}33`, cursor:'pointer', transition:'all 0.2s ease' }}
+                <button key={item} className="hero-quick-btn"
+                  onClick={()=>navigate('/services',{state:{initialSearch:item}})}
+                  style={{ color:theme.subText, background:`${theme.accent}14`, border:`1px solid ${theme.accent}33` }}
                   onMouseEnter={e=>{e.currentTarget.style.background=theme.accent;e.currentTarget.style.color='#fff';}}
                   onMouseLeave={e=>{e.currentTarget.style.background=`${theme.accent}14`;e.currentTarget.style.color=theme.subText;}}>
                   {item}
@@ -444,14 +533,15 @@ const Hero = () => {
             </motion.div>
 
             {/* CTAs */}
-            <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 }}
-              style={{ display:'flex', flexWrap:'wrap', gap:12 }}>
+            <motion.div className="hero-ctas" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 }}>
               <Link to={user?'/dashboard':'/register'}
-                style={{ display:'flex', alignItems:'center', gap:10, padding:'13px clamp(18px,2.5vw,28px)', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.16em', borderRadius:16, textDecoration:'none', transition:'all 0.3s ease', boxShadow:theme.isLight?'0 4px 16px rgba(0,0,0,0.15)':`0 8px 24px ${theme.accent}33`, whiteSpace:'nowrap' }}>
-                {user?'Enter Patient Portal':'Register as Patient'} <IoArrowForward size={13}/>
+                className="hero-cta-primary"
+                style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 20px', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', borderRadius:14, textDecoration:'none', transition:'all 0.3s ease', boxShadow:theme.isLight?'0 4px 16px rgba(0,0,0,0.15)':`0 8px 24px ${theme.accent}33`, whiteSpace:'nowrap' }}>
+                {user?'Patient Portal':'Register Now'} <IoArrowForward size={11}/>
               </Link>
               <Link to="/services"
-                style={{ display:'flex', alignItems:'center', gap:10, padding:'13px clamp(18px,2.5vw,28px)', background:theme.btnSecondary.bg, color:theme.btnSecondary.color, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.16em', borderRadius:16, border:`2px solid ${theme.btnSecondary.border}`, textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
+                className="hero-cta-secondary"
+                style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 20px', background:theme.btnSecondary.bg, color:theme.btnSecondary.color, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', borderRadius:14, border:`2px solid ${theme.btnSecondary.border}`, textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
                 Our Services
               </Link>
             </motion.div>
@@ -460,8 +550,8 @@ const Hero = () => {
           {/* ── RIGHT: Carousel ── */}
           <div className="hero-right">
             <TiltCard>
-              <motion.div initial={{ opacity:0, x:60, rotateY:-10 }} animate={{ opacity:1, x:0, rotateY:0 }} transition={{ delay:0.3, duration:0.8, type:'spring', stiffness:60 }}
-                style={{ position:'relative', height:'100%', width:'100%', borderRadius:'clamp(24px,4vw,48px)', overflow:'hidden', boxShadow:'0 40px 100px rgba(0,0,0,0.3)', border:'3px solid rgba(255,255,255,0.15)', transformStyle:'preserve-3d' }}>
+              <motion.div initial={{ opacity:0, x:40, rotateY:-10 }} animate={{ opacity:1, x:0, rotateY:0 }} transition={{ delay:0.3, duration:0.8, type:'spring', stiffness:60 }}
+                style={{ position:'relative', height:'100%', width:'100%', borderRadius:32, overflow:'hidden', boxShadow:'0 30px 80px rgba(0,0,0,0.3)', border:'2.5px solid rgba(255,255,255,0.15)', transformStyle:'preserve-3d' }}>
                 <Swiper modules={[Autoplay,EffectFade]} effect="fade" spaceBetween={0} slidesPerView={1} speed={1200} loop
                   autoplay={{ delay:4500, disableOnInteraction:false }}
                   onSwiper={(swiper)=>{swiperRef.current=swiper;}}
@@ -476,13 +566,13 @@ const Hero = () => {
                     </SwiperSlide>
                   ))}
                 </Swiper>
-                <div style={{ position:'absolute', top:16, right:16, zIndex:20, padding:'5px 13px', borderRadius:999, background:'rgba(255,255,255,0.1)', backdropFilter:'blur(10px)', border:'1px solid rgba(255,255,255,0.2)' }}>
-                  <p style={{ color:'#fff', fontSize:8, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', margin:0 }}>SJCH Facilities</p>
+                <div style={{ position:'absolute', top:12, right:12, zIndex:20, padding:'4px 11px', borderRadius:999, background:'rgba(255,255,255,0.1)', backdropFilter:'blur(10px)', border:'1px solid rgba(255,255,255,0.2)' }}>
+                  <p style={{ color:'#fff', fontSize:7, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', margin:0 }}>SJCH Facilities</p>
                 </div>
                 <ModernPagination total={images.length} active={activeIndex} onDotClick={handleDotClick} onPrev={handlePrev} onNext={handleNext} theme={theme} images={images}/>
               </motion.div>
 
-              {/* Floating badges — hidden on mobile via CSS */}
+              {/* Floating badges — desktop only via CSS */}
               <FloatingBadge className="hero-badge" icon={<IoHeartOutline size={16}/>}   label="Emergency"   value="Open 24/7"    delay={0.8}  theme={theme} style={{ bottom:'14%', left:'-6%', transform:'translateZ(40px)' }}/>
               <FloatingBadge className="hero-badge" icon={<IoPulseOutline size={16}/>}   label="Procedures"  value="12,000+"      delay={1.0}  theme={theme} style={{ top:'12%',   left:'-4%', transform:'translateZ(40px)' }}/>
               <FloatingBadge className="hero-badge" icon={<IoMedicalOutline size={16}/>} label="Specialists" value="45+ Doctors"  delay={1.2}  theme={theme} style={{ top:'42%',   right:'-4%', transform:'translateZ(40px)' }}/>
@@ -497,14 +587,14 @@ const Hero = () => {
             {[{ label:'Founded', value:'1963' },{ label:'Hospital Beds', value:'150+' },{ label:'Years of Care', value:'60+' },{ label:'Specialists', value:'45+' }].map((item,i)=>(
               <div key={i} className="hero-stats-item">
                 {i>0 && <div className="hero-stat-divider"/>}
-                <div>
-                  <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.22em', color:theme.statsMuted, margin:0 }}>{item.label}</p>
-                  <p style={{ fontSize:'clamp(16px,2.5vw,20px)', fontWeight:900, color:theme.statsText, letterSpacing:'-0.03em', margin:0 }}>{item.value}</p>
+                <div style={{ textAlign:'center' }}>
+                  <p style={{ fontSize:8, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:theme.statsMuted, margin:0 }}>{item.label}</p>
+                  <p style={{ fontSize:18, fontWeight:900, color:theme.statsText, letterSpacing:'-0.03em', margin:0 }}>{item.value}</p>
                 </div>
               </div>
             ))}
-            <Link to="/about" className="hero-stats-link" style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 20px', background:theme.accent, color:theme.key==='gold'?'#0a0700':'#fff', borderRadius:12, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.16em', textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
-              Our Story <IoArrowForward size={11}/>
+            <Link to="/about" style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 16px', background:theme.accent, color:theme.key==='gold'?'#0a0700':'#fff', borderRadius:11, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
+              Our Story <IoArrowForward size={10}/>
             </Link>
           </div>
         </motion.div>

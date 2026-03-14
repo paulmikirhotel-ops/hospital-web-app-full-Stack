@@ -6,207 +6,198 @@ import {
   IoCalendarOutline, IoTimeOutline, IoCloseCircleOutline, 
   IoCheckmarkCircle, IoWalletOutline, IoVideocam, IoMedkitOutline 
 } from 'react-icons/io5';
-
 import API from '../../api/axiosConfig';
 
 const MyAppointments = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location  = useLocation();
+  const navigate  = useNavigate();
 
   const [appointments, setAppointments] = useState(location.state?.freshAppointments || []);
-  const [loading, setLoading] = useState(!location.state?.freshAppointments);
+  const [loading, setLoading]           = useState(!location.state?.freshAppointments);
 
   const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await API.get('/appointments/my-appointments');
-      if (data.success) {
-        setAppointments(data.appointments);
-      }
+      if (data.success) setAppointments(data.appointments);
     } catch (error) {
-      console.error("Fetch Error:", error);
-      toast.error("Unable to sync health records.");
+      console.error('Fetch Error:', error);
+      toast.error('Unable to sync health records.');
     } finally {
       setTimeout(() => setLoading(false), 600);
     }
   }, []);
 
   useEffect(() => {
-    if (!location.state?.freshAppointments) {
-      fetchAppointments();
-    }
+    if (!location.state?.freshAppointments) fetchAppointments();
   }, [location.state, fetchAppointments]);
 
   const handleJoinMeeting = async (appointmentId) => {
-    const loadingToast = toast.loading("Establishing secure connection...");
+    const id = toast.loading('Establishing secure connection...');
     try {
       const { data } = await API.get(`/meetings/join/${appointmentId}`);
-      if (data.success) {
-        toast.dismiss(loadingToast);
-        navigate(`/video-consultation/${data.roomId}`);
-      }
-    } catch (err) {
-      toast.error("Room not active. Please join at your scheduled time.", { id: loadingToast });
-    }
+      if (data.success) { toast.dismiss(id); navigate(`/video-consultation/${data.roomId}`); }
+    } catch { toast.error('Room not active. Please join at your scheduled time.', { id }); }
   };
 
   const handlePayment = async (appointmentId) => {
-    const loadingToast = toast.loading("Processing clinical fee...");
+    const id = toast.loading('Processing clinical fee...');
     try {
       const { data } = await API.post('/appointments/mark-as-paid', { appointmentId });
-      if (data.success) {
-        toast.success("Payment Verified", { id: loadingToast });
-        // Refresh list to show confirmed status
-        fetchAppointments();
-      }
-    } catch (error) {
-      toast.error("Transaction declined", { id: loadingToast });
-    }
+      if (data.success) { toast.success('Payment Verified', { id }); fetchAppointments(); }
+    } catch { toast.error('Transaction declined', { id }); }
   };
 
   const handleCancel = async (id) => {
     try {
       const { data } = await API.patch(`/appointments/cancel/${id}`);
       if (data.success) {
-        toast.success("Consultation Cancelled");
-        setAppointments(prev => prev.map(app => 
-          app._id === id ? { ...app, status: 'Cancelled' } : app
-        ));
+        toast.success('Consultation Cancelled');
+        setAppointments(prev => prev.map(a => a._id === id ? { ...a, status: 'Cancelled' } : a));
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Unable to cancel");
-    }
+    } catch (error) { toast.error(error.response?.data?.message || 'Unable to cancel'); }
   };
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <div className="w-12 h-12 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Syncing Records...</p>
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#fff' }}>
+      <div style={{ width:44, height:44, border:'4px solid #dbeafe', borderTopColor:'#2563eb', borderRadius:'50%', animation:'spin 0.8s linear infinite', marginBottom:16 }}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <p style={{ fontSize:10, fontWeight:900, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.3em' }}>Syncing Records...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] py-12 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto">
-        
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
-          <div className="space-y-2">
-            <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase">My <span className="text-blue-600">Visits</span></h1>
-            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Encrypted Health Portal
+    <div style={{ minHeight:'100vh', background:'#fdfdfd', padding:'clamp(48px,8vw,80px) clamp(14px,4vw,32px)' }}>
+      <style>{`
+        .appt-header  { display:flex; flex-direction:column; gap:20px; margin-bottom:clamp(40px,8vw,64px); }
+        .appt-card    { display:flex; flex-direction:column; gap:20px; align-items:center; padding:clamp(20px,4vw,32px); border-radius:clamp(20px,4vw,48px); }
+        .appt-actions { width:100%; }
+        .appt-info    { text-align:center; flex:1; }
+
+        @media (min-width: 640px) {
+          .appt-header { flex-direction:row; align-items:flex-end; justify-content:space-between; }
+          .appt-card   { flex-direction:row; align-items:center; }
+          .appt-info   { text-align:left; }
+          .appt-actions{ width:auto; min-width:220px; }
+        }
+      `}</style>
+
+      <div style={{ maxWidth:900, margin:'0 auto' }}>
+
+        {/* Header */}
+        <header className="appt-header">
+          <div>
+            <h1 style={{ fontSize:'clamp(2rem,6vw,3.5rem)', fontWeight:900, color:'#0f172a', letterSpacing:'-0.04em', textTransform:'uppercase', margin:0 }}>
+              My <span style={{ color:'#2563eb' }}>Visits</span>
+            </h1>
+            <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:'#94a3b8', display:'flex', alignItems:'center', gap:7, marginTop:8 }}>
+              <span style={{ width:8, height:8, borderRadius:'50%', background:'#10b981', display:'inline-block', animation:'pulse 2s ease-in-out infinite' }}/>
+              <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+              Encrypted Health Portal
             </p>
           </div>
-          <button 
-            onClick={() => navigate('/doctors')} 
-            className="px-8 py-4 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-95"
-          >
+          <button onClick={()=>navigate('/doctors')}
+            style={{ padding:'clamp(10px,2vw,16px) clamp(18px,3vw,32px)', background:'#fff', border:'1px solid #f1f5f9', borderRadius:18, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', cursor:'pointer', boxShadow:'0 1px 4px rgba(0,0,0,0.06)', transition:'all 0.2s', whiteSpace:'nowrap' }}
+            onMouseEnter={e=>{e.currentTarget.style.background='#0f172a';e.currentTarget.style.color='#fff';}}
+            onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.color='inherit';}}>
             Schedule New Visit
           </button>
         </header>
 
-        <div className="grid grid-cols-1 gap-6">
+        {/* Cards */}
+        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
           <AnimatePresence mode="popLayout">
-            {appointments.length > 0 ? (
-              appointments.map((item) => (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  key={item._id} 
-                  className={`bg-white p-6 md:p-8 rounded-[3rem] border transition-all flex flex-col md:flex-row gap-8 items-center ${
-                    item.status === 'Cancelled' ? 'border-slate-50 grayscale opacity-50' : 'border-slate-100 shadow-sm hover:shadow-xl hover:shadow-blue-900/5'
-                  }`}
-                >
-                  <div className="relative flex-shrink-0">
-                    {/* 🚀 FIX: Access image via populated userId */}
-                    <img 
-                      src={item.doctorId?.userId?.image || 'https://via.placeholder.com/150'} 
-                      className="w-28 h-28 rounded-[2.5rem] object-cover bg-slate-100 border-4 border-white shadow-lg" 
-                      alt="Specialist" 
-                    />
-                    {item.payment && item.status !== 'Cancelled' && (
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-md">
-                        <IoCheckmarkCircle size={18} />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 text-center md:text-left space-y-1">
-                    <span className="text-[9px] font-black text-blue-600/40 uppercase tracking-[0.2em]">Clinical ID: {item._id.slice(-8).toUpperCase()}</span>
-                    {/* 🚀 FIX: Access name via populated userId */}
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Dr. {item.doctorId?.userId?.name}</h3>
-                    <p className="text-blue-600 text-[10px] font-black uppercase tracking-widest pb-4">{item.doctorId?.specialization}</p>
-                    
-                    <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                      <div className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 rounded-2xl text-slate-600 font-black text-[9px] uppercase tracking-tighter">
-                        <IoCalendarOutline className="text-blue-600" size={14} /> {item.date}
-                      </div>
-                      <div className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 rounded-2xl text-slate-600 font-black text-[9px] uppercase tracking-tighter">
-                        <IoTimeOutline className="text-blue-600" size={14} /> {item.slot}
-                      </div>
+            {appointments.length > 0 ? appointments.map(item => (
+              <motion.div layout key={item._id}
+                initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, scale:0.95 }}
+                className="appt-card"
+                style={{ background:'#fff', border:`1px solid ${item.status==='Cancelled'?'#f8fafc':'#f1f5f9'}`, boxShadow:item.status==='Cancelled'?'none':'0 2px 16px rgba(0,0,0,0.04)', opacity:item.status==='Cancelled'?0.5:1, filter:item.status==='Cancelled'?'grayscale(1)':'none', transition:'box-shadow 0.3s' }}>
+
+                {/* Avatar */}
+                <div style={{ position:'relative', flexShrink:0 }}>
+                  <img src={item.doctorId?.userId?.image||'https://via.placeholder.com/150'} alt="Specialist"
+                    style={{ width:clamp(80,28,112), height:clamp(80,28,112), width:'clamp(80px,15vw,110px)', height:'clamp(80px,15vw,110px)', borderRadius:'clamp(16px,4vw,32px)', objectFit:'cover', background:'#f1f5f9', border:'4px solid #fff', boxShadow:'0 4px 20px rgba(0,0,0,0.1)' }}/>
+                  {item.payment && item.status!=='Cancelled' && (
+                    <div style={{ position:'absolute', top:-6, right:-6, width:28, height:28, background:'#2563eb', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', border:'3px solid #fff', boxShadow:'0 2px 8px rgba(37,99,235,0.3)' }}>
+                      <IoCheckmarkCircle size={16}/>
                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3 w-full md:w-auto min-w-[240px]">
-                    {item.payment && item.status === 'Confirmed' && (
-                      <button 
-                        onClick={() => handleJoinMeeting(item._id)}
-                        className="flex items-center justify-center gap-3 w-full py-5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-2xl hover:bg-slate-900 transition-all shadow-xl shadow-blue-100 group"
-                      >
-                        <IoVideocam size={18} className="group-hover:scale-110 transition-transform" /> Start Consultation
-                      </button>
-                    )}
-
-                    {!item.payment && item.status !== 'Cancelled' ? (
-                      <button 
-                        onClick={() => handlePayment(item._id)}
-                        className="group flex items-center justify-center gap-3 w-full py-5 bg-slate-900 text-white text-[10px] font-black uppercase rounded-2xl hover:bg-blue-600 transition-all shadow-xl"
-                      >
-                        <IoWalletOutline size={16} /> Pay Fee: ${item.amount}
-                      </button>
-                    ) : (
-                      <div className={`flex items-center justify-center gap-2 py-5 rounded-2xl text-[10px] font-black uppercase border ${
-                        item.payment ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400'
-                      }`}>
-                        {item.payment ? 'Payment Received' : 'No Payment Required'}
-                      </div>
-                    )}
-
-                    <div className={`py-2 rounded-xl text-[9px] font-black uppercase text-center border-b-2 ${
-                      item.status === 'Cancelled' ? 'bg-white text-slate-300 border-slate-100' : 
-                      item.status === 'Confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                      'bg-amber-50 text-amber-500 border-amber-100'
-                    }`}>
-                      {item.status}
-                    </div>
-
-                    {item.status !== 'Cancelled' && (
-                      <button 
-                        onClick={() => handleCancel(item._id)}
-                        className="text-slate-400 hover:text-red-500 transition-colors text-[9px] font-black uppercase flex items-center justify-center gap-1.5 pt-1"
-                      >
-                        <IoCloseCircleOutline size={16} /> Cancel Booking
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-32 bg-slate-50 rounded-[4rem] border-2 border-dashed border-slate-200"
-              >
-                <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <IoMedkitOutline className="text-slate-300" size={32} />
+                  )}
                 </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">No Appointments Found</h3>
-                <p className="text-slate-400 font-medium mb-8">You haven't scheduled any medical consultations yet.</p>
-                <button 
-                  onClick={() => navigate('/doctors')} 
-                  className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-blue-100 hover:bg-slate-900 transition-all"
-                >
+
+                {/* Info */}
+                <div className="appt-info">
+                  <span style={{ fontSize:9, fontWeight:900, color:'rgba(37,99,235,0.4)', textTransform:'uppercase', letterSpacing:'0.2em' }}>
+                    Clinical ID: {item._id.slice(-8).toUpperCase()}
+                  </span>
+                  <h3 style={{ fontSize:'clamp(1.2rem,3vw,1.6rem)', fontWeight:900, color:'#0f172a', letterSpacing:'-0.03em', margin:'4px 0 2px' }}>
+                    Dr. {item.doctorId?.userId?.name}
+                  </h3>
+                  <p style={{ fontSize:10, fontWeight:900, color:'#2563eb', textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:14 }}>
+                    {item.doctorId?.specialization}
+                  </p>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center' }} className="appt-chips">
+                    <style>{`.appt-info .appt-chips{justify-content:flex-start}`}</style>
+                    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', background:'#f8fafc', borderRadius:14, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color:'#475569' }}>
+                      <IoCalendarOutline style={{ color:'#2563eb' }} size={13}/> {item.date}
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', background:'#f8fafc', borderRadius:14, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color:'#475569' }}>
+                      <IoTimeOutline style={{ color:'#2563eb' }} size={13}/> {item.slot}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="appt-actions" style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                  {item.payment && item.status==='Confirmed' && (
+                    <button onClick={()=>handleJoinMeeting(item._id)}
+                      style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, width:'100%', padding:'clamp(12px,2vw,18px)', background:'#2563eb', color:'#fff', fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', borderRadius:16, border:'none', cursor:'pointer', boxShadow:'0 8px 24px rgba(37,99,235,0.25)', transition:'background 0.2s' }}
+                      onMouseEnter={e=>e.currentTarget.style.background='#0f172a'}
+                      onMouseLeave={e=>e.currentTarget.style.background='#2563eb'}>
+                      <IoVideocam size={16}/> Start Consultation
+                    </button>
+                  )}
+
+                  {!item.payment && item.status!=='Cancelled' ? (
+                    <button onClick={()=>handlePayment(item._id)}
+                      style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, width:'100%', padding:'clamp(12px,2vw,18px)', background:'#0f172a', color:'#fff', fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', borderRadius:16, border:'none', cursor:'pointer', boxShadow:'0 8px 24px rgba(0,0,0,0.12)', transition:'background 0.2s' }}
+                      onMouseEnter={e=>e.currentTarget.style.background='#2563eb'}
+                      onMouseLeave={e=>e.currentTarget.style.background='#0f172a'}>
+                      <IoWalletOutline size={15}/> Pay Fee: ${item.amount}
+                    </button>
+                  ) : (
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'clamp(12px,2vw,18px)', borderRadius:16, fontSize:10, fontWeight:900, textTransform:'uppercase', border:'1px solid', ...(item.payment ? { background:'#f0fdf4', borderColor:'#bbf7d0', color:'#16a34a' } : { background:'#f8fafc', borderColor:'#e2e8f0', color:'#94a3b8' }) }}>
+                      {item.payment ? 'Payment Received' : 'No Payment Required'}
+                    </div>
+                  )}
+
+                  <div style={{ padding:'8px 0', borderRadius:10, fontSize:9, fontWeight:900, textTransform:'uppercase', textAlign:'center', borderBottom:'2px solid', ...(
+                    item.status==='Cancelled' ? { color:'#cbd5e1', borderColor:'#f1f5f9' } :
+                    item.status==='Confirmed' ? { color:'#2563eb', borderColor:'#bfdbfe', background:'#eff6ff' } :
+                    { color:'#d97706', borderColor:'#fde68a', background:'#fffbeb' }
+                  )}}>
+                    {item.status}
+                  </div>
+
+                  {item.status!=='Cancelled' && (
+                    <button onClick={()=>handleCancel(item._id)}
+                      style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'none', border:'none', cursor:'pointer', fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.12em', color:'#94a3b8', padding:'4px 0', transition:'color 0.2s' }}
+                      onMouseEnter={e=>e.currentTarget.style.color='#ef4444'}
+                      onMouseLeave={e=>e.currentTarget.style.color='#94a3b8'}>
+                      <IoCloseCircleOutline size={15}/> Cancel Booking
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )) : (
+              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+                style={{ textAlign:'center', padding:'clamp(48px,10vw,100px) 24px', background:'#f8fafc', borderRadius:'clamp(24px,5vw,48px)', border:'2px dashed #e2e8f0' }}>
+                <div style={{ width:64, height:64, background:'#fff', borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <IoMedkitOutline style={{ color:'#cbd5e1' }} size={28}/>
+                </div>
+                <h3 style={{ fontSize:'1.2rem', fontWeight:900, color:'#0f172a', margin:'0 0 8px' }}>No Appointments Found</h3>
+                <p style={{ color:'#94a3b8', fontWeight:500, margin:'0 0 28px', fontSize:14 }}>You haven't scheduled any medical consultations yet.</p>
+                <button onClick={()=>navigate('/doctors')}
+                  style={{ padding:'14px 32px', background:'#2563eb', color:'#fff', borderRadius:16, fontWeight:900, fontSize:10, textTransform:'uppercase', letterSpacing:'0.15em', border:'none', cursor:'pointer', boxShadow:'0 8px 24px rgba(37,99,235,0.25)' }}>
                   Find a Doctor
                 </button>
               </motion.div>

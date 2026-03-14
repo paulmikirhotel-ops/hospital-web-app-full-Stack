@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { 
   IoLogoFacebook, IoLogoTwitter, IoLogoInstagram, IoLogoLinkedin,
-  IoMailOutline, IoCallOutline, IoLocationOutline, IoSparkles,
+  IoCallOutline, IoLocationOutline, IoSparkles,
   IoShieldCheckmarkOutline, IoGlobeOutline, IoArrowForward
 } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
@@ -11,94 +11,132 @@ const Footer = () => {
 
   const footerSections = [
     {
-      title: "Healthcare Hub",
+      title: 'Healthcare Hub',
       links: [
-        { name: "Our Services", path: "/services" },
-        { name: "Medical Doctors", path: "/doctors" },
-        { name: "New Kru Clinic", path: "/new-cru-clinic" },
-        { name: "Journal & News", path: "/journal" },
-      ]
+        { name: 'Our Services',   path: '/services' },
+        { name: 'Medical Doctors', path: '/doctors' },
+        { name: 'New Kru Clinic', path: '/new-cru-clinic' },
+        { name: 'Journal & News', path: '/journal' },
+      ],
     },
     {
-      title: "The Institution",
+      title: 'The Institution',
       links: [
-        { name: "Our History", path: "/about/history" },
-        { name: "The Order", path: "/about/the-order" },
-        { name: "Training Programs", path: "/about/training" },
-        { name: "Contact Support", path: "/contact" },
-      ]
-    }
+        { name: 'Our History',       path: '/about/history' },
+        { name: 'The Order',         path: '/about/the-order' },
+        { name: 'Training Programs', path: '/about/training' },
+        { name: 'Contact Support',   path: '/contact' },
+      ],
+    },
   ];
 
   return (
-    <footer className="relative bg-[#0a0f1a] text-slate-400 pt-24 pb-12 overflow-hidden">
-      {/* --- AI AMBIENT GLOW BACKGROUND --- */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-600/5 rounded-full blur-[100px]" />
+    <footer style={{ position:'relative', background:'#0a0f1a', color:'#94a3b8', paddingTop:'clamp(48px,8vw,96px)', paddingBottom:'clamp(32px,5vw,48px)', overflow:'hidden' }}>
+      <style>{`
+        /* Ambient orbs */
+        .ft-orb1 { position:absolute; top:0; left:25%; width:clamp(200px,35vw,500px); height:clamp(200px,35vw,500px); background:rgba(37,99,235,0.1); border-radius:50%; filter:blur(120px); transform:translateY(-50%); pointer-events:none; }
+        .ft-orb2 { position:absolute; bottom:0; right:0; width:clamp(160px,28vw,400px); height:clamp(160px,28vw,400px); background:rgba(99,102,241,0.05); border-radius:50%; filter:blur(100px); pointer-events:none; }
 
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
-        
-        {/* --- TOP SECTION: NEWSLETTER AI --- */}
-        <div className="grid lg:grid-cols-2 gap-12 pb-20 border-b border-white/5 items-center">
+        /* Newsletter row */
+        .ft-nl-row  { display:grid; gap:clamp(24px,5vw,48px); padding-bottom:clamp(40px,7vw,80px); border-bottom:1px solid rgba(255,255,255,0.05); align-items:center; }
+        .ft-nl-form { display:flex; padding:7px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:clamp(16px,3vw,32px); transition:border-color 0.3s; }
+        .ft-nl-form:focus-within { border-color:rgba(37,99,235,0.5); }
+        .ft-nl-input { background:transparent; border:none; outline:none; flex:1; padding:'0 clamp(10px,2vw,24px)'; color:#fff; font-size:clamp(12px,1.5vw,14px); min-width:0; }
+        .ft-nl-btn   { background:#2563eb; color:#fff; border:none; border-radius:clamp(12px,2vw,24px); cursor:pointer; display:flex; align-items:center; gap:7px; padding:clamp(10px,2vw,16px) clamp(14px,2vw,20px); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.15em; transition:background 0.2s; white-space:nowrap; flex-shrink:0; }
+        .ft-nl-btn:hover { background:#1d4ed8; }
+        .ft-nl-note { display:flex; align-items:center; gap:7px; margin-top:12px; }
+
+        /* Links grid */
+        .ft-links-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(28px,5vw,48px); padding:clamp(32px,6vw,80px) 0; }
+        .ft-brand-col  { grid-column:1/-1; }
+
+        /* Bottom bar */
+        .ft-bottom { padding-top:clamp(24px,4vw,48px); border-top:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; gap:16px; align-items:center; }
+        .ft-legal   { display:flex; flex-direction:column; align-items:center; gap:12px; }
+        .ft-badges  { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+        .ft-links-row { display:flex; align-items:center; gap:clamp(16px,3vw,32px); flex-wrap:wrap; justify-content:center; }
+
+        /* Social icons */
+        .ft-social a { width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; color:#fff; transition:all 0.2s; }
+        .ft-social a:hover { background:#2563eb; border-color:#2563eb; }
+
+        @media (min-width: 640px) {
+          .ft-nl-row   { grid-template-columns:1fr 1fr; }
+          .ft-nl-btn-label { display:inline !important; }
+          .ft-bottom   { flex-direction:row; justify-content:space-between; }
+          .ft-legal    { flex-direction:row; }
+        }
+        @media (min-width: 900px) {
+          .ft-links-grid { grid-template-columns:2fr 1fr 1fr 1fr; }
+          .ft-brand-col  { grid-column:auto; }
+        }
+      `}</style>
+
+      <div className="ft-orb1"/>
+      <div className="ft-orb2"/>
+
+      <div style={{ maxWidth:1280, margin:'0 auto', padding:'0 clamp(14px,4vw,32px)', position:'relative', zIndex:1 }}>
+
+        {/* ── Newsletter ── */}
+        <div className="ft-nl-row">
           <div>
-            <h2 className="text-3xl lg:text-4xl font-black text-white tracking-tighter mb-4">
-              Stay Synced with <br />
-              <span className="text-blue-500">SJCH Intelligence</span>
+            <h2 style={{ fontSize:'clamp(1.5rem,4vw,2.5rem)', fontWeight:900, color:'#fff', letterSpacing:'-0.03em', lineHeight:1.15, marginBottom:14 }}>
+              Stay Synced with <br/>
+              <span style={{ color:'#3b82f6' }}>SJCH Intelligence</span>
             </h2>
-            <p className="max-w-md text-slate-500 font-medium">
+            <p style={{ fontSize:'clamp(13px,1.5vw,15px)', color:'#64748b', fontWeight:500, maxWidth:400, lineHeight:1.65 }}>
               Join 5,000+ patients receiving real-time health updates and clinic news directly to their encrypted portal.
             </p>
           </div>
-          <div className="relative">
-            <div className="flex p-2 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] focus-within:border-blue-500/50 transition-all">
-              <input 
-                type="email" 
-                placeholder="Enter your email for AI updates..." 
-                className="bg-transparent border-none outline-none flex-1 px-6 text-white text-sm placeholder:text-slate-600"
-              />
-              <button className="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-[1.5rem] transition-all flex items-center gap-2 group">
-                <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Join Network</span>
-                <IoArrowForward className="group-hover:translate-x-1 transition-transform" />
+          <div>
+            <div className="ft-nl-form">
+              <input type="email" placeholder="Enter your email for AI updates..." className="ft-nl-input"
+                style={{ padding:'0 clamp(10px,2vw,20px)' }}/>
+              <button className="ft-nl-btn">
+                <span className="ft-nl-btn-label" style={{ display:'none' }}>Join Network</span>
+                <IoArrowForward size={15}/>
               </button>
             </div>
-            <div className="absolute -bottom-8 left-6 flex items-center gap-2">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-600">AI Personalization Active</span>
+            <div className="ft-nl-note">
+              <div style={{ width:7, height:7, background:'#10b981', borderRadius:'50%', animation:'pulse 2s ease-in-out infinite', flexShrink:0 }}/>
+              <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
+              <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'#475569' }}>AI Personalization Active</span>
             </div>
           </div>
         </div>
 
-        {/* --- MAIN LINKS SECTION --- */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 py-20">
-          
-          {/* Brand Column */}
-          <div className="col-span-2 lg:col-span-2">
-            <Link to="/" className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
-                <IoSparkles size={20} />
+        {/* ── Main links ── */}
+        <div className="ft-links-grid">
+
+          {/* Brand */}
+          <div className="ft-brand-col">
+            <Link to="/" style={{ display:'inline-flex', alignItems:'center', gap:10, marginBottom:20, textDecoration:'none' }}>
+              <div style={{ width:38, height:38, background:'#2563eb', borderRadius:14, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', boxShadow:'0 4px 16px rgba(37,99,235,0.25)', flexShrink:0 }}>
+                <IoSparkles size={18}/>
               </div>
-              <span className="text-2xl font-black text-white tracking-tighter uppercase">SJCH <span className="text-blue-500">2026</span></span>
+              <span style={{ fontSize:'clamp(1.1rem,2.5vw,1.6rem)', fontWeight:900, color:'#fff', letterSpacing:'-0.03em', textTransform:'uppercase' }}>SJCH <span style={{ color:'#3b82f6' }}>2026</span></span>
             </Link>
-            <p className="text-sm leading-relaxed mb-8 max-w-sm">
-              Saint John Catholic Hospital is a leading medical institution in Monrovia, merging spiritual compassion with the world's most advanced medical AI and diagnostics.
+            <p style={{ fontSize:'clamp(12px,1.5vw,14px)', lineHeight:1.7, marginBottom:20, maxWidth:320, color:'#64748b' }}>
+              Saint Joseph's Catholic Hospital is a leading medical institution in Monrovia, merging spiritual compassion with advanced medical diagnostics.
             </p>
-            <div className="flex gap-4">
-              {[<IoLogoFacebook />, <IoLogoTwitter />, <IoLogoInstagram />, <IoLogoLinkedin />].map((icon, i) => (
-                <a key={i} href="#" className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-blue-600 hover:border-blue-600 transition-all">
-                  {icon}
-                </a>
+            <div className="ft-social" style={{ display:'flex', gap:10 }}>
+              {[<IoLogoFacebook/>, <IoLogoTwitter/>, <IoLogoInstagram/>, <IoLogoLinkedin/>].map((icon, i) => (
+                <a key={i} href="#" aria-label={`Social ${i}`}>{icon}</a>
               ))}
             </div>
           </div>
 
-          {/* Nav Columns */}
+          {/* Nav columns */}
           {footerSections.map((section, i) => (
             <div key={i}>
-              <h4 className="text-white font-black uppercase text-[11px] tracking-[0.2em] mb-8">{section.title}</h4>
-              <ul className="space-y-4">
+              <h4 style={{ color:'#fff', fontWeight:900, textTransform:'uppercase', fontSize:10, letterSpacing:'0.2em', marginBottom:'clamp(16px,3vw,32px)' }}>{section.title}</h4>
+              <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:14 }}>
                 {section.links.map((link, j) => (
                   <li key={j}>
-                    <Link to={link.path} className="text-sm hover:text-blue-500 hover:translate-x-2 flex items-center transition-all">
+                    <Link to={link.path}
+                      style={{ fontSize:'clamp(12px,1.5vw,14px)', color:'#64748b', textDecoration:'none', display:'inline-flex', alignItems:'center', transition:'color 0.2s, transform 0.2s' }}
+                      onMouseEnter={e=>{e.currentTarget.style.color='#3b82f6';e.currentTarget.style.transform='translateX(4px)';}}
+                      onMouseLeave={e=>{e.currentTarget.style.color='#64748b';e.currentTarget.style.transform='translateX(0)';}}>
                       {link.name}
                     </Link>
                   </li>
@@ -107,59 +145,61 @@ const Footer = () => {
             </div>
           ))}
 
-          {/* Contact Column */}
+          {/* Contact */}
           <div>
-            <h4 className="text-white font-black uppercase text-[11px] tracking-[0.2em] mb-8">Global Reach</h4>
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <IoLocationOutline className="text-blue-500 shrink-0" size={20} />
-                <p className="text-xs leading-tight">Old Road, Sinkor <br /> Monrovia, Liberia</p>
+            <h4 style={{ color:'#fff', fontWeight:900, textTransform:'uppercase', fontSize:10, letterSpacing:'0.2em', marginBottom:'clamp(16px,3vw,32px)' }}>Global Reach</h4>
+            <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
+              <div style={{ display:'flex', alignItems:'flex-start', gap:12 }}>
+                <IoLocationOutline style={{ color:'#3b82f6', flexShrink:0, marginTop:1 }} size={18}/>
+                <p style={{ fontSize:12, lineHeight:1.5, margin:0 }}>Old Road, Sinkor<br/>Monrovia, Liberia</p>
               </div>
-              <div className="flex items-center gap-4">
-                <IoCallOutline className="text-blue-500 shrink-0" size={20} />
-                <p className="text-xs font-bold text-white">+231 888785931</p>
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <IoCallOutline style={{ color:'#3b82f6', flexShrink:0 }} size={18}/>
+                <p style={{ fontSize:12, fontWeight:700, color:'#fff', margin:0 }}>+231 888 785 931</p>
               </div>
-              <div className="p-4 bg-blue-600/10 border border-blue-600/20 rounded-2xl">
-                <p className="text-[9px] font-black text-blue-400 uppercase mb-1">Emergency 24/7</p>
-                <p className="text-xs text-white font-bold">Dial 911 (Local Sync)</p>
+              <div style={{ padding:'12px 16px', background:'rgba(37,99,235,0.1)', border:'1px solid rgba(37,99,235,0.2)', borderRadius:16 }}>
+                <p style={{ fontSize:9, fontWeight:900, color:'#60a5fa', textTransform:'uppercase', letterSpacing:'0.15em', margin:'0 0 4px' }}>Emergency 24/7</p>
+                <p style={{ fontSize:12, color:'#fff', fontWeight:700, margin:0 }}>Dial 911 (Local Sync)</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* --- BOTTOM LEGAL & TECH BAR --- */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">
-              © {currentYear} SJCH  All Rights Reserved.
+        {/* ── Bottom bar ── */}
+        <div className="ft-bottom">
+          <div className="ft-legal">
+            <p style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.15em', color:'#475569', margin:0, whiteSpace:'nowrap' }}>
+              © {currentYear} SJCH · All Rights Reserved.
             </p>
-            <div className="hidden sm:flex items-center gap-4 border-l border-white/10 pl-6">
-              <div className="flex items-center gap-2">
-                <IoShieldCheckmarkOutline className="text-emerald-500" />
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">HIPAA AI-Compliant</span>
+            <div className="ft-badges">
+              <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                <IoShieldCheckmarkOutline style={{ color:'#10b981' }} size={14}/>
+                <span style={{ fontSize:9, fontWeight:700, color:'#475569', textTransform:'uppercase', letterSpacing:'0.1em' }}>HIPAA Compliant</span>
               </div>
-              <div className="flex items-center gap-2">
-                <IoGlobeOutline className="text-blue-500" />
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Global Health Sync</span>
+              <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                <IoGlobeOutline style={{ color:'#3b82f6' }} size={14}/>
+                <span style={{ fontSize:9, fontWeight:700, color:'#475569', textTransform:'uppercase', letterSpacing:'0.1em' }}>Global Health Sync</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-8">
-            <Link to="/privacy" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Terms of Service</Link>
-            
-            {/* Scroll to Top Trigger (Visual Only) */}
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all"
-            >
-              <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                ↑
-              </motion.div>
+          <div className="ft-links-row">
+            <Link to="/privacy" style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', color:'#475569', textDecoration:'none', transition:'color 0.2s', whiteSpace:'nowrap' }}
+              onMouseEnter={e=>e.currentTarget.style.color='#fff'}
+              onMouseLeave={e=>e.currentTarget.style.color='#475569'}>Privacy Policy</Link>
+            <Link to="/terms" style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', color:'#475569', textDecoration:'none', transition:'color 0.2s', whiteSpace:'nowrap' }}
+              onMouseEnter={e=>e.currentTarget.style.color='#fff'}
+              onMouseLeave={e=>e.currentTarget.style.color='#475569'}>Terms of Service</Link>
+            <button onClick={()=>window.scrollTo({ top:0, behavior:'smooth' })}
+              style={{ width:42, height:42, borderRadius:'50%', border:'1px solid rgba(255,255,255,0.1)', background:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'background 0.2s', flexShrink:0 }}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.08)'}
+              onMouseLeave={e=>e.currentTarget.style.background='none'}
+              title="Scroll to top">
+              <motion.span animate={{ y:[0,-4,0] }} transition={{ repeat:Infinity, duration:2 }} style={{ fontSize:16, lineHeight:1 }}>↑</motion.span>
             </button>
           </div>
         </div>
+
       </div>
     </footer>
   );
