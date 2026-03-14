@@ -6,10 +6,12 @@ import { checkAuth } from './redux/features/auth/authSlice';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AppRouter from './router/AppRouter';
+import { ThemeProvider, useSiteTheme } from './context/ThemeContext';
 
-function App() {
+function AppContent() {
   const dispatch = useDispatch();
   const [appReady, setAppReady] = useState(false);
+  const { siteTheme } = useSiteTheme();
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -19,15 +21,26 @@ function App() {
     initializeAuth();
   }, [dispatch]);
 
-  // --- MEDICAL THEMED LOADER (Cleaned) ---
   if (!appReady) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-white transition-colors duration-500">
+      <div
+        style={{ background: siteTheme.siteBg, transition: 'background 0.5s ease' }}
+        className="h-screen w-full flex flex-col items-center justify-center"
+      >
         <div className="relative flex items-center justify-center">
-          <div className="w-16 h-16 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin"></div>
-          <div className="absolute text-blue-600 animate-pulse text-xl">✚</div>
+          <div
+            className="w-16 h-16 rounded-full animate-spin"
+            style={{
+              border: `4px solid ${siteTheme.siteBorder}`,
+              borderTopColor: siteTheme.siteAccent,
+            }}
+          />
+          <div className="absolute animate-pulse text-xl" style={{ color: siteTheme.siteAccent }}>✚</div>
         </div>
-        <p className="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+        <p
+          className="mt-4 text-[10px] font-black uppercase tracking-[0.3em]"
+          style={{ color: siteTheme.siteMuted }}
+        >
           Syncing Health Portal...
         </p>
       </div>
@@ -35,31 +48,44 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 transition-colors duration-300 selection:bg-blue-100 selection:text-blue-600">
-      
-      <Toaster 
-        position="top-center" 
+    <div
+      style={{
+        background: siteTheme.siteBg,
+        color: siteTheme.siteText,
+        transition: 'background 0.5s ease, color 0.5s ease',
+      }}
+      className="flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-600"
+    >
+      <Toaster
+        position="top-center"
         reverseOrder={false}
         toastOptions={{
           style: {
             borderRadius: '1rem',
-            background: '#fff',
-            color: '#0f172a',
-            border: '1px solid #e2e8f0',
-            fontWeight: '600'
+            background: siteTheme.siteCard,
+            color: siteTheme.siteText,
+            border: `1px solid ${siteTheme.siteBorder}`,
+            fontWeight: '600',
           },
-        }} 
+        }}
       />
-      
       <Navbar />
-      
-      {/* Main Content Area */}
-      <main className="flex-grow max-w-screen-2xl mx-auto w-full pt-24 px-4 sm:px-6 lg:px-8 text-slate-900">
+      <main
+        className="flex-grow max-w-screen-2xl mx-auto w-full pt-24 px-4 sm:px-6 lg:px-8"
+        style={{ color: siteTheme.siteText }}
+      >
         <AppRouter />
       </main>
-
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

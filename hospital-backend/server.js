@@ -20,13 +20,19 @@ const userRoutes = require('./src/routes/userRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes'); // 🆕 Added
 const commentRoutes = require('./src/routes/commentRoutes'); // 🆕 Added
 const inquiryRoutes = require('./src/routes/inquiryRoutes');
+const settingsRoutes = require('./src/routes/settingsRoutes');
 
 const app = express();
 
 // --- 2. CORS CONFIGURATION ---
 app.use(cors({
   // Tip: In production, change this to your actual domain
-  origin: ['http://localhost:5174', 'http://localhost:5173','https://hospital-web-app-full-stack-1.onrender.com'], 
+  origin: ['http://localhost:5174',
+           'http://localhost:5173',
+           'https://hospital-web-app-8slq.onrender.com',         // ✅ your frontend
+           'https://hospital-web-app-full-stack-1.onrender.com', // ✅ your backend
+
+         ], 
   credentials: true,               
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'token']
@@ -58,10 +64,11 @@ app.use('/api/admin', adminRouter);
 app.use('/api/ai', aiRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/payments', paymentRoutes); // 🆕 Mounted
 app.use('/api/comments', commentRoutes); // 🆕 Mounted
 app.use('/api/inquiries', inquiryRoutes); // 🆕 Mounted
+app.use('/api/settings', settingsRoutes);
 
 // --- 6. HEALTH CHECK (Optional but recommended) ---
 app.get('/', (req, res) => {

@@ -20,14 +20,20 @@ export const loginUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await API.post('/auth/login', userData);
-      return response.data; 
+
+      // ✅ Token is in HTTP-only cookie — only save user to localStorage
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
 );
 
-// --- 3. CHECK AUTH THUNK (Persistence) ---
+// --- 3. CHECK AUTH THUNK ---
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
@@ -40,18 +46,23 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
-// --- 4. UPDATE USER THUNK (For Edit Profile) ---
+// --- 4. UPDATE USER THUNK ---
 export const updateUser = createAsyncThunk(
   'auth/updateUser',
   async (formData, { rejectWithValue }) => {
     try {
-      // Logic for handling both JSON and Multipart (if using Cloudinary for images)
       const config = {
         headers: {
           'Content-Type': formData instanceof FormData ? 'multipart/form-data' : 'application/json'
         }
       };
       const response = await API.put('/user/profile', formData, config);
+
+      // ✅ Update user in localStorage when profile changes
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Update failed');
@@ -62,10 +73,10 @@ export const updateUser = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: null,
+    user: JSON.parse(localStorage.getItem('user')) || null, // ✅ persist on refresh
     loading: false,
     error: null,
-    isAuthenticated: false,
+    isAuthenticated: !!localStorage.getItem('user'),        // ✅ persist on refresh
   },
   reducers: {
     setUser: (state, action) => {
@@ -76,6 +87,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       state.error = null;
+      localStorage.removeItem('user'); // ✅ only user in localStorage, cookie cleared by backend
       API.post('/auth/logout').catch(() => {});
     },
     clearError: (state) => {
@@ -109,6 +121,7 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.loading = false;
+        localStorage.removeItem('user');
       })
 
       // Update User

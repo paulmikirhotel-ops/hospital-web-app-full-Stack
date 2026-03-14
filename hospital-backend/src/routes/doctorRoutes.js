@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
- const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const Doctor = require('../models/Doctor');
 const User = require('../models/User'); 
 const { upload } = require('../middleware/cloudinaryConfig');
@@ -12,32 +12,22 @@ const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 // ==========================================
 
 // --- ADD NEW DOCTOR PROFILE ---
-// Linked to an existing User account via userId
 router.post('/add-doctor', verifyToken, isAdmin, upload.single('image'), async (req, res) => {
     try {
         const { userId, specialization, fee, experience, qualification, about, name, email } = req.body;
 
         if (!req.file) return res.status(400).json({ success: false, message: "Doctor image is required" });
 
-        // Check if doctor profile already exists for this user
         const existingDoctor = await Doctor.findOne({ userId });
         if (existingDoctor) return res.status(400).json({ success: false, message: "Doctor profile already exists for this user" });
 
         const newDoctor = new Doctor({
-            userId,
-            name,
-            email,
-            specialization,
-            fee,
-            experience,
-            qualification,
-            about,
+            userId, name, email, specialization,
+            fee, experience, qualification, about,
             image: req.file.path 
         });
 
         await newDoctor.save();
-
-        // 🚀 CRITICAL: Update the User model to reflect profile completion
         await User.findByIdAndUpdate(userId, { isProfileComplete: true, role: 'doctor' });
 
         res.status(201).json({ success: true, message: "Doctor profile created", doctor: newDoctor });
@@ -46,12 +36,110 @@ router.post('/add-doctor', verifyToken, isAdmin, upload.single('image'), async (
     }
 });
 
+// --- ADD DOCTOR DIRECT ---
+router.post('/add-doctor-direct', verifyToken, isAdmin, upload.single('image'), async (req, res) => {
+    try {
+        const { name, email, password, specialization, fee, qualification, about, experience } = req.body;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "Doctor headshot is required" });
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "This email is already registered." });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const newUser = new User({
+            name, email,
+            password: hashedPassword,
+            role: 'doctor',
+            isProfileComplete: true
+        });
+        const savedUser = await newUser.save();
+
+        const newDoctor = new Doctor({
+            userId: savedUser._id,
+            name, email, specialization,
+            fee: Number(fee),
+            experience: experience || "1 Year",
+            qualification, about,
+            image: req.file.path 
+        });
+
+        await newDoctor.save();
+
+        res.status(201).json({ 
+            success: true, 
+            message: "Doctor account created and profile activated successfully!" 
+        });
+    } catch (error) {
+        console.error("Direct Add Error:", error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// --- EDIT DOCTOR ---
+// PUT /api/doctors/edit/:id
+router.put('/edit/:id', verifyToken, isAdmin, upload.single('image'), async (req, res) => {
+    try {
+        const { name, email, specialization, fee, experience, qualification, about } = req.body;
+        const updateData = {};
+
+        if (name)           updateData.name = name;
+        if (email)          updateData.email = email;
+        if (specialization) updateData.specialization = specialization;
+        if (fee)            updateData.fee = Number(fee);
+        if (experience)     updateData.experience = experience;
+        if (qualification)  updateData.qualification = qualification;
+        if (about)          updateData.about = about;
+        if (req.file)       updateData.image = req.file.path;
+
+        const doctor = await Doctor.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true }
+        );
+
+        if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
+
+        // Also update name/email on the linked User account
+        if (name || email) {
+            const userUpdate = {};
+            if (name)  userUpdate.name = name;
+            if (email) userUpdate.email = email;
+            await User.findByIdAndUpdate(doctor.userId, userUpdate);
+        }
+
+        res.json({ success: true, message: 'Doctor updated successfully', doctor });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- DELETE DOCTOR ---
+// DELETE /api/doctors/delete/:id
+router.delete('/delete/:id', verifyToken, isAdmin, async (req, res) => {
+    try {
+        const doctor = await Doctor.findByIdAndDelete(req.params.id);
+        if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found' });
+
+        // Also delete the linked user account
+        await User.findByIdAndDelete(doctor.userId);
+
+        res.json({ success: true, message: 'Doctor and linked account deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
 // ==========================================
 // 2. PUBLIC: BROWSING DOCTORS
 // ==========================================
-
-// --- GET ALL DOCTORS (With Filter Logic) ---
-// backend/routes/doctorRoute.js
 
 // --- GET ALL DOCTORS ---
 router.get('/list', async (req, res) => {
@@ -59,14 +147,11 @@ router.get('/list', async (req, res) => {
         const { specialization } = req.query;
         let filter = {};
         
-        if (specialization) {
-            filter.specialization = specialization;
-        }
+        if (specialization) filter.specialization = specialization;
 
-        // We get the name/image from the Doctor model itself now
         const doctors = await Doctor.find(filter)
             .select('-slotsBooked')
-            .sort({ createdAt: -1 }); // Newest doctors first
+            .sort({ createdAt: -1 });
 
         res.status(200).json({ success: true, doctors });
     } catch (error) {
@@ -78,8 +163,6 @@ router.get('/list', async (req, res) => {
 router.get('/get-doctor/:docId', async (req, res) => {
     try {
         const { docId } = req.params;
-        
-        // Populate userId ONLY if you need generic account info (like join date)
         const doctor = await Doctor.findById(docId).select('-slotsBooked');
 
         if (!doctor) {
@@ -91,6 +174,8 @@ router.get('/get-doctor/:docId', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+
 // ==========================================
 // 3. DOCTOR: SELF MANAGEMENT
 // ==========================================
@@ -98,7 +183,6 @@ router.get('/get-doctor/:docId', async (req, res) => {
 // --- GET MY CLINICAL PROFILE ---
 router.get('/me', verifyToken, async (req, res) => {
     try {
-        // Find clinical data using the User ID from the token
         const doctor = await Doctor.findOne({ userId: req.user.id });
         if (!doctor) return res.status(404).json({ success: false, message: "Clinical profile not found" });
         res.status(200).json({ success: true, doctor });
@@ -120,61 +204,5 @@ router.patch('/toggle-availability', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-   
-  
-router.post('/add-doctor-direct', verifyToken, isAdmin, upload.single('image'), async (req, res) => {
-    try {
-        // 🚀 1. ADD 'experience' TO DESTRUCTURING
-        const { name, email, password, specialization, fee, qualification, about, experience } = req.body;
-        
 
-        console.log("Files received:", req.file); // If this says 'undefined', the frontend key is wrong.
-    console.log("Body received:", req.body); // If this is empty, the FormData isn't sending.
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: "Doctor headshot is required" });
-        }
-
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: "This email is already registered." });
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const newUser = new User({
-            name,
-            email,
-            password: hashedPassword,
-            role: 'doctor',
-            isProfileComplete: true
-        });
-        const savedUser = await newUser.save();
-
-        // 🚀 2. ADD 'experience' TO THE DOCTOR OBJECT
-        const newDoctor = new Doctor({
-            userId: savedUser._id,
-            name,
-            email,
-            specialization,
-            fee: Number(fee),
-            experience: experience || "1 Year", // Fallback if somehow missing
-            qualification,
-            about,
-            image: req.file.path 
-        });
-
-        await newDoctor.save();
-
-        res.status(201).json({ 
-            success: true, 
-            message: "Doctor account created and profile activated successfully!" 
-        });
-
-    } catch (error) {
-        console.error("Direct Add Error:", error);
-        // Change status to 400 for validation errors to help debugging
-        res.status(400).json({ success: false, message: error.message });
-    }
-});
 module.exports = router;

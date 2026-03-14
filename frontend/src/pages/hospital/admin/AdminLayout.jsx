@@ -6,18 +6,16 @@ import {
   IoPeopleOutline, IoSettingsOutline, IoLogOutOutline,
   IoAddCircleOutline, IoMailOutline, IoMedicalOutline
 } from 'react-icons/io5';
+import { MdOutlinePersonPin } from 'react-icons/md';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch inquiry count from backend
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5001/api/auth/inquiries', { withCredentials: true });
-        // For now, we show total count. If you add a 'status' field later, 
-        // you can filter by 'unread'.
+        const { data } = await axios.get('https://hospital-web-app-full-stack-1.onrender.com/api/auth/inquiries', { withCredentials: true });
         setUnreadCount(data.length);
       } catch (error) {
         console.error("Error fetching inquiry count");
@@ -25,7 +23,6 @@ const AdminLayout = () => {
     };
 
     fetchCount();
-    // Refresh count every 2 minutes
     const interval = setInterval(fetchCount, 120000);
     return () => clearInterval(interval);
   }, []);
@@ -39,6 +36,7 @@ const AdminLayout = () => {
       badge: unreadCount 
     },
     { name: 'Manage Services', path: '/admin/services', icon: <IoMedicalOutline /> }, 
+    { name: 'Manage Doctors', path: '/admin/manage-doctors', icon: <MdOutlinePersonPin /> },
     { name: 'Manage Journal', path: '/admin/manage-blogs', icon: <IoDocumentTextOutline /> },
     { name: 'Add Member', path: '/admin/add-admin', icon: <IoPeopleOutline /> },
     { name: 'Settings', path: '/admin/settings', icon: <IoSettingsOutline /> },
@@ -46,7 +44,6 @@ const AdminLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      {/* SIDEBAR */}
       <aside className="w-72 bg-slate-900 text-white fixed h-full z-50">
         <div className="p-8">
           <div className="flex items-center gap-3 mb-10">
@@ -69,8 +66,6 @@ const AdminLayout = () => {
                   <span className="text-xl">{item.icon}</span>
                   {item.name}
                 </div>
-                
-                {/* NOTIFICATION BADGE */}
                 {item.badge > 0 && (
                   <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
                     {item.badge}
@@ -88,7 +83,6 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
       <main className="flex-1 ml-72 p-10">
         <header className="flex justify-between items-center mb-10">
           <div>
@@ -96,7 +90,7 @@ const AdminLayout = () => {
             <p className="text-slate-900 font-bold text-xl">Hospital Command Center</p>
           </div>
           <div className="flex gap-4">
-             <button 
+            <button 
               onClick={() => navigate('/admin/inquiries')}
               className="relative flex items-center gap-2 px-6 py-3 bg-white text-slate-900 border border-slate-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
             >
@@ -115,7 +109,7 @@ const AdminLayout = () => {
         </header>
 
         <div className="bg-white rounded-[2.5rem] min-h-[75vh] shadow-sm border border-slate-100 overflow-hidden">
-             <Outlet />
+          <Outlet />
         </div>
       </main>
     </div>

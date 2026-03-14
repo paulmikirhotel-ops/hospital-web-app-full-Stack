@@ -9,7 +9,7 @@ const medicalRecordSchema = new mongoose.Schema({
     title: { 
         type: String, 
         required: true,
-        trim: true // 💡 Removes accidental whitespace
+        trim: true
     }, 
     documentUrl: { 
         type: String, 
@@ -22,8 +22,7 @@ const medicalRecordSchema = new mongoose.Schema({
     },
     uploadedBy: { 
         type: String, 
-        // 💡 FIX: Added lowercase versions or change logic to lowercase
-        enum: ['Patient', 'Admin', 'Doctor', 'patient', 'admin', 'doctor'], 
+        enum: ['Patient', 'Admin', 'Doctor'],
         default: 'Patient' 
     },
     fileType: { 
@@ -33,20 +32,11 @@ const medicalRecordSchema = new mongoose.Schema({
     fileSize: { 
         type: String 
     },
-    // 💡 IMPROVEMENT: Add a status field for clinical review
     status: {
         type: String,
         enum: ['Pending', 'Verified', 'Flagged'],
         default: 'Pending'
     }
 }, { timestamps: true });
-
-// Optional: Force lowercase before saving to avoid this ever happening again
-medicalRecordSchema.pre('save', function(next) {
-    if (this.uploadedBy) {
-        this.uploadedBy = this.uploadedBy.charAt(0).toUpperCase() + this.uploadedBy.slice(1).toLowerCase();
-    }
-    next();
-});
 
 module.exports = mongoose.model('MedicalRecord', medicalRecordSchema);

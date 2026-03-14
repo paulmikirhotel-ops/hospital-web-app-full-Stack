@@ -1,95 +1,207 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux'; 
-import { logout } from '../redux/features/auth/authSlice'; 
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../redux/features/auth/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import NotificationBell from '../pages/medicalVault/NotificationBell/NotificationBell'; 
-
-import { 
-  IoChevronDown, IoMenu, IoClose, 
+import NotificationBell from '../pages/medicalVault/NotificationBell/NotificationBell';
+import { useSiteTheme } from '../context/ThemeContext';
+import {
+  IoChevronDown, IoMenu, IoClose,
   IoTimeOutline, IoLibraryOutline, IoSchoolOutline, IoPeopleOutline,
-  IoCalendarOutline, IoLogOutOutline, IoPersonOutline, 
+  IoCalendarOutline, IoLogOutOutline, IoPersonOutline,
   IoSettingsOutline, IoShieldCheckmarkOutline, IoGridOutline,
-  IoStatsChartOutline, IoFileTrayFullOutline 
+  IoStatsChartOutline, IoFileTrayFullOutline, IoMedicalOutline,
 } from 'react-icons/io5';
 
+const NAV_THEMES = [
+  {
+    name: 'Dark Gold',
+    key: 'gold',
+    navBg: 'rgba(10,7,0,0.92)',
+    border: 'rgba(212,160,23,0.25)',
+    text: '#f5e6c0',
+    muted: '#b8922a',
+    accent: '#d4a017',
+    accentHover: '#f5c842',
+    dropdownBg: 'rgba(18,12,0,0.97)',
+    dropdownBorder: 'rgba(212,160,23,0.2)',
+    linkHover: '#d4a017',
+    profileBg: 'rgba(18,12,0,0.97)',
+    badgeBg: '#d4a017',
+    badgeText: '#0a0700',
+    mobileBg: 'rgba(10,7,0,0.98)',
+    glow: '0 0 30px rgba(212,160,23,0.15)',
+    adminBg: 'rgba(212,160,23,0.12)',
+    adminText: '#d4a017',
+    dotColor: '#d4a017',
+  },
+  {
+    name: 'Deep Blue',
+    key: 'blue',
+    navBg: 'rgba(0,8,20,0.92)',
+    border: 'rgba(14,165,233,0.25)',
+    text: '#e0f2fe',
+    muted: '#38bdf8',
+    accent: '#0ea5e9',
+    accentHover: '#38bdf8',
+    dropdownBg: 'rgba(0,8,20,0.97)',
+    dropdownBorder: 'rgba(14,165,233,0.2)',
+    linkHover: '#38bdf8',
+    profileBg: 'rgba(0,8,20,0.97)',
+    badgeBg: '#0ea5e9',
+    badgeText: '#fff',
+    mobileBg: 'rgba(0,8,20,0.98)',
+    glow: '0 0 30px rgba(14,165,233,0.15)',
+    adminBg: 'rgba(14,165,233,0.12)',
+    adminText: '#38bdf8',
+    dotColor: '#0ea5e9',
+  },
+  {
+    name: 'Classic White',
+    key: 'white',
+    navBg: 'rgba(255,255,255,0.96)',
+    border: 'rgba(59,130,246,0.15)',
+    text: '#0f172a',
+    muted: '#64748b',
+    accent: '#2563eb',
+    accentHover: '#1d4ed8',
+    dropdownBg: '#ffffff',
+    dropdownBorder: 'rgba(59,130,246,0.1)',
+    linkHover: '#2563eb',
+    profileBg: '#ffffff',
+    badgeBg: '#2563eb',
+    badgeText: '#fff',
+    mobileBg: '#ffffff',
+    glow: '0 2px 20px rgba(59,130,246,0.08)',
+    adminBg: 'rgba(16,185,129,0.08)',
+    adminText: '#059669',
+    dotColor: '#2563eb',
+  },
+];
+
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen]           = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  
-  const navigate = useNavigate();
-  const dispatch = useDispatch(); 
-  const { user } = useSelector((state) => state.auth);
+
+  const { themeIdx, cycleTheme } = useSiteTheme();
+  const navigate  = useNavigate();
+  const dispatch  = useDispatch();
+  const { user }  = useSelector((state) => state.auth);
+  const theme     = NAV_THEMES[themeIdx];
 
   const handleLogout = async () => {
-    const logoutPromise = axios.post('http://localhost:5001/api/auth/logout', {}, { withCredentials: true });
-    
+         const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+         axios.post(`${BASE_URL}/api/auth/logout`, {}, { withCredentials: true })
     toast.promise(logoutPromise, {
       loading: 'Disconnecting session...',
-      success: () => {
-        dispatch(logout()); 
-        navigate('/login');
-        return <b>Logged out!</b>;
-      },
-      error: (err) => <b>Logout failed: {err.response?.data?.message || "Server Error"}</b>,
+      success: () => { dispatch(logout()); navigate('/login'); return <b>Logged out!</b>; },
+      error:   (err) => <b>Logout failed: {err.response?.data?.message || 'Server Error'}</b>,
     });
   };
 
   const aboutLinks = [
-    { name: 'Brief History', path: '/about/history', icon: <IoTimeOutline /> },
-    { name: 'Programs', path: '/about/programs', icon: <IoLibraryOutline /> },
-    { name: 'Training', path: '/about/training', icon: <IoSchoolOutline /> },
-    { name: 'The Order', path: '/about/the-order', icon: <IoPeopleOutline /> },
+    { name: 'Brief History', path: '/about/history',   icon: <IoTimeOutline /> },
+    { name: 'Programs',      path: '/about/programs',  icon: <IoLibraryOutline /> },
+    { name: 'Training',      path: '/about/training',  icon: <IoSchoolOutline /> },
+    { name: 'The Order',     path: '/about/the-order', icon: <IoPeopleOutline /> },
   ];
 
-  const navLinkClass = ({ isActive }) => 
-    `px-3 py-2 text-sm font-bold transition-all duration-300 ${
-      isActive ? 'text-blue-600' : 'text-slate-500 hover:text-blue-600'
-    }`;
+  const linkStyle = (isActive) => ({
+    padding: '6px 12px',
+    fontSize: 13,
+    fontWeight: 700,
+    color: isActive ? theme.accent : theme.muted,
+    textDecoration: 'none',
+    transition: 'color 0.2s ease',
+    borderRadius: 8,
+  });
+
+  const dropdownItemStyle = {
+    display: 'flex', alignItems: 'center', gap: 12,
+    padding: '10px 16px', fontSize: 13, fontWeight: 600,
+    color: theme.muted, textDecoration: 'none',
+    borderRadius: 12, transition: 'all 0.2s ease',
+  };
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-[100] bg-white border-b border-blue-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="flex justify-between h-20 items-center">
-            
-            {/* --- BRAND SECTION --- */}
-            <Link to="/" className="flex items-center group">
-              <div className="relative flex items-center">
-                <img 
-                  src="/logo.jpeg" 
-                  alt="Hospital Logo" 
-                  className="h-14 w-auto object-contain transition-all duration-500 group-hover:scale-105 drop-shadow-md"
-                />
-                <span className="absolute -right-1.5 -top-0.5 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-600 border-2 border-white shadow-sm"></span>
+      <style>{`
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        .nav-link-hover:hover { color: var(--accent) !important; }
+      `}</style>
+
+      <nav style={{
+        position: 'fixed', top: 0, width: '100%', zIndex: 100,
+        background: theme.navBg,
+        borderBottom: `1px solid ${theme.border}`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: theme.glow,
+        transition: 'all 0.4s ease',
+      }}>
+        <div style={{
+          width: '100%',
+          paddingLeft:  'clamp(16px, 4vw, 48px)',
+          paddingRight: 'clamp(16px, 4vw, 48px)',
+          boxSizing: 'border-box',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', height: 72, alignItems: 'center', gap: 16 }}>
+
+            {/* ── BRAND ── */}
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{ position: 'relative' }}>
+                <img src="/logo.jpeg" alt="Hospital Logo" style={{ height: 52, width: 'auto', objectFit: 'contain' }} />
+                <span style={{ position: 'absolute', top: -2, right: -6, width: 12, height: 12 }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: theme.dotColor, opacity: 0.75, animation: 'ping 1.5s cubic-bezier(0,0,0.2,1) infinite' }} />
+                  <span style={{ position: 'relative', display: 'flex', width: 12, height: 12, borderRadius: '50%', background: theme.dotColor, border: '2px solid rgba(255,255,255,0.3)' }} />
                 </span>
               </div>
             </Link>
 
-            {/* --- DESKTOP NAVIGATION --- */}
-            <div className="hidden lg:flex items-center space-x-1">
-              <NavLink to="/" className={navLinkClass}>Home</NavLink>
-              
-              <div className="relative" onMouseEnter={() => setIsAboutOpen(true)} onMouseLeave={() => setIsAboutOpen(false)}>
-                <button className={`flex items-center gap-1 px-3 py-2 text-sm font-bold transition-colors ${isAboutOpen ? 'text-blue-600' : 'text-slate-500'}`}>
-                  About <IoChevronDown className={`transition-transform ${isAboutOpen ? 'rotate-180' : ''}`} />
+            {/* ── DESKTOP NAV LINKS ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'nowrap' }}>
+
+              <NavLink to="/" style={({ isActive }) => linkStyle(isActive)}>Home</NavLink>
+
+              {/* About dropdown */}
+              <div
+                style={{ position: 'relative' }}
+                onMouseEnter={() => setIsAboutOpen(true)}
+                onMouseLeave={() => setIsAboutOpen(false)}
+              >
+                <button style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '6px 12px', fontSize: 13, fontWeight: 700,
+                  color: isAboutOpen ? theme.accent : theme.muted,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  transition: 'color 0.2s ease', borderRadius: 8,
+                }}>
+                  About
+                  <IoChevronDown style={{ transition: 'transform 0.2s', transform: isAboutOpen ? 'rotate(180deg)' : 'none' }} />
                 </button>
                 <AnimatePresence>
                   {isAboutOpen && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }} 
-                      animate={{ opacity: 1, y: 0 }} 
-                      exit={{ opacity: 0, y: 10 }} 
-                      className="absolute top-full left-0 w-52 bg-white border border-blue-50 shadow-xl rounded-2xl p-2 mt-1"
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                      style={{
+                        position: 'absolute', top: '100%', left: 0, width: 210,
+                        background: theme.dropdownBg,
+                        border: `1px solid ${theme.dropdownBorder}`,
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                        borderRadius: 20, padding: 8, marginTop: 4,
+                        backdropFilter: 'blur(20px)',
+                      }}
                     >
-                      {aboutLinks.map((link) => (
-                        <Link key={link.name} to={link.path} className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
-                          <span className="text-blue-500">{link.icon}</span> {link.name}
+                      {aboutLinks.map(link => (
+                        <Link key={link.name} to={link.path}
+                          style={dropdownItemStyle}
+                          onMouseEnter={e => { e.currentTarget.style.color = theme.accent; e.currentTarget.style.background = `${theme.accent}14`; }}
+                          onMouseLeave={e => { e.currentTarget.style.color = theme.muted; e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <span style={{ color: theme.accent }}>{link.icon}</span> {link.name}
                         </Link>
                       ))}
                     </motion.div>
@@ -97,93 +209,198 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              <NavLink to="/services" className={navLinkClass}>Services</NavLink>
-              <NavLink to="/doctors" className={navLinkClass}>Doctors</NavLink>
-              
+              <NavLink to="/services"        style={({ isActive }) => linkStyle(isActive)}>Services</NavLink>
+              <NavLink to="/doctors"         style={({ isActive }) => linkStyle(isActive)}>Doctors</NavLink>
+              <NavLink to="/journal"         style={({ isActive }) => linkStyle(isActive)}>Journal</NavLink>
+              <NavLink to="/new-cru-clinic"  style={({ isActive }) => linkStyle(isActive)}>New Cru</NavLink>
+              <NavLink to="/contact"         style={({ isActive }) => linkStyle(isActive)}>Contact</NavLink>
+
+              {/* AI Triage — highlighted link */}
+              <NavLink to="/triage" style={({ isActive }) => ({
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '5px 12px', fontSize: 12, fontWeight: 900,
+                color: isActive ? theme.badgeText : theme.accent,
+                background: isActive ? theme.accent : `${theme.accent}18`,
+                borderRadius: 999, textDecoration: 'none',
+                border: `1px solid ${theme.accent}44`,
+                transition: 'all 0.2s',
+              })}>
+                <IoMedicalOutline size={13} /> AI Triage
+              </NavLink>
+
+              {/* Admin Hub badge */}
               {user?.role === 'admin' && (
-                <NavLink to="/admin/dashboard" className={navLinkClass}>
-                  <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-                    <IoStatsChartOutline size={16} /> Admin Hub
-                  </span>
+                <NavLink to="/admin/dashboard" style={() => ({
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '4px 12px', fontSize: 12, fontWeight: 900,
+                  color: theme.adminText, background: theme.adminBg,
+                  borderRadius: 999, textDecoration: 'none',
+                  border: `1px solid ${theme.adminText}33`,
+                })}>
+                  <IoStatsChartOutline size={14} /> Admin Hub
                 </NavLink>
               )}
-
-              <NavLink to="/journal" className={navLinkClass}>Journal</NavLink>
-              <NavLink to="/new-cru-clinic" className={navLinkClass}>New Cru Clinic</NavLink>
-              <NavLink to="/contact" className={navLinkClass}>Contact Us</NavLink>
             </div>
 
-            {/* --- USER PROFILE / AUTH SECTION --- */}
-            <div className="flex items-center gap-3">
+            {/* ── RIGHT: THEME + AUTH ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+
+              {/* Theme switcher */}
+              <motion.button
+                onClick={cycleTheme}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 12px', borderRadius: 999,
+                  background: 'rgba(255,255,255,0.07)',
+                  border: `1px solid ${theme.border}`,
+                  cursor: 'pointer', color: theme.text,
+                  fontSize: 10, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase',
+                  backdropFilter: 'blur(8px)',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {NAV_THEMES.map((t, i) => (
+                  <span key={i} style={{
+                    width: i === themeIdx ? 10 : 6,
+                    height: i === themeIdx ? 10 : 6,
+                    borderRadius: '50%', background: t.accent,
+                    border: i === themeIdx ? `2px solid ${theme.text}` : '2px solid transparent',
+                    boxShadow: i === themeIdx ? `0 0 6px ${t.accent}` : 'none',
+                    transition: 'all 0.3s ease', display: 'inline-block',
+                  }} />
+                ))}
+                {theme.name}
+              </motion.button>
+
+              {/* Logged out */}
               {!user ? (
                 <>
-                  <Link to="/login" className="hidden sm:block text-sm font-bold text-slate-500 hover:text-blue-600">
+                  <Link to="/login" style={{ fontSize: 13, fontWeight: 700, color: theme.muted, textDecoration: 'none' }}>
                     Login
                   </Link>
-                  <Link to="/doctors" className="hidden md:flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 transition-all shadow-lg shadow-blue-100">
-                    <IoCalendarOutline size={16} /> Book Now
+                  <Link to="/doctors" style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '10px 18px',
+                    background: theme.badgeBg, color: theme.badgeText,
+                    fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.18em',
+                    borderRadius: 12, textDecoration: 'none', transition: 'all 0.3s ease',
+                    boxShadow: `0 0 16px ${theme.accent}44`,
+                  }}>
+                    <IoCalendarOutline size={14} /> Book Now
                   </Link>
                 </>
               ) : (
-                <div className="flex items-center gap-4">
+                /* Logged in */
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <NotificationBell />
 
-                  <div className="relative" onMouseEnter={() => setIsProfileOpen(true)} onMouseLeave={() => setIsProfileOpen(false)}>
-                    <button className="flex items-center gap-3 pl-3 pr-1 py-1 rounded-full border border-slate-100 hover:bg-slate-50 transition-all">
-                      <div className="hidden sm:flex flex-col items-end mr-1">
-                        <span className="text-[10px] font-black text-slate-800 leading-none uppercase">{user.name}</span>
-                        <span className="text-[8px] font-bold text-blue-500 uppercase tracking-tighter">{user.role}</span>
+                  {/* Profile dropdown */}
+                  <div
+                    style={{ position: 'relative' }}
+                    onMouseEnter={() => setIsProfileOpen(true)}
+                    onMouseLeave={() => setIsProfileOpen(false)}
+                  >
+                    <button style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '4px 4px 4px 12px',
+                      borderRadius: 999, border: `1px solid ${theme.border}`,
+                      background: 'rgba(255,255,255,0.05)', cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                    }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ display: 'block', fontSize: 10, fontWeight: 900, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{user.name}</span>
+                        <span style={{ display: 'block', fontSize: 8, fontWeight: 700, color: theme.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{user.role}</span>
                       </div>
-                      <div className={`w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white font-bold shadow-inner ${user.role === 'admin' ? 'bg-slate-900' : 'bg-blue-600'}`}>
-                        {user.image ? (
-                          <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          user.role === 'admin' ? <IoShieldCheckmarkOutline size={20} /> : user.name?.charAt(0)
-                        )}
+                      <div style={{
+                        width: 38, height: 38, borderRadius: '50%', overflow: 'hidden',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: user.role === 'admin' ? theme.accent : theme.badgeBg,
+                        color: theme.badgeText, fontWeight: 700, fontSize: 15,
+                        flexShrink: 0,
+                      }}>
+                        {user.image
+                          ? <img src={user.image} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : user.role === 'admin'
+                            ? <IoShieldCheckmarkOutline size={18} />
+                            : user.name?.charAt(0)
+                        }
                       </div>
                     </button>
 
                     <AnimatePresence>
                       {isProfileOpen && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }} 
-                          animate={{ opacity: 1, y: 0, scale: 1 }} 
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }} 
-                          className="absolute top-full right-0 w-64 bg-white border border-slate-100 shadow-2xl rounded-[2rem] p-3 mt-2"
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          style={{
+                            position: 'absolute', top: '100%', right: 0, width: 260,
+                            background: theme.profileBg,
+                            border: `1px solid ${theme.dropdownBorder}`,
+                            boxShadow: '0 30px 60px rgba(0,0,0,0.4)',
+                            borderRadius: 28, padding: 12, marginTop: 8,
+                            backdropFilter: 'blur(24px)',
+                          }}
                         >
-                          <div className="p-4 bg-slate-50 rounded-2xl mb-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Account Info</p>
-                            <p className="text-sm font-bold text-slate-800 truncate">{user.email}</p>
+                          {/* Account info */}
+                          <div style={{ padding: '12px 16px', background: `${theme.accent}14`, borderRadius: 16, marginBottom: 8 }}>
+                            <p style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: theme.muted, marginBottom: 4 }}>Account</p>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: theme.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{user.email}</p>
                           </div>
-                          <div className="space-y-1">
-                            <Link to="/profile" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
-                              <IoPersonOutline size={18} /> My Profile
-                            </Link>
-                            
-                            <Link to="/my-appointments" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
-                              <IoCalendarOutline size={18} /> My Appointments
-                            </Link>
 
-                            <Link to="/medical-vault" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
-                              <IoFileTrayFullOutline size={18} /> Medical Vault
-                            </Link>
-                            
-                            {user.role === 'admin' && (
-                              <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all">
-                                <IoGridOutline size={18} /> Admin Dashboard
-                              </Link>
-                            )}
-                            
-                            <Link to="/edit-profile" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all">
-                              <IoSettingsOutline size={18} /> Settings
-                            </Link>
-                            <button 
-                              onClick={handleLogout}
-                              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-all mt-2 pt-3 border-t border-slate-50"
+                          {/* Menu items */}
+                          {[
+                            { to: '/profile',         icon: <IoPersonOutline size={17} />,       label: 'My Profile' },
+                            { to: '/my-appointments', icon: <IoCalendarOutline size={17} />,     label: 'My Appointments' },
+                            { to: '/medical-vault',   icon: <IoFileTrayFullOutline size={17} />, label: 'Medical Vault' },
+                            { to: '/triage',          icon: <IoMedicalOutline size={17} />,      label: 'AI Symptom Triage' },
+                            { to: '/edit-profile',    icon: <IoSettingsOutline size={17} />,     label: 'Settings' },
+                          ].map(item => (
+                            <Link key={item.to} to={item.to}
+                              style={dropdownItemStyle}
+                              onMouseEnter={e => { e.currentTarget.style.color = theme.accent; e.currentTarget.style.background = `${theme.accent}14`; }}
+                              onMouseLeave={e => { e.currentTarget.style.color = theme.muted; e.currentTarget.style.background = 'transparent'; }}
                             >
-                              <IoLogOutOutline size={18} /> Sign Out
-                            </button>
-                          </div>
+                              <span style={{ color: theme.accent }}>{item.icon}</span> {item.label}
+                            </Link>
+                          ))}
+
+                          {/* Admin dashboard link */}
+                          {user.role === 'admin' && (
+                            <Link to="/admin/dashboard"
+                              style={{ ...dropdownItemStyle, color: theme.adminText }}
+                              onMouseEnter={e => { e.currentTarget.style.background = `${theme.adminText}14`; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                            >
+                              <IoGridOutline size={17} /> Admin Dashboard
+                            </Link>
+                          )}
+
+                          {/* Doctor dashboard link */}
+                          {user.role === 'doctor' && (
+                            <Link to="/doctor/dashboard"
+                              style={{ ...dropdownItemStyle }}
+                              onMouseEnter={e => { e.currentTarget.style.color = theme.accent; e.currentTarget.style.background = `${theme.accent}14`; }}
+                              onMouseLeave={e => { e.currentTarget.style.color = theme.muted; e.currentTarget.style.background = 'transparent'; }}
+                            >
+                              <IoStatsChartOutline size={17} /> Doctor Dashboard
+                            </Link>
+                          )}
+
+                          {/* Sign out */}
+                          <button onClick={handleLogout} style={{
+                            width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                            padding: '10px 16px', fontSize: 13, fontWeight: 600,
+                            color: '#f87171', background: 'none', border: 'none', cursor: 'pointer',
+                            borderRadius: 12, transition: 'all 0.2s ease',
+                            borderTop: `1px solid ${theme.border}`, marginTop: 8,
+                          }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                          >
+                            <IoLogOutOutline size={17} /> Sign Out
+                          </button>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -191,53 +408,91 @@ const Navbar = () => {
                 </div>
               )}
 
-              <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden p-2 text-blue-900 hover:bg-blue-50 rounded-xl">
-                {isOpen ? <IoClose size={28} /> : <IoMenu size={28} />}
+              {/* Hamburger */}
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                style={{ padding: 8, color: theme.accent, background: 'none', border: 'none', cursor: 'pointer', borderRadius: 10, display: 'none' }}
+                className="mobile-menu-btn"
+              >
+                {isOpen ? <IoClose size={26} /> : <IoMenu size={26} />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* --- MOBILE MENU --- */}
+        {/* ── MOBILE MENU ── */}
         <AnimatePresence>
           {isOpen && (
-            <motion.div 
-              initial={{ height: 0 }} 
-              animate={{ height: 'auto' }} 
-              exit={{ height: 0 }} 
-              className="lg:hidden bg-white border-b border-blue-50 overflow-hidden"
+            <motion.div
+              initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }}
+              style={{
+                background: theme.mobileBg,
+                borderBottom: `1px solid ${theme.border}`,
+                overflow: 'hidden',
+                backdropFilter: 'blur(20px)',
+              }}
             >
-              <div className="px-6 py-8 space-y-4 text-center font-bold">
-                <Link to="/" onClick={() => setIsOpen(false)} className="block py-2 text-slate-600">Home</Link>
+              <div style={{
+                padding: '24px clamp(16px, 6vw, 48px)',
+                display: 'flex', flexDirection: 'column', gap: 4, textAlign: 'center',
+              }}>
+                {[
+                  { to: '/',             label: 'Home' },
+                  { to: '/services',     label: 'Services' },
+                  { to: '/doctors',      label: 'Doctors' },
+                  { to: '/journal',      label: 'Journal' },
+                  { to: '/new-cru-clinic', label: 'New Cru Clinic' },
+                  { to: '/contact',      label: 'Contact Us' },
+                  { to: '/triage',       label: '🩺 AI Symptom Triage' },
+                ].map(item => (
+                  <Link key={item.to} to={item.to} onClick={() => setIsOpen(false)} style={{
+                    display: 'block', padding: '10px 0', fontSize: 15, fontWeight: 700,
+                    color: theme.muted, textDecoration: 'none', borderRadius: 10,
+                    transition: 'color 0.2s ease',
+                  }}>
+                    {item.label}
+                  </Link>
+                ))}
+
                 {user?.role === 'admin' && (
-                  <Link to="/admin/dashboard" onClick={() => setIsOpen(false)} className="block py-2 text-emerald-600 font-black">Admin Dashboard</Link>
+                  <Link to="/admin/dashboard" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '10px 0', fontWeight: 900, color: theme.adminText, textDecoration: 'none' }}>
+                    Admin Dashboard
+                  </Link>
                 )}
-                <Link to="/services" onClick={() => setIsOpen(false)} className="block py-2 text-slate-600">Services</Link>
-                <Link to="/doctors" onClick={() => setIsOpen(false)} className="block py-2 text-slate-600">Doctors</Link>
-                
-                {user && (
-                  <>
-                    <Link to="/my-appointments" onClick={() => setIsOpen(false)} className="block py-2 text-blue-600">My Appointments</Link>
-                    <Link to="/medical-vault" onClick={() => setIsOpen(false)} className="block py-2 text-blue-600">Medical Vault</Link>
-                  </>
+
+                {user?.role === 'doctor' && (
+                  <Link to="/doctor/dashboard" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '10px 0', fontWeight: 900, color: theme.accent, textDecoration: 'none' }}>
+                    Doctor Dashboard
+                  </Link>
                 )}
-                
-                <Link to="/new-cru-clinic" onClick={() => setIsOpen(false)} className="block py-2 text-slate-600">New Cru Clinic</Link>
-                <Link to="/contact" onClick={() => setIsOpen(false)} className="block py-2 text-slate-600">Contact Us</Link>
-                
+
                 {user ? (
-                   <Link to="/profile" onClick={() => setIsOpen(false)} className="block py-2 text-blue-600">My Profile</Link>
+                  <>
+                    <Link to="/my-appointments" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '10px 0', fontWeight: 700, color: theme.accent, textDecoration: 'none' }}>My Appointments</Link>
+                    <Link to="/medical-vault"   onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '10px 0', fontWeight: 700, color: theme.accent, textDecoration: 'none' }}>Medical Vault</Link>
+                    <Link to="/profile"         onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '10px 0', fontWeight: 700, color: theme.accent, textDecoration: 'none' }}>My Profile</Link>
+                    <button onClick={() => { setIsOpen(false); handleLogout(); }} style={{ display: 'block', width: '100%', padding: '10px 0', fontWeight: 700, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, borderTop: `1px solid ${theme.border}`, marginTop: 8 }}>
+                      Sign Out
+                    </button>
+                  </>
                 ) : (
-                  <Link to="/login" onClick={() => setIsOpen(false)} className="block py-2 text-blue-600">Sign In</Link>
+                  <Link to="/login" onClick={() => setIsOpen(false)} style={{ display: 'block', padding: '10px 0', fontWeight: 700, color: theme.accent, textDecoration: 'none' }}>Sign In</Link>
                 )}
-                
-                <Link to="/doctors" onClick={() => setIsOpen(false)} className="block py-4 text-blue-600 border-t border-slate-50">Book Now</Link>
+
+                <Link to="/doctors" onClick={() => setIsOpen(false)} style={{
+                  display: 'block', padding: '12px 0', fontWeight: 900, color: theme.accent,
+                  textDecoration: 'none', borderTop: `1px solid ${theme.border}`, marginTop: 8,
+                }}>
+                  Book Appointment
+                </Link>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
-      <div className="h-20"></div>
+
+      {/* Spacer so content isn't hidden under fixed navbar */}
+      <div style={{ height: 72 }} />
     </>
   );
 };

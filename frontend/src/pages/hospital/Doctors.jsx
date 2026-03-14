@@ -2,209 +2,456 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  IoSearchOutline, IoChevronForward, 
-  IoTimeOutline, IoMedkitOutline, IoFilterOutline 
+import {
+  IoSearchOutline, IoChevronForward, IoMedkitOutline,
+  IoFilterOutline, IoStarOutline, IoStar,
+  IoTimeOutline, IoPersonOutline, IoCallOutline,
 } from 'react-icons/io5';
 import API from '../../api/axiosConfig';
+import { useSiteTheme } from '../../context/ThemeContext';
 
+// ─── Specialty accent colors ──────────────────────────────────────────────────
+const SPECIALTY_COLORS = {
+  'General Physician': { bg: '#e0f2fe', text: '#0369a1', dot: '#0ea5e9' },
+  'Gynecologist':      { bg: '#fce7f3', text: '#9d174d', dot: '#ec4899' },
+  'Dermatologist':     { bg: '#fef3c7', text: '#92400e', dot: '#f59e0b' },
+  'Pediatrician':      { bg: '#dcfce7', text: '#166534', dot: '#22c55e' },
+  'Neurologist':       { bg: '#ede9fe', text: '#5b21b6', dot: '#8b5cf6' },
+  'Cardiologist':      { bg: '#fee2e2', text: '#991b1b', dot: '#ef4444' },
+};
+const defaultColor = { bg: '#f1f5f9', text: '#475569', dot: '#94a3b8' };
+
+// ─── Doctor Card ──────────────────────────────────────────────────────────────
+const DoctorCard = ({ doctor, theme, onClick, idx }) => {
+  const [hovered, setHovered] = useState(false);
+  const sc = SPECIALTY_COLORS[doctor.specialization] || defaultColor;
+  const rating = (4.5 + (doctor._id?.charCodeAt(0) % 5) * 0.1).toFixed(1);
+  const reviews = 80 + (doctor._id?.charCodeAt(1) % 120);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.07, type: 'spring', stiffness: 100, damping: 18 }}
+      whileHover={{ y: -8 }}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: theme.siteCard,
+        borderRadius: 28,
+        border: `1.5px solid ${hovered ? sc.dot : theme.siteBorder}`,
+        overflow: 'hidden',
+        cursor: 'pointer',
+        transition: 'border-color 0.3s ease, box-shadow 0.35s ease',
+        boxShadow: hovered
+          ? `0 20px 60px ${sc.dot}28, 0 4px 16px rgba(0,0,0,0.06)`
+          : '0 2px 12px rgba(0,0,0,0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Image area */}
+      <div style={{ position: 'relative', height: 240, overflow: 'hidden', background: theme.siteAltBg, flexShrink: 0 }}>
+        <motion.img
+          animate={{ scale: hovered ? 1.07 : 1 }}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
+          src={doctor.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=1e3a8a&color=fff&size=400&bold=true`}
+          alt={doctor.name}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(15,23,42,0.55) 0%, rgba(15,23,42,0.1) 50%, transparent 100%)',
+        }} />
+
+        {/* Specialty badge — top left */}
+        <div style={{
+          position: 'absolute', top: 14, left: 14,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 12px', borderRadius: 999,
+          background: 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(8px)',
+          border: `1px solid ${sc.dot}33`,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: sc.dot, boxShadow: `0 0 6px ${sc.dot}` }} />
+          <span style={{ fontSize: 9, fontWeight: 900, color: sc.text, textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+            {doctor.specialization}
+          </span>
+        </div>
+
+        {/* Available badge — top right */}
+        <div style={{
+          position: 'absolute', top: 14, right: 14,
+          padding: '5px 11px', borderRadius: 999,
+          background: 'rgba(16,185,129,0.14)',
+          border: '1px solid rgba(16,185,129,0.3)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          <span style={{ fontSize: 9, fontWeight: 900, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Available
+          </span>
+        </div>
+
+        {/* Rating — bottom left over image */}
+        <div style={{
+          position: 'absolute', bottom: 14, left: 14,
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}>
+          <div style={{ display: 'flex', gap: 2 }}>
+            {[1,2,3,4,5].map(i => (
+              <span key={i} style={{ color: i <= Math.floor(rating) ? '#fbbf24' : 'rgba(255,255,255,0.4)', fontSize: 11, display: 'flex' }}>
+                {i <= Math.floor(rating) ? <IoStar /> : <IoStarOutline />}
+              </span>
+            ))}
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{rating}</span>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>({reviews})</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: '20px 22px 22px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: theme.siteMuted, margin: '0 0 5px' }}>
+            {doctor.qualification}
+          </p>
+          <h3 style={{
+            fontSize: '1.25rem', fontWeight: 900, color: theme.siteText,
+            margin: 0, letterSpacing: '-0.025em', lineHeight: 1.25,
+          }}>
+            Dr. {doctor.name}
+          </h3>
+        </div>
+
+        {/* Meta row */}
+        <div style={{ display: 'flex', gap: 14, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <IoTimeOutline style={{ color: theme.siteMuted, fontSize: 13 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: theme.siteMuted }}>Mon – Sat</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <IoPersonOutline style={{ color: theme.siteMuted, fontSize: 13 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: theme.siteMuted }}>
+              {200 + (doctor._id?.charCodeAt(2) % 300)}+ patients
+            </span>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: theme.siteBorder, marginBottom: 18 }} />
+
+        {/* Fee + CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+          <div>
+            <p style={{ fontSize: 8, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: theme.siteMuted, margin: '0 0 2px' }}>Consultation</p>
+            <p style={{ fontSize: '1.3rem', fontWeight: 900, color: theme.siteText, margin: 0, letterSpacing: '-0.02em' }}>
+              ${doctor.fee}
+              <span style={{ fontSize: 10, fontWeight: 700, color: theme.siteMuted }}> /visit</span>
+            </p>
+          </div>
+
+          <motion.div
+            animate={{
+              background: hovered ? sc.dot : theme.siteBtnBg,
+              scale: hovered ? 1.08 : 1,
+            }}
+            transition={{ duration: 0.2 }}
+            style={{
+              width: 44, height: 44, borderRadius: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: 18,
+              boxShadow: hovered ? `0 6px 20px ${sc.dot}50` : 'none',
+            }}
+          >
+            <IoChevronForward />
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+const SkeletonCard = ({ theme }) => (
+  <div style={{ background: theme.siteCard, borderRadius: 28, overflow: 'hidden', border: `1px solid ${theme.siteBorder}` }}>
+    <div style={{ height: 240, background: theme.siteAltBg, animation: 'pulse 1.5s ease-in-out infinite' }} />
+    <div style={{ padding: '20px 22px 22px' }}>
+      <div style={{ height: 10, width: '40%', borderRadius: 6, background: theme.siteAltBg, marginBottom: 10, animation: 'pulse 1.5s ease-in-out infinite' }} />
+      <div style={{ height: 22, width: '70%', borderRadius: 8, background: theme.siteAltBg, marginBottom: 16, animation: 'pulse 1.5s ease-in-out infinite 0.1s' }} />
+      <div style={{ height: 1, background: theme.siteBorder, marginBottom: 16 }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ height: 28, width: '30%', borderRadius: 8, background: theme.siteAltBg, animation: 'pulse 1.5s ease-in-out infinite 0.2s' }} />
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: theme.siteAltBg, animation: 'pulse 1.5s ease-in-out infinite 0.3s' }} />
+      </div>
+    </div>
+  </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const Doctors = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchName, setSearchName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [direction, setDirection] = useState(0); 
+  const [direction, setDirection] = useState(0);
   const doctorsPerPage = 6;
 
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { siteTheme } = useSiteTheme();
 
-// frontend/src/pages/Doctors.jsx
-
-const fetchDoctors = async () => {
+  const fetchDoctors = async () => {
     setLoading(true);
     try {
-        const params = {};
-        if (searchName) params.name = searchName;
-        if (specialty) params.specialization = specialty;
-
-        // 1. Fixed the URL to include '/list'
-        const response = await API.get('/doctors/list', { params });
-
-        // 2. Fixed Data Extraction: Pointing to response.data.doctors
-        if (response.data.success) {
-            setDoctors(response.data.doctors);
-        } else {
-            setDoctors([]);
-        }
-
-        setCurrentPage(1); 
-    } catch (err) {
-        console.error("Fetch Error:", err);
-        setDoctors([]); 
+      const params = {};
+      if (searchName) params.name = searchName;
+      if (specialty) params.specialization = specialty;
+      const response = await API.get('/doctors/list', { params });
+      if (response.data.success) setDoctors(response.data.doctors);
+      else setDoctors([]);
+      setCurrentPage(1);
+    } catch {
+      setDoctors([]);
     } finally {
-        setTimeout(() => setLoading(false), 400);
+      setTimeout(() => setLoading(false), 350);
     }
-};
+  };
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchDoctors();
-    }, 400);
-    return () => clearTimeout(delayDebounceFn);
+    const t = setTimeout(fetchDoctors, 400);
+    return () => clearTimeout(t);
   }, [searchName, specialty]);
 
-  // --- PAGINATION LOGIC ---
-  const indexOfLastDoctor = currentPage * doctorsPerPage;
-  const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
-  // 🚀 Fix: Added optional chaining to prevent crash if doctors is null
-  const currentDoctors = doctors?.slice(indexOfFirstDoctor, indexOfLastDoctor) || [];
+  const indexOfLast  = currentPage * doctorsPerPage;
+  const indexOfFirst = indexOfLast - doctorsPerPage;
+  const currentDoctors = doctors?.slice(indexOfFirst, indexOfLast) || [];
   const totalPages = Math.ceil(doctors.length / doctorsPerPage);
 
-  const slideVariants = {
-    enter: (dir) => ({ x: dir > 0 ? 50 : -50, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir) => ({ x: dir < 0 ? 50 : -50, opacity: 0 }),
+  const specialties = ['General Physician', 'Gynecologist', 'Dermatologist', 'Pediatrician', 'Neurologist', 'Cardiologist'];
+
+  const inputBase = {
+    background: siteTheme.siteInputBg,
+    border: `1.5px solid ${siteTheme.siteInputBorder}`,
+    color: siteTheme.siteText,
+    borderRadius: 14,
+    padding: '13px 16px 13px 44px',
+    fontSize: 13,
+    fontWeight: 700,
+    outline: 'none',
+    transition: 'border-color 0.25s ease',
+    fontFamily: 'inherit',
+    width: '100%',
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] py-12 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
-        
-        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
-          <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-              Our <span className="text-blue-600">Specialists</span>
-            </h1>
-            <p className="text-slate-400 font-medium max-w-md italic">
-              {user ? `Welcome, ${user.name.split(' ')[0]}. Select a specialist below.` : "Access world-class healthcare providers."}
-            </p>
-          </div>
+    <div style={{ minHeight: '100vh', background: siteTheme.siteBg, transition: 'background 0.5s ease' }}>
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+        .doc-input:focus { border-color: ${siteTheme.siteAccent} !important; }
+        .spec-btn:hover { background: ${siteTheme.siteAccent} !important; color: #fff !important; border-color: ${siteTheme.siteAccent} !important; }
+        .page-btn:hover { background: ${siteTheme.siteAccent} !important; color: #fff !important; }
+        .reset-btn:hover { opacity: 0.8; }
+      `}</style>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative group flex-grow md:flex-grow-0">
-              <IoSearchOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search by name..." 
+      {/* ── Page header ── */}
+      <div style={{
+        background: `linear-gradient(135deg, #0f172a 0%, #1e3a8a 65%, #0ea5e9 100%)`,
+        padding: '80px 32px 60px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative circles */}
+        <div style={{ position: 'absolute', top: -80, right: -80, width: 320, height: 320, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -120, left: '30%', width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' }} />
+
+        <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Eyebrow */}
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '5px 16px', borderRadius: 999, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
+            <span style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.75)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+              Saint Joseph's Catholic Hospital
+            </span>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+            style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24 }}>
+            <div>
+              <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', margin: '0 0 10px', lineHeight: 1.05 }}>
+                Our Medical<br />
+                <span style={{ WebkitTextFillColor: 'transparent', background: 'linear-gradient(90deg, #7dd3fc, #a5b4fc)', WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>
+                  Specialists
+                </span>
+              </h1>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 500, margin: 0, fontSize: 14, fontStyle: 'italic' }}>
+                {user
+                  ? `Welcome back, ${user.name.split(' ')[0]}. Find the right specialist for your care.`
+                  : 'Expert physicians dedicated to your health and wellbeing.'}
+              </p>
+            </div>
+
+            {/* Stats row */}
+            <div style={{ display: 'flex', gap: 32 }}>
+              {[{ label: 'Specialists', value: `${doctors.length || '45'}+` }, { label: 'Specialties', value: '12' }, { label: 'Years Service', value: '60+' }].map(stat => (
+                <div key={stat.label} style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.03em' }}>{stat.value}</p>
+                  <p style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.45)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.2em' }}>{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Search + Filter bar ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+            style={{ marginTop: 36, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            {/* Search input */}
+            <div style={{ position: 'relative', flex: '1 1 260px', minWidth: 200 }}>
+              <IoSearchOutline style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none', fontSize: 17 }} />
+              <input
+                type="text"
+                placeholder="Search by name..."
                 value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl outline-none w-full md:w-72 text-sm font-bold shadow-sm focus:border-blue-500 transition-all"
+                onChange={e => setSearchName(e.target.value)}
+                className="doc-input"
+                style={{ ...inputBase, background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)', color: '#fff', borderRadius: 14 }}
               />
             </div>
 
-            <div className="relative flex-grow md:flex-grow-0">
-              <IoFilterOutline className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <select 
-                value={specialty} 
-                onChange={(e) => setSpecialty(e.target.value)}
-                className="pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl outline-none text-[10px] font-black text-slate-600 uppercase tracking-widest cursor-pointer shadow-sm appearance-none hover:border-blue-400 transition-all"
+            {/* Specialty select */}
+            <div style={{ position: 'relative', flex: '0 1 220px', minWidth: 180 }}>
+              <IoFilterOutline style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none', fontSize: 16 }} />
+              <select
+                value={specialty}
+                onChange={e => setSpecialty(e.target.value)}
+                className="doc-input"
+                style={{ ...inputBase, background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)', color: specialty ? '#fff' : 'rgba(255,255,255,0.5)', appearance: 'none', paddingRight: 40, cursor: 'pointer', borderRadius: 14 }}
               >
                 <option value="">All Specialties</option>
-                <option value="General Physician">General Physician</option>
-                <option value="Gynecologist">Gynecologist</option>
-                <option value="Dermatologist">Dermatologist</option>
-                <option value="Pediatrician">Pediatrician</option>
-                <option value="Neurologist">Neurologist</option>
-                <option value="Cardiologist">Cardiologist</option>
+                {specialties.map(s => <option key={s} value={s} style={{ color: '#0f172a', background: '#fff' }}>{s}</option>)}
               </select>
             </div>
-          </div>
-        </header>
+          </motion.div>
 
-        <div className="min-h-[500px]">
+          {/* ── Specialty pill filters ── */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18 }}
+            style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <button
+              className="spec-btn"
+              onClick={() => setSpecialty('')}
+              style={{ padding: '6px 16px', borderRadius: 999, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.2s ease', border: '1px solid rgba(255,255,255,0.2)', background: specialty === '' ? siteTheme.siteAccent : 'rgba(255,255,255,0.08)', color: specialty === '' ? '#fff' : 'rgba(255,255,255,0.65)' }}>
+              All
+            </button>
+            {specialties.map(s => {
+              const sc = SPECIALTY_COLORS[s] || defaultColor;
+              return (
+                <button key={s} className="spec-btn" onClick={() => setSpecialty(specialty === s ? '' : s)}
+                  style={{ padding: '6px 16px', borderRadius: 999, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', cursor: 'pointer', transition: 'all 0.2s ease', border: `1px solid ${specialty === s ? sc.dot : 'rgba(255,255,255,0.15)'}`, background: specialty === s ? sc.dot : 'rgba(255,255,255,0.07)', color: specialty === s ? '#fff' : 'rgba(255,255,255,0.6)' }}>
+                  {s}
+                </button>
+              );
+            })}
+          </motion.div>
+        </div>
+      </div>
+
+      {/* ── Content area ── */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px 80px' }}>
+
+        {/* Results count */}
+        {!loading && doctors.length > 0 && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', color: siteTheme.siteMuted, marginBottom: 28 }}>
+            {doctors.length} specialist{doctors.length !== 1 ? 's' : ''} found
+            {specialty ? ` · ${specialty}` : ''}
+            {searchName ? ` · "${searchName}"` : ''}
+          </motion.p>
+        )}
+
+        {/* Grid */}
+        <div style={{ minHeight: 480 }}>
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-[400px] bg-slate-100 animate-pulse rounded-[3rem]"></div>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 28 }}>
+              {[...Array(6)].map((_, i) => <SkeletonCard key={i} theme={siteTheme} />)}
             </div>
           ) : currentDoctors.length > 0 ? (
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
-                key={currentPage + specialty}
+                key={`${currentPage}-${specialty}-${searchName}`}
                 custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.4, ease: "anticipate" }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 28 }}
               >
-                {currentDoctors.map((doctor) => (
-                  <div 
-                    key={doctor._id} 
-                    className="bg-white rounded-[2.5rem] border border-slate-100 p-4 hover:shadow-2xl hover:shadow-blue-900/5 transition-all group cursor-pointer"
-                    onClick={() => navigate(`/appointment/${doctor._id}`)}
-                  >
-                    <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-slate-100 mb-6">
-                      <img 
-                        src={doctor.image} 
-                        alt={doctor.name} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                      />
-                      <div className="absolute bottom-4 left-4">
-                        <span className="bg-blue-600 text-white px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest">
-                          {doctor.specialization}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="px-4 pb-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Available Now</span>
-                      </div>
-                      <h3 className="text-2xl font-black text-slate-900">Dr. {doctor.name}</h3>
-                      <p className="text-slate-400 text-xs font-bold mt-1">{doctor.qualification}</p>
-                      
-                      <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-50">
-                        <span className="text-lg font-black text-slate-900">${doctor.fee}<span className="text-[10px] text-slate-400">/visit</span></span>
-                        <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                            <IoChevronForward />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                {currentDoctors.map((doctor, idx) => (
+                  <DoctorCard
+                    key={doctor._id}
+                    doctor={doctor}
+                    theme={siteTheme}
+                    idx={idx}
+                    onClick={() => navigate(`/doctor/${doctor._id}`)}
+                  />
                 ))}
               </motion.div>
             </AnimatePresence>
           ) : (
-            <div className="flex flex-col items-center justify-center py-40 bg-slate-50 rounded-[4rem] border-2 border-dashed border-slate-200">
-              <IoMedkitOutline size={40} className="text-slate-300 mb-4" />
-              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">No results found</h3>
-              <p className="text-slate-400 text-sm font-medium">Try checking your spelling or changing the specialty.</p>
-              <button 
-                onClick={() => {setSearchName(''); setSpecialty('')}} 
-                className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all"
-              >
+            <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '7rem 2rem', background: siteTheme.siteAltBg, borderRadius: 32, border: `2px dashed ${siteTheme.siteBorder}`, textAlign: 'center' }}>
+              <div style={{ width: 64, height: 64, borderRadius: 20, background: siteTheme.siteBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: `1px solid ${siteTheme.siteBorder}` }}>
+                <IoMedkitOutline size={28} style={{ color: siteTheme.siteMuted }} />
+              </div>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: siteTheme.siteText, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+                No Specialists Found
+              </h3>
+              <p style={{ color: siteTheme.siteMuted, fontSize: 13, margin: '0 0 28px' }}>
+                Try adjusting your search or clearing the filters.
+              </p>
+              <button className="reset-btn" onClick={() => { setSearchName(''); setSpecialty(''); }}
+                style={{ padding: '12px 32px', background: siteTheme.siteAccent, color: '#fff', borderRadius: 14, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s' }}>
                 Reset All Filters
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
 
-        {/* PAGINATION */}
+        {/* ── Pagination ── */}
         {totalPages > 1 && !loading && (
-          <div className="flex justify-center items-center gap-3 mt-16">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 56 }}>
+
+            {/* Prev */}
+            <button
+              className="page-btn"
+              disabled={currentPage === 1}
+              onClick={() => { setDirection(-1); setCurrentPage(p => Math.max(1, p - 1)); }}
+              style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 900, fontSize: 11, border: `1px solid ${siteTheme.siteBorder}`, cursor: currentPage === 1 ? 'default' : 'pointer', transition: 'all 0.2s ease', background: siteTheme.siteCard, color: currentPage === 1 ? siteTheme.siteMuted : siteTheme.siteText, opacity: currentPage === 1 ? 0.4 : 1, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              ← Prev
+            </button>
+
+            {/* Page numbers */}
             {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setDirection(i + 1 > currentPage ? 1 : -1);
-                  setCurrentPage(i + 1);
-                }}
-                className={`w-12 h-12 rounded-2xl font-black text-xs transition-all ${
-                  currentPage === i + 1 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-110' 
-                  : 'bg-white text-slate-400 border border-slate-100 hover:border-blue-200'
-                }`}
-              >
+              <button key={i} className="page-btn"
+                onClick={() => { setDirection(i + 1 > currentPage ? 1 : -1); setCurrentPage(i + 1); }}
+                style={{ width: 44, height: 44, borderRadius: 12, fontWeight: 900, fontSize: 13, border: `1px solid ${currentPage === i + 1 ? siteTheme.siteAccent : siteTheme.siteBorder}`, cursor: 'pointer', transition: 'all 0.2s ease', background: currentPage === i + 1 ? siteTheme.siteAccent : siteTheme.siteCard, color: currentPage === i + 1 ? '#fff' : siteTheme.siteMuted, transform: currentPage === i + 1 ? 'scale(1.1)' : 'scale(1)', boxShadow: currentPage === i + 1 ? `0 4px 14px ${siteTheme.siteAccent}44` : 'none' }}>
                 {i + 1}
               </button>
             ))}
-          </div>
+
+            {/* Next */}
+            <button
+              className="page-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => { setDirection(1); setCurrentPage(p => Math.min(totalPages, p + 1)); }}
+              style={{ padding: '10px 20px', borderRadius: 12, fontWeight: 900, fontSize: 11, border: `1px solid ${siteTheme.siteBorder}`, cursor: currentPage === totalPages ? 'default' : 'pointer', transition: 'all 0.2s ease', background: siteTheme.siteCard, color: currentPage === totalPages ? siteTheme.siteMuted : siteTheme.siteText, opacity: currentPage === totalPages ? 0.4 : 1, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Next →
+            </button>
+          </motion.div>
         )}
       </div>
     </div>

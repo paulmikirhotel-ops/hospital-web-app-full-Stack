@@ -1,217 +1,894 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { 
-  IoMedkitOutline, IoPeopleOutline, IoTimerOutline, 
+import {
+  IoMedkitOutline, IoPeopleOutline, IoTimerOutline,
   IoPulseOutline, IoArrowForwardOutline, IoCalendarOutline,
-  IoCallOutline, IoLocationOutline, IoTimeOutline
+  IoCallOutline, IoLocationOutline, IoTimeOutline,
 } from 'react-icons/io5';
 import Hero from '../components/Hero';
+import API from '../api/axiosConfig';
+
+const SPACE_THEMES = [
+  {
+    name: 'Classic White',
+    key: 'white',
+    bg: ['#f8fafc', '#f1f5f9', '#e2e8f0'],
+    nebula: ['rgba(59,130,246,0.06)', 'rgba(99,102,241,0.04)'],
+    stars: [148, 163, 184],
+    planets: ['#3b82f6', '#6366f1', '#60a5fa', '#4f46e5', '#93c5fd'],
+    rings: 'rgba(147,197,253,0.4)',
+    accent: '#2563eb',
+    accentDark: '#1e3a8a',
+    card3d: '#93c5fd',
+    card3dHover: '#2563eb',
+    cardBg: 'rgba(255,255,255,0.85)',
+    cardBorder: 'rgba(59,130,246,0.18)',
+    text: '#0f172a',
+    muted: '#475569',
+    glow: 'rgba(37,99,235,0.25)',
+    glowBox: '0 0 80px rgba(37,99,235,0.08)',
+    orb1: 'rgba(59,130,246,0.08)',
+    orb2: 'rgba(99,102,241,0.05)',
+    innerCard: 'rgba(239,246,255,0.8)',
+    btnPrimary: { bg: '#0f172a', color: '#ffffff' },
+    btnSecondary: { bg: 'rgba(37,99,235,0.08)', color: '#1d4ed8', border: 'rgba(37,99,235,0.25)' },
+    contactBg: 'rgba(248,250,252,0.95)',
+    sectionLabel: '#2563eb',
+    statNum: '#0f172a',
+    filterBg: '#eff6ff',
+    footerBorder: 'rgba(37,99,235,0.12)',
+    isLight: true,
+  },
+  {
+    name: 'Deep Cosmos',
+    key: 'cosmos',
+    bg: ['#0a0015', '#0d0030', '#050010'],
+    nebula: ['rgba(120,40,200,0.18)', 'rgba(60,0,120,0.12)'],
+    stars: [255,255,255],
+    planets: ['#c084fc','#7c3aed','#a855f7','#6d28d9','#8b5cf6'],
+    rings: 'rgba(196,181,253,0.3)',
+    accent: '#a855f7',
+    accentDark: '#3b0764',
+    card3d: '#c084fc',
+    card3dHover: '#a855f7',
+    cardBg: 'rgba(15,0,40,0.65)',
+    cardBorder: 'rgba(168,85,247,0.3)',
+    text: '#f5f3ff',
+    muted: '#a78bfa',
+    glow: 'rgba(168,85,247,0.4)',
+    glowBox: '0 0 80px rgba(168,85,247,0.2)',
+    orb1: 'rgba(120,40,200,0.12)',
+    orb2: 'rgba(90,0,160,0.08)',
+    innerCard: 'rgba(80,0,160,0.3)',
+    btnPrimary: { bg: '#a855f7', color: '#fff' },
+    btnSecondary: { bg: 'rgba(168,85,247,0.15)', color: '#d8b4fe', border: 'rgba(168,85,247,0.3)' },
+    contactBg: 'rgba(10,0,30,0.8)',
+    sectionLabel: '#c084fc',
+    statNum: '#f5f3ff',
+    filterBg: '#1e0a3c',
+    footerBorder: 'rgba(168,85,247,0.2)',
+    isLight: false,
+  },
+  {
+    name: 'Solar Flare',
+    key: 'solar',
+    bg: ['#0f0500','#1a0800','#0a0200'],
+    nebula: ['rgba(251,146,60,0.18)', 'rgba(220,38,38,0.12)'],
+    stars: [254,243,199],
+    planets: ['#fb923c','#ef4444','#f59e0b','#dc2626','#f97316'],
+    rings: 'rgba(251,191,36,0.3)',
+    accent: '#f97316',
+    accentDark: '#431407',
+    card3d: '#fb923c',
+    card3dHover: '#f97316',
+    cardBg: 'rgba(20,5,0,0.7)',
+    cardBorder: 'rgba(249,115,22,0.3)',
+    text: '#fff7ed',
+    muted: '#fdba74',
+    glow: 'rgba(249,115,22,0.4)',
+    glowBox: '0 0 80px rgba(249,115,22,0.2)',
+    orb1: 'rgba(251,146,60,0.12)',
+    orb2: 'rgba(220,38,38,0.08)',
+    innerCard: 'rgba(120,40,0,0.3)',
+    btnPrimary: { bg: '#f97316', color: '#fff' },
+    btnSecondary: { bg: 'rgba(249,115,22,0.15)', color: '#fed7aa', border: 'rgba(249,115,22,0.3)' },
+    contactBg: 'rgba(15,5,0,0.85)',
+    sectionLabel: '#fb923c',
+    statNum: '#fff7ed',
+    filterBg: '#431407',
+    footerBorder: 'rgba(249,115,22,0.2)',
+    isLight: false,
+  },
+  {
+    name: 'Ice Nebula',
+    key: 'ice',
+    bg: ['#00080f','#000d1a','#000510'],
+    nebula: ['rgba(56,189,248,0.15)', 'rgba(14,165,233,0.1)'],
+    stars: [224,242,254],
+    planets: ['#38bdf8','#0ea5e9','#7dd3fc','#0284c7','#bae6fd'],
+    rings: 'rgba(186,230,253,0.3)',
+    accent: '#0ea5e9',
+    accentDark: '#082f49',
+    card3d: '#38bdf8',
+    card3dHover: '#0ea5e9',
+    cardBg: 'rgba(0,10,25,0.7)',
+    cardBorder: 'rgba(14,165,233,0.3)',
+    text: '#f0f9ff',
+    muted: '#7dd3fc',
+    glow: 'rgba(14,165,233,0.4)',
+    glowBox: '0 0 80px rgba(14,165,233,0.2)',
+    orb1: 'rgba(56,189,248,0.12)',
+    orb2: 'rgba(14,165,233,0.08)',
+    innerCard: 'rgba(0,60,100,0.3)',
+    btnPrimary: { bg: '#0ea5e9', color: '#fff' },
+    btnSecondary: { bg: 'rgba(14,165,233,0.15)', color: '#bae6fd', border: 'rgba(14,165,233,0.3)' },
+    contactBg: 'rgba(0,8,20,0.85)',
+    sectionLabel: '#38bdf8',
+    statNum: '#f0f9ff',
+    filterBg: '#082f49',
+    footerBorder: 'rgba(14,165,233,0.2)',
+    isLight: false,
+  },
+  {
+    name: 'Aurora',
+    key: 'aurora',
+    bg: ['#001a0a','#00120a','#000f05'],
+    nebula: ['rgba(34,197,94,0.15)', 'rgba(16,185,129,0.1)'],
+    stars: [220,252,231],
+    planets: ['#4ade80','#22c55e','#86efac','#16a34a','#bbf7d0'],
+    rings: 'rgba(187,247,208,0.3)',
+    accent: '#22c55e',
+    accentDark: '#052e16',
+    card3d: '#4ade80',
+    card3dHover: '#22c55e',
+    cardBg: 'rgba(0,15,5,0.7)',
+    cardBorder: 'rgba(34,197,94,0.3)',
+    text: '#f0fdf4',
+    muted: '#86efac',
+    glow: 'rgba(34,197,94,0.4)',
+    glowBox: '0 0 80px rgba(34,197,94,0.2)',
+    orb1: 'rgba(34,197,94,0.12)',
+    orb2: 'rgba(16,185,129,0.08)',
+    innerCard: 'rgba(0,60,20,0.3)',
+    btnPrimary: { bg: '#22c55e', color: '#fff' },
+    btnSecondary: { bg: 'rgba(34,197,94,0.15)', color: '#bbf7d0', border: 'rgba(34,197,94,0.3)' },
+    contactBg: 'rgba(0,15,5,0.85)',
+    sectionLabel: '#4ade80',
+    statNum: '#f0fdf4',
+    filterBg: '#052e16',
+    footerBorder: 'rgba(34,197,94,0.2)',
+    isLight: false,
+  },
+  {
+    name: 'Rose Galaxy',
+    key: 'rose',
+    bg: ['#0f0008','#160010','#0a0005'],
+    nebula: ['rgba(244,114,182,0.18)', 'rgba(236,72,153,0.12)'],
+    stars: [253,242,248],
+    planets: ['#f472b6','#ec4899','#fb7185','#db2777','#fbcfe8'],
+    rings: 'rgba(251,207,232,0.3)',
+    accent: '#ec4899',
+    accentDark: '#500724',
+    card3d: '#f472b6',
+    card3dHover: '#ec4899',
+    cardBg: 'rgba(15,0,10,0.7)',
+    cardBorder: 'rgba(236,72,153,0.3)',
+    text: '#fdf2f8',
+    muted: '#f9a8d4',
+    glow: 'rgba(236,72,153,0.4)',
+    glowBox: '0 0 80px rgba(236,72,153,0.2)',
+    orb1: 'rgba(244,114,182,0.12)',
+    orb2: 'rgba(236,72,153,0.08)',
+    innerCard: 'rgba(100,0,50,0.3)',
+    btnPrimary: { bg: '#ec4899', color: '#fff' },
+    btnSecondary: { bg: 'rgba(236,72,153,0.15)', color: '#fbcfe8', border: 'rgba(236,72,153,0.3)' },
+    contactBg: 'rgba(15,0,10,0.85)',
+    sectionLabel: '#f472b6',
+    statNum: '#fdf2f8',
+    filterBg: '#500724',
+    footerBorder: 'rgba(236,72,153,0.2)',
+    isLight: false,
+  },
+];
+
+const StarField = ({ theme }) => {
+  const canvasRef = useRef(null);
+  const animRef = useRef(null);
+  const starsRef = useRef([]);
+  const planetsRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+
+    if (starsRef.current.length === 0) {
+      for (let i = 0; i < 220; i++) {
+        starsRef.current.push({
+          x: Math.random(), y: Math.random(),
+          r: Math.random() * 1.5 + 0.2,
+          twinkle: Math.random() * Math.PI * 2,
+          twinkleSpeed: Math.random() * 0.03 + 0.01,
+        });
+      }
+    }
+
+    if (!planetsRef.current) {
+      planetsRef.current = [
+        { orbitX:0.12, orbitY:0.18, orbitRx:0.07, orbitRy:0.03,  r:18, colorIdx:0, hasRing:true,  angle:0,   speed:0.0003 },
+        { orbitX:0.88, orbitY:0.22, orbitRx:0.08, orbitRy:0.03,  r:26, colorIdx:1, hasRing:false, angle:1.2, speed:0.0002 },
+        { orbitX:0.76, orbitY:0.80, orbitRx:0.06, orbitRy:0.025, r:13, colorIdx:2, hasRing:true,  angle:2.5, speed:0.0004 },
+        { orbitX:0.05, orbitY:0.70, orbitRx:0.05, orbitRy:0.02,  r:10, colorIdx:3, hasRing:false, angle:3.8, speed:0.0005 },
+        { orbitX:0.50, orbitY:0.93, orbitRx:0.04, orbitRy:0.015, r:7,  colorIdx:4, hasRing:false, angle:5.0, speed:0.0006 },
+      ];
+    }
+
+    const [sr, sg, sb] = theme.stars;
+
+    const draw = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const grad = ctx.createRadialGradient(w*0.5,h*0.4,0, w*0.5,h*0.4,Math.max(w,h)*0.85);
+      grad.addColorStop(0, theme.bg[1]);
+      grad.addColorStop(0.5, theme.bg[0]);
+      grad.addColorStop(1, theme.bg[2]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,w,h);
+
+      const n1 = ctx.createRadialGradient(w*0.28,h*0.3,0, w*0.28,h*0.3,w*0.38);
+      n1.addColorStop(0, theme.nebula[0]);
+      n1.addColorStop(1,'transparent');
+      ctx.fillStyle = n1; ctx.fillRect(0,0,w,h);
+
+      const n2 = ctx.createRadialGradient(w*0.78,h*0.62,0, w*0.78,h*0.62,w*0.32);
+      n2.addColorStop(0, theme.nebula[1]);
+      n2.addColorStop(1,'transparent');
+      ctx.fillStyle = n2; ctx.fillRect(0,0,w,h);
+
+      starsRef.current.forEach(star => {
+        star.twinkle += star.twinkleSpeed;
+        const alpha = theme.isLight
+          ? (0.08 + 0.12 * Math.abs(Math.sin(star.twinkle)))
+          : (0.35 + 0.65 * Math.abs(Math.sin(star.twinkle)));
+        ctx.beginPath();
+        ctx.arc(star.x*w, star.y*h, star.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${sr},${sg},${sb},${alpha})`;
+        ctx.fill();
+      });
+
+      planetsRef.current.forEach((p) => {
+        p.angle += p.speed;
+        const px = (p.orbitX + Math.cos(p.angle)*p.orbitRx)*w;
+        const py = (p.orbitY + Math.sin(p.angle)*p.orbitRy)*h;
+        const color = theme.planets[p.colorIdx % theme.planets.length];
+
+        const haloAlpha = theme.isLight ? '0.08' : '0.25';
+        const halo = ctx.createRadialGradient(px,py,0,px,py,p.r*3);
+        halo.addColorStop(0, theme.glow.replace('0.25', haloAlpha).replace('0.4', haloAlpha));
+        halo.addColorStop(1,'transparent');
+        ctx.fillStyle = halo;
+        ctx.beginPath(); ctx.arc(px,py,p.r*3,0,Math.PI*2); ctx.fill();
+
+        if (p.hasRing) {
+          ctx.save(); ctx.translate(px,py); ctx.scale(1,0.28);
+          ctx.beginPath(); ctx.arc(0,0,p.r*2.3,Math.PI,Math.PI*2);
+          ctx.strokeStyle = theme.rings; ctx.lineWidth = 5; ctx.stroke();
+          ctx.restore();
+        }
+
+        const pg = ctx.createRadialGradient(px-p.r*0.3,py-p.r*0.3,p.r*0.05, px,py,p.r);
+        pg.addColorStop(0, color);
+        pg.addColorStop(1, theme.accentDark);
+        ctx.globalAlpha = theme.isLight ? 0.35 : 1;
+        ctx.beginPath(); ctx.arc(px,py,p.r,0,Math.PI*2);
+        ctx.fillStyle = pg; ctx.fill();
+        ctx.globalAlpha = 1;
+
+        if (p.hasRing) {
+          ctx.save(); ctx.translate(px,py); ctx.scale(1,0.28);
+          ctx.beginPath(); ctx.arc(0,0,p.r*2.3,0,Math.PI);
+          ctx.strokeStyle = theme.rings; ctx.lineWidth = 5; ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.beginPath(); ctx.arc(px-p.r*0.28,py-p.r*0.28,p.r*0.32,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fill();
+      });
+
+      animRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      window.removeEventListener('resize', resize);
+    };
+  }, [theme]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position:'fixed', top:0, left:0, width:'100%', height:'100%', zIndex:0, display:'block' }}
+    />
+  );
+};
+
+const ThemeSwitcher = ({ themeIdx, theme, onCycle }) => (
+  <motion.button
+    onClick={onCycle}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    style={{
+      position: 'fixed', top: 24, right: 24, zIndex: 1000,
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '8px 18px',
+      background: theme.isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      color: theme.text,
+      border: `1px solid ${theme.isLight ? 'rgba(0,0,0,0.12)' : theme.cardBorder}`,
+      borderRadius: 999,
+      cursor: 'pointer',
+      fontSize: 10, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase',
+      boxShadow: `0 0 24px ${theme.glow}`,
+      transition: 'all 0.3s ease',
+    }}
+  >
+    <span style={{ display:'flex', gap:5, alignItems:'center' }}>
+      {SPACE_THEMES.map((t, i) => (
+        <span key={i} style={{
+          width: i === themeIdx ? 12 : 7,
+          height: i === themeIdx ? 12 : 7,
+          borderRadius: '50%',
+          background: t.accent,
+          border: i === themeIdx ? `2px solid ${theme.isLight ? '#0f172a' : theme.text}` : '2px solid transparent',
+          boxShadow: i === themeIdx ? `0 0 8px ${t.accent}` : 'none',
+          transition: 'all 0.3s ease',
+          display: 'inline-block',
+        }} />
+      ))}
+    </span>
+    {theme.name}
+  </motion.button>
+);
+
+const StatCard = ({ stat, idx, theme }) => {
+  const [hovered, setHovered] = useState(false);
+  const [tilt, setTilt] = useState({ x:0, y:0 });
+  const ref = useRef(null);
+
+  const handleMouseMove = (e) => {
+    const rect = ref.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 20;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -20;
+    setTilt({ x, y });
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity:0, y:30 }}
+      whileInView={{ opacity:1, y:0 }}
+      viewport={{ once:true }}
+      transition={{ delay: idx*0.1, type:'spring', stiffness:100 }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setTilt({x:0,y:0}); }}
+      animate={{ rotateX: tilt.y, rotateY: tilt.x }}
+      style={{
+        transformStyle:'preserve-3d', perspective:600,
+        display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center',
+        padding:'2rem', borderRadius:'1.5rem',
+        background: hovered
+          ? (theme.isLight ? 'rgba(239,246,255,0.95)' : theme.innerCard.replace('0.3','0.5'))
+          : theme.innerCard,
+        border: `1px solid ${hovered ? theme.accent : theme.cardBorder}`,
+        transition:'border 0.3s ease, background 0.3s ease',
+        cursor:'default',
+        boxShadow: hovered ? `0 0 30px ${theme.glow}` : 'none',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <motion.div
+        animate={{ scale: hovered ? 1.2 : 1 }}
+        transition={{ duration:0.3 }}
+        style={{
+          fontSize:28, marginBottom:16, color: theme.accent,
+          filter: hovered ? `drop-shadow(0 0 8px ${theme.accent})` : 'none',
+        }}
+      >
+        {stat.icon}
+      </motion.div>
+      <h3 style={{
+        fontSize:'2.25rem', fontWeight:900, marginBottom:8, letterSpacing:'-0.04em',
+        color: theme.statNum,
+        textShadow: hovered && !theme.isLight ? `0 0 20px ${theme.glow}` : 'none',
+        transition: 'text-shadow 0.3s ease',
+      }}>
+        {stat.value}
+      </h3>
+      <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color: theme.muted }}>
+        {stat.label}
+      </p>
+      {hovered && (
+        <div style={{
+          position:'absolute', inset:0, borderRadius:'1.5rem', pointerEvents:'none',
+          background:'linear-gradient(135deg,rgba(255,255,255,0.07) 0%,transparent 60%)',
+        }}/>
+      )}
+    </motion.div>
+  );
+};
+
+// ─── UPDATED: ServiceCard with truncated description + Read more ───────────────
+const ServiceCard = ({ service, idx, theme, onClick }) => {
+  const [tilt, setTilt] = useState({ x:0, y:0 });
+  const [hovered, setHovered] = useState(false);
+  const ref = useRef(null);
+
+  const handleMouseMove = (e) => {
+    const rect = ref.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left)/rect.width - 0.5) * 15;
+    const y = ((e.clientY - rect.top)/rect.height - 0.5) * -15;
+    setTilt({ x, y });
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity:0, scale:0.9, y:20 }}
+      whileInView={{ opacity:1, scale:1, y:0 }}
+      viewport={{ once:true }}
+      transition={{ delay:idx*0.1, type:'spring', stiffness:80 }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setTilt({x:0,y:0}); setHovered(false); }}
+      animate={{ rotateX: tilt.y, rotateY: tilt.x, y: hovered ? -8 : 0 }}
+      onClick={onClick}
+      style={{
+        transformStyle:'preserve-3d', perspective:800,
+        padding:'2rem', borderRadius:'2.5rem', cursor:'pointer',
+        background: theme.cardBg, backdropFilter:'blur(16px)',
+        border: `1.5px solid ${hovered ? theme.accent : theme.cardBorder}`,
+        display:'flex', flexDirection:'column',
+        transition:'border 0.3s ease, background 0.3s ease',
+        boxShadow: hovered
+          ? `0 30px 60px ${theme.glow}, 0 0 30px ${theme.glow}, 6px 6px 0 ${theme.card3dHover}`
+          : `3px 3px 0 ${theme.card3d}`,
+      }}
+    >
+      <div style={{
+        width:56, height:56, borderRadius:14,
+        display:'flex', alignItems:'center', justifyContent:'center', padding:10,
+        marginBottom:28,
+        background: hovered ? theme.accent : theme.innerCard,
+        transition:'background 0.3s ease',
+        transform:'translateZ(20px)',
+        boxShadow: hovered ? `0 0 20px ${theme.glow}` : 'none',
+      }}>
+        <img
+          src={service.image}
+          style={{
+            width:'100%', height:'100%', objectFit:'contain',
+            filter: hovered
+              ? 'brightness(0) invert(1)'
+              : (theme.isLight ? 'brightness(0.6) saturate(0)' : 'brightness(0.8) saturate(0)'),
+          }}
+          alt=""
+        />
+      </div>
+
+      <div style={{ flexGrow:1, transform:'translateZ(10px)' }}>
+        <h4 style={{
+          fontSize:'1.1rem', fontWeight:900, marginBottom:10,
+          color: hovered ? theme.accent : theme.text,
+          transition:'color 0.3s ease',
+          textShadow: hovered && !theme.isLight ? `0 0 16px ${theme.glow}` : 'none',
+        }}>
+          {service.title}
+        </h4>
+
+        {/* ── Truncated description (max 3 lines) ── */}
+        <p style={{
+          fontSize:13, lineHeight:1.7, color: theme.muted, fontStyle:'italic',
+          display:'-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient:'vertical',
+          overflow:'hidden',
+          margin:0,
+        }}>
+          "{service.description}"
+        </p>
+      </div>
+
+      {/* ── Read more button ── */}
+      <div style={{
+        marginTop:16,
+        display:'flex', alignItems:'center', gap:6,
+        transform:'translateZ(10px)',
+      }}>
+        <span style={{
+          fontSize:10, fontWeight:900, textTransform:'uppercase',
+          letterSpacing:'0.18em',
+          color: theme.accent,
+          opacity: hovered ? 1 : 0.55,
+          transition:'opacity 0.3s ease',
+        }}>
+          Read more
+        </span>
+        <motion.span
+          animate={{ x: hovered ? 4 : 0 }}
+          transition={{ duration:0.2 }}
+          style={{ color: theme.accent, fontSize:13, opacity: hovered ? 1 : 0.55, transition:'opacity 0.3s ease' }}
+        >
+          →
+        </motion.span>
+      </div>
+
+      <div style={{
+        position:'absolute', top:20, right:20,
+        width:8, height:8, borderRadius:'50%',
+        background: theme.accent,
+        opacity: hovered ? 1 : 0,
+        boxShadow: `0 0 8px ${theme.accent}`,
+        transition:'opacity 0.3s ease',
+      }}/>
+    </motion.div>
+  );
+};
+
+// ─── BlogCard (unchanged) ──────────────────────────────────────────────────────
+const BlogCard = ({ blog, idx, theme, onClick }) => {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <motion.article
+      initial={{ opacity:0, y:30 }}
+      whileInView={{ opacity:1, y:0 }}
+      viewport={{ once:true }}
+      transition={{ delay:idx*0.1, type:'spring' }}
+      animate={{ y: hovered ? -6 : 0, scale: hovered ? 1.02 : 1 }}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRadius:'2.5rem', padding:14, cursor:'pointer',
+        background: theme.cardBg, backdropFilter:'blur(16px)',
+        border: `1.5px solid ${hovered ? theme.accent : theme.cardBorder}`,
+        transition:'border 0.3s ease',
+        boxShadow: hovered
+          ? `0 20px 40px ${theme.glow}, 4px 4px 0 ${theme.card3dHover}`
+          : `2px 2px 0 ${theme.card3d}`,
+      }}
+    >
+      <div style={{ position:'relative', aspectRatio:'16/9', borderRadius:'2rem', overflow:'hidden', marginBottom:20, background:'#000' }}>
+        <img
+          src={blog.coverImg}
+          style={{
+            width:'100%', height:'100%', objectFit:'cover',
+            transition:'transform 0.7s ease, opacity 0.3s ease',
+            transform: hovered ? 'scale(1.1)' : 'scale(1)',
+            opacity: hovered ? 0.85 : 0.75,
+          }}
+          alt={blog.title}
+        />
+        <div style={{
+          position:'absolute', inset:0,
+          background:'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
+          opacity: hovered ? 1 : 0, transition:'opacity 0.3s ease',
+        }}/>
+      </div>
+      <div style={{ padding:'0 8px 8px' }}>
+        <div style={{
+          display:'flex', alignItems:'center', gap:8,
+          fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', marginBottom:10,
+        }}>
+          <span style={{ color: theme.accent }}>{blog.category}</span>
+          <span style={{ color: theme.cardBorder }}>•</span>
+          <span style={{ color: theme.muted, display:'flex', alignItems:'center', gap:3 }}>
+            <IoCalendarOutline style={{ width:12, height:12 }} />
+            {new Date(blog.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+        <h4 style={{
+          fontSize:'1.1rem', fontWeight:900, lineHeight:1.3,
+          color: hovered ? theme.accent : theme.text,
+          transition:'color 0.3s ease',
+          textShadow: hovered && !theme.isLight ? `0 0 16px ${theme.glow}` : 'none',
+          display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden',
+        }}>
+          {blog.title}
+        </h4>
+      </div>
+    </motion.article>
+  );
+};
+
+const ContactInfo = ({ icon, label, value, theme }) => (
+  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+    <div style={{
+      width:38, height:38, borderRadius:'50%',
+      display:'flex', alignItems:'center', justifyContent:'center',
+      background: `${theme.accent}22`, color: theme.accent, fontSize:18,
+    }}>
+      {icon}
+    </div>
+    <div>
+      <p style={{ fontSize:9, textTransform:'uppercase', fontWeight:900, letterSpacing:'0.2em', color: theme.muted, margin:0 }}>{label}</p>
+      <p style={{ fontSize:13, fontWeight:700, color: theme.text, margin:0 }}>{value}</p>
+    </div>
+  </div>
+);
 
 const Home = () => {
   const navigate = useNavigate();
+  const [themeIdx, setThemeIdx] = useState(0);
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [liveServices, setLiveServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 400], [0, -60]);
+
+  const theme = SPACE_THEMES[themeIdx];
+  const cycleTheme = () => setThemeIdx(prev => (prev + 1) % SPACE_THEMES.length);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [blogRes, serviceRes] = await Promise.all([
-          axios.get('http://localhost:5001/api/blogs'),
-          axios.get('http://localhost:5001/api/services/list')
+          API.get('/blogs'),
+          API.get('/services/list'),
         ]);
-
-        if (blogRes.data && blogRes.data.posts) {
-          setLatestBlogs(blogRes.data.posts.slice(0, 3));
-        } else if (Array.isArray(blogRes.data)) {
-          setLatestBlogs(blogRes.data.slice(0, 3));
-        }
-
-        if (serviceRes.data && serviceRes.data.success) {
-          const services = serviceRes.data.services || [];
-          const active = services.filter(s => s.isAvailable !== false).slice(0, 4);
-          setLiveServices(active);
+        if (blogRes.data?.posts) setLatestBlogs(blogRes.data.posts.slice(0, 3));
+        else if (Array.isArray(blogRes.data)) setLatestBlogs(blogRes.data.slice(0, 3));
+        if (serviceRes.data?.success) {
+          setLiveServices((serviceRes.data.services || []).filter(s => s.isAvailable !== false).slice(0, 4));
         }
       } catch (err) {
-        console.error("Home Data Fetch Error:", err);
+        console.error('Home Data Fetch Error:', err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   const stats = [
-    { label: 'Years of Service', value: '60+', icon: <IoTimerOutline /> },
-    { label: 'Specialized Doctors', value: '45+', icon: <IoPeopleOutline /> },
-    { label: 'Successful Procedures', value: '12k+', icon: <IoMedkitOutline /> },
-    { label: 'Hospital Beds', value: '150+', icon: <IoPulseOutline /> },
+    { label:'Years of Service',      value:'60+',  icon:<IoTimerOutline /> },
+    { label:'Specialized Doctors',   value:'45+',  icon:<IoPeopleOutline /> },
+    { label:'Successful Procedures', value:'12k+', icon:<IoMedkitOutline /> },
+    { label:'Hospital Beds',         value:'150+', icon:<IoPulseOutline /> },
   ];
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Synchronizing Clinical Systems...</p>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background: theme.bg[0] }}>
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
+        <div style={{
+          width:48, height:48, borderRadius:'50%',
+          border:`3px solid ${theme.accent}`, borderTopColor:'transparent',
+          animation:'spin 0.8s linear infinite',
+        }}/>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <p style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color: theme.muted }}>
+          Synchronizing Clinical Systems...
+        </p>
       </div>
     </div>
   );
 
   return (
-    <div className="bg-slate-50 min-h-screen pt-24 pb-12 font-sans">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="bg-white rounded-[3rem] shadow-sm overflow-hidden border border-slate-200/60">
-          
-          {/* HERO SECTION */}
-          <div className="relative overflow-hidden">
-            <Hero />
-          </div>
+    <div style={{ minHeight:'100vh', position:'relative' }}>
 
-          {/* CONTACT STRIP */}
-          <section className="bg-slate-900 text-white py-6 px-12 flex flex-wrap justify-center lg:justify-between gap-8 items-center border-b border-white/5">
-            <ContactInfo icon={<IoCallOutline />} label="Emergency Line" value="+231 770 000 000" />
-            <div className="hidden lg:block w-px h-8 bg-white/10" />
-            <ContactInfo icon={<IoTimeOutline />} label="Opening Hours" value="Open 24/7 (Emergency)" />
-            <div className="hidden lg:block w-px h-8 bg-white/10" />
-            <ContactInfo icon={<IoLocationOutline />} label="Location" value="Old Road, Congo Town" />
-          </section>
+      <StarField theme={theme} />
 
-          {/* STATS SECTION */}
-          <section className="relative z-20 -mt-10 px-6 lg:px-12">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/10 border border-blue-50/50">
-              {stats.map((stat, idx) => (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }} 
-                  whileInView={{ opacity: 1, y: 0 }} 
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  key={idx} 
-                  className="flex flex-col items-center text-center"
-                >
-                  <div className="text-2xl text-blue-600 mb-2">{stat.icon}</div>
-                  <h3 className="text-3xl font-black text-slate-900">{stat.value}</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </section>
+      <ThemeSwitcher themeIdx={themeIdx} theme={theme} onCycle={cycleTheme} />
 
-          {/* DEPARTMENTS SECTION */}
-          <section className="py-24 px-6 lg:px-16">
-            <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-6">
-              <div className="max-w-xl text-center lg:text-left">
-                <h2 className="text-xs font-black text-blue-600 uppercase tracking-[0.3em] mb-4">Core Units</h2>
-                <h3 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight tracking-tighter">
-                  Specialized Medical <br /> Departments
-                </h3>
-              </div>
-              <button onClick={() => navigate('/services')} className="group flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all">
-                All Departments <IoArrowForwardOutline className="group-hover:translate-x-1 transition-transform"/>
-              </button>
-            </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={themeIdx}
+          initial={{ opacity:0 }}
+          animate={{ opacity:1 }}
+          transition={{ duration:0.5 }}
+          style={{ position:'relative', zIndex:1, paddingTop:'6rem', paddingBottom:'3rem' }}
+        >
+          <div style={{ maxWidth:1440, margin:'0 auto', padding:'0 1.5rem' }}>
+            <div style={{
+              borderRadius:'3rem', overflow:'hidden',
+              border:`1px solid ${theme.cardBorder}`,
+              background: theme.cardBg,
+              backdropFilter:'blur(20px)',
+              WebkitBackdropFilter:'blur(20px)',
+              boxShadow: theme.glowBox,
+            }}>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <AnimatePresence>
-                {liveServices.length > 0 ? liveServices.map((service, idx) => (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    whileHover={{ y: -10 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    key={service._id} 
-                    className="p-8 rounded-[3rem] bg-slate-50/40 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-2xl hover:shadow-blue-200/20 transition-all group cursor-pointer flex flex-col h-full"
-                    onClick={() => navigate(`/services/${service._id}`)}
-                  >
-                    <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center p-3 mb-8 group-hover:bg-blue-600 transition-all duration-500">
-                      <img src={service.image} className="w-full h-full object-contain group-hover:brightness-0 group-hover:invert transition-all" alt=""/>
-                    </div>
-                    <div className="flex-grow">
-                        <h4 className="text-xl font-black text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">{service.title}</h4>
-                        <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 italic">"{service.description}"</p>
-                    </div>
-                  </motion.div>
-                )) : (
-                  <div className="col-span-full py-12 text-center text-slate-300 font-bold uppercase text-xs tracking-widest">
-                    No Active Departments Currently Listed
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
-          </section>
+              {/* ── Hero ── */}
+              <motion.div style={{ y: heroY }} className="relative overflow-hidden">
+                <Hero />
+              </motion.div>
 
-          {/* MEDICAL JOURNAL SECTION */}
-          <section className="bg-blue-600 py-24 px-6 lg:px-16 rounded-t-[4rem] relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
-            
-            <div className="flex items-center justify-between mb-12 relative z-10">
-              <div>
-                <h2 className="text-xs font-black text-blue-100 uppercase tracking-[0.3em] mb-4">Medical Journal</h2>
-                <h3 className="text-4xl font-black text-white tracking-tighter italic">Clinical Insights</h3>
-              </div>
-              <button onClick={() => navigate('/blog')} className="px-6 py-3 bg-white/10 hover:bg-white text-white hover:text-blue-600 rounded-xl border border-white/20 text-[10px] font-black uppercase tracking-widest transition-all">
-                Read All Posts
-              </button>
-            </div>
+              {/* ── UPDATED: Contact bar slides up from below after hero ── */}
+              <motion.section
+                initial={{ opacity:0, y:40 }}
+                animate={{ opacity:1, y:0 }}
+                transition={{ delay:0.4, type:'spring', stiffness:80, damping:18 }}
+                style={{
+                  padding:'1.5rem 3rem',
+                  display:'flex', flexWrap:'wrap',
+                  justifyContent:'space-between', alignItems:'center', gap:24,
+                  borderBottom:`1px solid ${theme.cardBorder}`,
+                  background: theme.contactBg,
+                  backdropFilter:'blur(10px)',
+                }}
+              >
+                <ContactInfo theme={theme} icon={<IoCallOutline />}     label="Emergency Line" value="+231 770 000 000" />
+                <div style={{ width:1, height:32, background: theme.cardBorder }} />
+                <ContactInfo theme={theme} icon={<IoTimeOutline />}     label="Opening Hours"  value="Open 24/7 (Emergency)" />
+                <div style={{ width:1, height:32, background: theme.cardBorder }} />
+                <ContactInfo theme={theme} icon={<IoLocationOutline />} label="Location"       value="Old Road, Congo Town" />
+              </motion.section>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-              {latestBlogs.length > 0 ? latestBlogs.map((blog, idx) => (
-                <motion.article 
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  key={blog._id} 
-                  className="group bg-white rounded-[2.5rem] p-4 cursor-pointer hover:shadow-2xl transition-all" 
-                  onClick={() => navigate(`/blog/${blog._id}`)}
-                >
-                  <div className="relative aspect-video rounded-[2rem] overflow-hidden mb-6 bg-slate-100">
-                    <img src={blog.coverImg} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={blog.title}/>
-                  </div>
-                  <div className="px-4 pb-4">
-                    <div className="flex items-center gap-3 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">
-                      <span className="text-blue-600">{blog.category}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1"><IoCalendarOutline /> {new Date(blog.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <h4 className="text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-tight line-clamp-2">
-                      {blog.title}
-                    </h4>
-                  </div>
-                </motion.article>
-              )) : (
-                <div className="col-span-full py-12 text-center text-blue-100/50 font-bold uppercase text-xs tracking-widest">
-                  Loading Journal Entries...
+              {/* ── Stats ── */}
+              <section style={{ position:'relative', zIndex:20, marginTop:'-2.5rem', padding:'0 1.5rem 0' }}>
+                <div style={{
+                  display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap:16, padding:'2rem', borderRadius:'2.5rem',
+                  background: theme.cardBg, backdropFilter:'blur(16px)',
+                  border:`1px solid ${theme.cardBorder}`,
+                  boxShadow:`0 25px 50px rgba(0,0,0,0.1)`,
+                  perspective:'1200px',
+                }}>
+                  {stats.map((stat, idx) => <StatCard key={idx} stat={stat} idx={idx} theme={theme} />)}
                 </div>
-              )}
-            </div>
-          </section>
+              </section>
 
-          {/* FOOTER STRIP */}
-          <footer className="py-8 text-center border-t border-slate-100 bg-white">
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">
-              Saint Joseph's Catholic Hospital Portal © 2026
-            </p>
-          </footer>
-        </div>
-      </div>
+              {/* ── Services ── */}
+              <section style={{ padding:'6rem 3rem' }}>
+                <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'4rem', gap:24 }}>
+                  <div style={{ maxWidth:480 }}>
+                    <motion.p
+                      initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }}
+                      style={{
+                        fontSize:11, fontWeight:900, textTransform:'uppercase',
+                        letterSpacing:'0.3em', marginBottom:16,
+                        color: theme.sectionLabel,
+                        textShadow: theme.isLight ? 'none' : `0 0 12px ${theme.glow}`,
+                      }}
+                    >
+                      Core Units
+                    </motion.p>
+                    <motion.h3
+                      initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ delay:0.1 }}
+                      style={{ fontSize:'clamp(2rem,4vw,3rem)', fontWeight:900, lineHeight:1.1, letterSpacing:'-0.03em', color: theme.text, margin:0 }}
+                    >
+                      Specialized Medical<br/>Departments
+                    </motion.h3>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }}
+                    onClick={() => navigate('/services')}
+                    style={{
+                      display:'flex', alignItems:'center', gap:10,
+                      padding:'14px 28px', borderRadius:14,
+                      fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
+                      background: theme.btnPrimary.bg, color: theme.btnPrimary.color,
+                      border:'none', cursor:'pointer',
+                      boxShadow: theme.isLight ? '0 4px 16px rgba(0,0,0,0.15)' : `0 0 20px ${theme.glow}`,
+                      transition:'all 0.3s ease',
+                    }}
+                  >
+                    All Departments <IoArrowForwardOutline />
+                  </motion.button>
+                </div>
+
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:24, perspective:'1000px' }}>
+                  {liveServices.length > 0 ? liveServices.map((service, idx) => (
+                    <ServiceCard key={service._id} service={service} idx={idx} theme={theme} onClick={() => navigate(`/services/${service._id}`)} />
+                  )) : (
+                    <div style={{ gridColumn:'1/-1', padding:'3rem', textAlign:'center', fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color: theme.muted }}>
+                      No Active Departments Currently Listed
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* ── UPDATED: Blog / Journal section — title links to /blog ── */}
+              <section style={{
+                padding:'6rem 3rem', borderRadius:'4rem 4rem 0 0',
+                background: theme.isLight ? 'rgba(241,245,249,0.8)' : 'rgba(0,0,0,0.3)',
+                backdropFilter:'blur(16px)',
+                position:'relative', overflow:'hidden',
+                borderTop:`1px solid ${theme.cardBorder}`,
+              }}>
+                <div style={{
+                  position:'absolute', top:0, right:0, width:400, height:400,
+                  borderRadius:'50%', background: theme.orb1, filter:'blur(60px)', pointerEvents:'none',
+                  marginRight:'-5rem', marginTop:'-5rem',
+                }}/>
+                <div style={{
+                  position:'absolute', bottom:0, left:0, width:300, height:300,
+                  borderRadius:'50%', background: theme.orb2, filter:'blur(60px)', pointerEvents:'none',
+                  marginLeft:'-4rem', marginBottom:'-4rem',
+                }}/>
+
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'3rem', position:'relative', zIndex:1, flexWrap:'wrap', gap:16 }}>
+                  <div>
+                    <p style={{
+                      fontSize:11, fontWeight:900, textTransform:'uppercase',
+                      letterSpacing:'0.3em', marginBottom:12,
+                      color: theme.sectionLabel,
+                      textShadow: theme.isLight ? 'none' : `0 0 12px ${theme.glow}`,
+                    }}>
+                      Medical Journal
+                    </p>
+
+                    {/* ── UPDATED: Clicking the title navigates to /blog ── */}
+                    <motion.h3
+                      onClick={() => navigate('/blog')}
+                      whileHover={{ opacity:0.75 }}
+                      style={{
+                        fontSize:'clamp(1.8rem,3.5vw,2.5rem)', fontWeight:900,
+                        letterSpacing:'-0.03em', fontStyle:'italic',
+                        color: theme.accent, margin:0,
+                        cursor:'pointer',
+                        textShadow: theme.isLight ? 'none' : `0 0 20px ${theme.glow}`,
+                        transition:'color 0.2s ease',
+                        display:'flex', alignItems:'center', gap:10,
+                      }}
+                    >
+                      Our Story
+                      <span style={{ fontSize:'clamp(1rem,2vw,1.4rem)', opacity:0.7 }}>↗</span>
+                    </motion.h3>
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }}
+                    onClick={() => navigate('/blog')}
+                    style={{
+                      padding:'12px 22px', borderRadius:12,
+                      fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em',
+                      background: theme.btnSecondary.bg, color: theme.btnSecondary.color,
+                      border:`1px solid ${theme.btnSecondary.border}`,
+                      cursor:'pointer', backdropFilter:'blur(8px)',
+                      transition:'all 0.3s ease',
+                    }}
+                  >
+                    Read All Posts
+                  </motion.button>
+                </div>
+
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:24, position:'relative', zIndex:1 }}>
+                  {latestBlogs.length > 0 ? latestBlogs.map((blog, idx) => (
+                    <BlogCard key={blog._id} blog={blog} idx={idx} theme={theme} onClick={() => navigate(`/blog/${blog._id}`)} />
+                  )) : (
+                    <div style={{ gridColumn:'1/-1', padding:'3rem', textAlign:'center', fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', opacity:0.4, color: theme.text }}>
+                      Loading Journal Entries...
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* ── Footer ── */}
+              <footer style={{
+                padding:'2rem', textAlign:'center',
+                borderTop:`1px solid ${theme.footerBorder}`,
+                background: theme.isLight ? 'rgba(248,250,252,0.9)' : 'rgba(0,0,0,0.2)',
+              }}>
+                <p style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.4em', color: theme.muted, margin:0 }}>
+                  Saint Joseph's Catholic Hospital Portal © 2026
+                </p>
+              </footer>
+
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
-
-const ContactInfo = ({ icon, label, value }) => (
-  <div className="flex items-center gap-3">
-    <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400">
-      {icon}
-    </div>
-    <div>
-      <p className="text-[9px] uppercase font-black tracking-widest text-slate-500">{label}</p>
-      <p className="text-sm font-bold">{value}</p>
-    </div>
-  </div>
-);
 
 export default Home;
