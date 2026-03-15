@@ -204,5 +204,53 @@ router.patch('/toggle-availability', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+// --- DOCTOR ANALYTICS BY SESSION DATE ---
+// GET /api/doctors/analytics
+router.get('/analytics', verifyToken, isAdmin, async (req, res) => {
+  try {
+    const Appointment = require('../models/Appointment');
 
+    // Sessions grouped by date
+    const sessionsByDate = await Appointment.aggregate([
+      { $match: { status: { $ne: 'Cancelled' } } },
+      {
+        $group: {
+          _id: '$date',
+          totalSessions: { $sum: 1 },
+          paidSessions:  { $sum: { $cond: ['$payment', 1, 0] } },
+          revenue:       { $sum: { $cond: ['$payment', '$fee', 0] } },
+        }
+      },
+      { $sort: { _id: 1 } },
+      { $limit: 30 }
+    ]);
+
+    // Sessions per doctor
+    const sessionsByDoctor = await Appointment.aggregate([
+      { $match: { status: { $ne: 'Cancelled' } } },
+      {
+        $group: {
+          _id:           '$doctorId',
+          totalSessions: { $sum: 1 },
+          paidSessions:  { $sum: { $cond: ['$payment', 1, 0] } },
+          revenue:       { $sum: { $cond: ['$payment', '$fee', 0] } },
+        }
+      },
+      {
+        $lookup: {
+          from:         'doctors',
+          localField:   '_id',
+          foreignField: 'userId',
+          as:           'doctorInfo'
+        }
+      },
+      { $unwind: { path: '$doctorInfo', preserveNullAndEmpty: true } },
+      { $sort: { totalSessions: -1 } }
+    ]);
+
+    res.status(200).json({ success: true, sessionsByDate, sessionsByDoctor });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 module.exports = router;

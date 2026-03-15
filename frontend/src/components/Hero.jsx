@@ -34,9 +34,8 @@ const HERO_THEMES = {
     accent: '#2563eb', accentDark: '#1e3a8a',
     glow: 'rgba(37,99,235,0.25)', splitBg: '#0f172a', accentStrip: '#2563eb',
     leftBg: '#ffffff',
-    // headline: dark on white bg, white on the dark split side
-    headlineColor: '#0f172a',       // "ST. JOSEPH'S CATHOLIC" — sits on light bg
-    headlineColorDark: '#ffffff',   // same line when it overlaps the dark split (desktop)
+    headlineColor: '#0f172a',
+    headlineColorDark: '#ffffff',
     headlineAccent: 'linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%)',
     subText: '#3d5068', quoteColor: '#2563eb',
     inputBg: '#f8fafc', inputBorder: '#e2e8f0',
@@ -55,8 +54,8 @@ const HERO_THEMES = {
     accent: '#d4a017', accentDark: '#3d2800',
     glow: 'rgba(212,160,23,0.4)', splitBg: '#1a0f00', accentStrip: '#d4a017',
     leftBg: '#fef9e7',
-    headlineColor: '#1a0f00',       // dark amber on light cream bg
-    headlineColorDark: '#f5e6c0',   // warm white on dark split
+    headlineColor: '#1a0f00',
+    headlineColorDark: '#f5e6c0',
     headlineAccent: 'linear-gradient(135deg, #d4a017 0%, #f5c842 100%)',
     subText: '#6b4f10', quoteColor: '#b8820f',
     inputBg: '#fffbf0', inputBorder: '#f0d080',
@@ -75,8 +74,8 @@ const HERO_THEMES = {
     accent: '#0ea5e9', accentDark: '#082f49',
     glow: 'rgba(14,165,233,0.4)', splitBg: '#00090f', accentStrip: '#0ea5e9',
     leftBg: '#f0f9ff',
-    headlineColor: '#0c1a2e',       // deep navy on ice-blue bg
-    headlineColorDark: '#e0f2fe',   // pale blue-white on dark split
+    headlineColor: '#0c1a2e',
+    headlineColorDark: '#e0f2fe',
     headlineAccent: 'linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%)',
     subText: '#334e6b', quoteColor: '#0ea5e9',
     inputBg: '#f0f9ff', inputBorder: '#bae6fd',
@@ -89,22 +88,30 @@ const HERO_THEMES = {
 
 /* ── STAR CANVAS ── */
 const StarField = ({ theme }) => {
-  const canvasRef = useRef(null);
-  const animRef   = useRef(null);
-  const starsRef  = useRef([]);
+  const canvasRef  = useRef(null);
+  const animRef    = useRef(null);
+  const starsRef   = useRef([]);
   const planetsRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    const resize = () => {
+      canvas.width  = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
     resize();
     window.addEventListener('resize', resize);
 
     if (starsRef.current.length === 0) {
       for (let i = 0; i < 160; i++) {
-        starsRef.current.push({ x:Math.random(), y:Math.random(), r:Math.random()*1.2+0.2, twinkle:Math.random()*Math.PI*2, twinkleSpeed:Math.random()*0.025+0.008 });
+        starsRef.current.push({
+          x: Math.random(), y: Math.random(),
+          r: Math.random() * 1.2 + 0.2,
+          twinkle: Math.random() * Math.PI * 2,
+          twinkleSpeed: Math.random() * 0.025 + 0.008,
+        });
       }
     }
     if (!planetsRef.current) {
@@ -120,57 +127,103 @@ const StarField = ({ theme }) => {
 
     const draw = () => {
       const w = canvas.width, h = canvas.height;
-      ctx.clearRect(0,0,w,h);
-      const grad = ctx.createRadialGradient(w*.5,h*.4,0,w*.5,h*.4,Math.max(w,h)*.85);
-      grad.addColorStop(0,theme.bg[1]); grad.addColorStop(.5,theme.bg[0]); grad.addColorStop(1,theme.bg[2]);
-      ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
-      const n1 = ctx.createRadialGradient(w*.25,h*.28,0,w*.25,h*.28,w*.36);
-      n1.addColorStop(0,theme.nebula[0]); n1.addColorStop(1,'transparent');
-      ctx.fillStyle=n1; ctx.fillRect(0,0,w,h);
-      const n2 = ctx.createRadialGradient(w*.8,h*.65,0,w*.8,h*.65,w*.3);
-      n2.addColorStop(0,theme.nebula[1]); n2.addColorStop(1,'transparent');
-      ctx.fillStyle=n2; ctx.fillRect(0,0,w,h);
+      ctx.clearRect(0, 0, w, h);
+
+      const grad = ctx.createRadialGradient(w*.5, h*.4, 0, w*.5, h*.4, Math.max(w,h)*.85);
+      grad.addColorStop(0, theme.bg[1]);
+      grad.addColorStop(.5, theme.bg[0]);
+      grad.addColorStop(1, theme.bg[2]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      const n1 = ctx.createRadialGradient(w*.25, h*.28, 0, w*.25, h*.28, w*.36);
+      n1.addColorStop(0, theme.nebula[0]); n1.addColorStop(1, 'transparent');
+      ctx.fillStyle = n1; ctx.fillRect(0, 0, w, h);
+
+      const n2 = ctx.createRadialGradient(w*.8, h*.65, 0, w*.8, h*.65, w*.3);
+      n2.addColorStop(0, theme.nebula[1]); n2.addColorStop(1, 'transparent');
+      ctx.fillStyle = n2; ctx.fillRect(0, 0, w, h);
+
       starsRef.current.forEach(star => {
-        star.twinkle+=star.twinkleSpeed;
-        const alpha = theme.isLight?(0.06+0.1*Math.abs(Math.sin(star.twinkle))):(0.3+0.7*Math.abs(Math.sin(star.twinkle)));
-        ctx.beginPath(); ctx.arc(star.x*w,star.y*h,star.r,0,Math.PI*2);
-        ctx.fillStyle=`rgba(${sr},${sg},${sb},${alpha})`; ctx.fill();
+        star.twinkle += star.twinkleSpeed;
+        const alpha = theme.isLight
+          ? (0.06 + 0.1  * Math.abs(Math.sin(star.twinkle)))
+          : (0.3  + 0.7  * Math.abs(Math.sin(star.twinkle)));
+        ctx.beginPath();
+        ctx.arc(star.x * w, star.y * h, star.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${sr},${sg},${sb},${alpha})`;
+        ctx.fill();
       });
+
       planetsRef.current.forEach(p => {
-        p.angle+=p.speed;
-        const px=(p.orbitX+Math.cos(p.angle)*p.orbitRx)*w;
-        const py=(p.orbitY+Math.sin(p.angle)*p.orbitRy)*h;
-        const color=theme.planets[p.colorIdx%theme.planets.length];
-        const haloAlpha=theme.isLight?'0.06':'0.2';
-        const halo=ctx.createRadialGradient(px,py,0,px,py,p.r*3);
-        halo.addColorStop(0,theme.glow.replace('0.25',haloAlpha).replace('0.4',haloAlpha));
-        halo.addColorStop(1,'transparent');
-        ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(px,py,p.r*3,0,Math.PI*2); ctx.fill();
-        if(p.hasRing){ctx.save();ctx.translate(px,py);ctx.scale(1,0.28);ctx.beginPath();ctx.arc(0,0,p.r*2.3,Math.PI,Math.PI*2);ctx.strokeStyle=theme.rings;ctx.lineWidth=4;ctx.stroke();ctx.restore();}
-        const pg=ctx.createRadialGradient(px-p.r*.3,py-p.r*.3,p.r*.05,px,py,p.r);
-        pg.addColorStop(0,color); pg.addColorStop(1,theme.accentDark);
-        ctx.globalAlpha=theme.isLight?0.3:1;
-        ctx.beginPath(); ctx.arc(px,py,p.r,0,Math.PI*2); ctx.fillStyle=pg; ctx.fill();
-        ctx.globalAlpha=1;
-        if(p.hasRing){ctx.save();ctx.translate(px,py);ctx.scale(1,0.28);ctx.beginPath();ctx.arc(0,0,p.r*2.3,0,Math.PI);ctx.strokeStyle=theme.rings;ctx.lineWidth=4;ctx.stroke();ctx.restore();}
-        ctx.beginPath(); ctx.arc(px-p.r*.28,py-p.r*.28,p.r*.3,0,Math.PI*2);
-        ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fill();
+        p.angle += p.speed;
+        const px = (p.orbitX + Math.cos(p.angle) * p.orbitRx) * w;
+        const py = (p.orbitY + Math.sin(p.angle) * p.orbitRy) * h;
+        const color = theme.planets[p.colorIdx % theme.planets.length];
+        const haloAlpha = theme.isLight ? '0.06' : '0.2';
+        const halo = ctx.createRadialGradient(px, py, 0, px, py, p.r * 3);
+        halo.addColorStop(0, theme.glow.replace('0.25', haloAlpha).replace('0.4', haloAlpha));
+        halo.addColorStop(1, 'transparent');
+        ctx.fillStyle = halo;
+        ctx.beginPath(); ctx.arc(px, py, p.r * 3, 0, Math.PI * 2); ctx.fill();
+
+        if (p.hasRing) {
+          ctx.save(); ctx.translate(px, py); ctx.scale(1, 0.28);
+          ctx.beginPath(); ctx.arc(0, 0, p.r * 2.3, Math.PI, Math.PI * 2);
+          ctx.strokeStyle = theme.rings; ctx.lineWidth = 4; ctx.stroke();
+          ctx.restore();
+        }
+
+        const pg = ctx.createRadialGradient(px - p.r*.3, py - p.r*.3, p.r*.05, px, py, p.r);
+        pg.addColorStop(0, color); pg.addColorStop(1, theme.accentDark);
+        ctx.globalAlpha = theme.isLight ? 0.3 : 1;
+        ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = pg; ctx.fill();
+        ctx.globalAlpha = 1;
+
+        if (p.hasRing) {
+          ctx.save(); ctx.translate(px, py); ctx.scale(1, 0.28);
+          ctx.beginPath(); ctx.arc(0, 0, p.r * 2.3, 0, Math.PI);
+          ctx.strokeStyle = theme.rings; ctx.lineWidth = 4; ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.beginPath();
+        ctx.arc(px - p.r*.28, py - p.r*.28, p.r*.3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fill();
       });
+
       animRef.current = requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(animRef.current); window.removeEventListener('resize',resize); };
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      window.removeEventListener('resize', resize);
+    };
   }, [theme]);
 
-  return <canvas ref={canvasRef} style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:0, display:'block' }}/>;
+  return (
+    <canvas ref={canvasRef}
+      style={{ position:'absolute', inset:0, width:'100%', height:'100%', zIndex:0, display:'block' }}
+    />
+  );
 };
 
 /* ── FLOATING BADGE ── */
 const FloatingBadge = ({ icon, label, value, style, delay, theme }) => (
   <motion.div
-    initial={{ opacity:0, scale:0.8, y:20 }} animate={{ opacity:1, scale:1, y:0 }}
+    initial={{ opacity:0, scale:0.8, y:20 }}
+    animate={{ opacity:1, scale:1, y:0 }}
     transition={{ delay, type:'spring', stiffness:100 }}
-    style={{ ...style, position:'absolute', zIndex:30, display:'flex', alignItems:'center', gap:10, padding:'9px 14px', borderRadius:16, background:theme.badgeBg, backdropFilter:'blur(16px)', border:'1px solid rgba(0,0,0,0.08)', boxShadow:'0 8px 32px rgba(0,0,0,0.18)' }}>
+    style={{
+      ...style, position:'absolute', zIndex:30,
+      display:'flex', alignItems:'center', gap:10,
+      padding:'9px 14px', borderRadius:16,
+      background:theme.badgeBg, backdropFilter:'blur(16px)',
+      border:'1px solid rgba(0,0,0,0.08)',
+      boxShadow:'0 8px 32px rgba(0,0,0,0.18)',
+    }}
+  >
     <div style={{ width:34, height:34, borderRadius:10, background:theme.badgeIcon, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:16, flexShrink:0 }}>{icon}</div>
     <div>
       <p style={{ fontSize:8, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', color:theme.badgeText, opacity:0.55, margin:0 }}>{label}</p>
@@ -179,20 +232,24 @@ const FloatingBadge = ({ icon, label, value, style, delay, theme }) => (
   </motion.div>
 );
 
-/* ── TILT CARD (disabled on touch devices) ── */
+/* ── TILT CARD ── */
 const TiltCard = ({ children }) => {
-  const ref  = useRef(null);
-  const x    = useMotionValue(0), y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y,[-0.5,0.5],[8,-8]),{ stiffness:200, damping:30 });
-  const rotateY = useSpring(useTransform(x,[-0.5,0.5],[-8,8]),{ stiffness:200, damping:30 });
+  const ref = useRef(null);
+  const x   = useMotionValue(0), y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [8, -8]),  { stiffness:200, damping:30 });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-8, 8]), { stiffness:200, damping:30 });
   const handleMouseMove = (e) => {
     const rect = ref.current.getBoundingClientRect();
-    x.set((e.clientX-rect.left)/rect.width-0.5);
-    y.set((e.clientY-rect.top)/rect.height-0.5);
+    x.set((e.clientX - rect.left) / rect.width  - 0.5);
+    y.set((e.clientY - rect.top)  / rect.height - 0.5);
   };
   return (
-    <motion.div ref={ref} onMouseMove={handleMouseMove} onMouseLeave={()=>{x.set(0);y.set(0);}}
-      style={{ rotateX, rotateY, transformStyle:'preserve-3d', perspective:1000, position:'relative', width:'100%', height:'100%' }}>
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+      style={{ rotateX, rotateY, transformStyle:'preserve-3d', perspective:1000, position:'relative', width:'100%', height:'100%' }}
+    >
       {children}
     </motion.div>
   );
@@ -200,13 +257,18 @@ const TiltCard = ({ children }) => {
 
 /* ── PROGRESS RING ── */
 const ProgressRing = ({ radius, stroke, progress, color }) => {
-  const nr = radius-stroke/2;
-  const circ = 2*Math.PI*nr;
-  const offset = circ-(progress/100)*circ;
+  const nr     = radius - stroke / 2;
+  const circ   = 2 * Math.PI * nr;
+  const offset = circ - (progress / 100) * circ;
   return (
     <svg height={radius*2} width={radius*2} style={{ position:'absolute', top:0, left:0, transform:'rotate(-90deg)' }}>
       <circle stroke="rgba(255,255,255,0.15)" fill="transparent" strokeWidth={stroke} r={nr} cx={radius} cy={radius}/>
-      <motion.circle stroke={color} fill="transparent" strokeWidth={stroke} strokeDasharray={`${circ} ${circ}`} strokeLinecap="round" r={nr} cx={radius} cy={radius} animate={{ strokeDashoffset:offset }} transition={{ duration:0.4, ease:'easeOut' }}/>
+      <motion.circle stroke={color} fill="transparent" strokeWidth={stroke}
+        strokeDasharray={`${circ} ${circ}`} strokeLinecap="round"
+        r={nr} cx={radius} cy={radius}
+        animate={{ strokeDashoffset: offset }}
+        transition={{ duration:0.4, ease:'easeOut' }}
+      />
     </svg>
   );
 };
@@ -214,52 +276,83 @@ const ProgressRing = ({ radius, stroke, progress, color }) => {
 /* ── PAGINATION ── */
 const ModernPagination = ({ total, active, onDotClick, onPrev, onNext, theme, images }) => {
   const slideLabels = ['Emergency Care','Maternity Unit','Surgical Suite','Diagnostics Lab','Patient Wards','Outpatient Wing'];
-  const progress = ((active+1)/total)*100;
-  const RING_R = 24;
+  const progress    = ((active + 1) / total) * 100;
+  const RING_R      = 24;
+
   return (
     <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:20, padding:'0 10px 10px', display:'flex', alignItems:'flex-end', justifyContent:'space-between', gap:6, flexWrap:'nowrap' }}>
-      {/* Left: counter */}
+
+      {/* Counter */}
       <div style={{ background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'6px 10px', display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
         <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
-          {Array.from({length:total}).map((_,i)=>(
-            <motion.div key={i} onClick={()=>onDotClick(i)} animate={{ height:active===i?16:3, backgroundColor:active===i?'#fff':'rgba(255,255,255,0.3)', opacity:active===i?1:0.6 }} transition={{ type:'spring', stiffness:300, damping:28 }} style={{ width:3, borderRadius:99, cursor:'pointer', overflow:'hidden', position:'relative' }}>
-              {active===i && <motion.div key={`fill-${active}`} initial={{ height:'0%' }} animate={{ height:'100%' }} transition={{ duration:4.5, ease:'linear' }} style={{ position:'absolute', top:0, left:0, right:0, background:theme.accent, borderRadius:99 }}/>}
+          {Array.from({ length:total }).map((_, i) => (
+            <motion.div key={i} onClick={() => onDotClick(i)}
+              animate={{ height:active===i?16:3, backgroundColor:active===i?'#fff':'rgba(255,255,255,0.3)', opacity:active===i?1:0.6 }}
+              transition={{ type:'spring', stiffness:300, damping:28 }}
+              style={{ width:3, borderRadius:99, cursor:'pointer', overflow:'hidden', position:'relative' }}
+            >
+              {active === i && (
+                <motion.div key={`fill-${active}`}
+                  initial={{ height:'0%' }} animate={{ height:'100%' }}
+                  transition={{ duration:4.5, ease:'linear' }}
+                  style={{ position:'absolute', top:0, left:0, right:0, background:theme.accent, borderRadius:99 }}
+                />
+              )}
             </motion.div>
           ))}
         </div>
         <div>
           <div style={{ display:'flex', alignItems:'baseline', gap:2, marginBottom:1 }}>
             <AnimatePresence mode="wait">
-              <motion.span key={active} initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:8 }} transition={{ duration:0.22 }} style={{ fontSize:16, fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>
-                {String(active+1).padStart(2,'0')}
+              <motion.span key={active}
+                initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:8 }}
+                transition={{ duration:0.22 }}
+                style={{ fontSize:16, fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>
+                {String(active + 1).padStart(2, '0')}
               </motion.span>
             </AnimatePresence>
-            <span style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.4)' }}>/{String(total).padStart(2,'0')}</span>
+            <span style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.4)' }}>
+              /{String(total).padStart(2, '0')}
+            </span>
           </div>
           <AnimatePresence mode="wait">
-            <motion.p key={active} initial={{ opacity:0, x:-6 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:6 }} transition={{ duration:0.2 }} style={{ fontSize:7, fontWeight:800, color:'rgba(255,255,255,0.55)', textTransform:'uppercase', letterSpacing:'0.12em', margin:0, whiteSpace:'nowrap' }}>
-              {slideLabels[active]||'SJCH'}
+            <motion.p key={active}
+              initial={{ opacity:0, x:-6 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:6 }}
+              transition={{ duration:0.2 }}
+              style={{ fontSize:7, fontWeight:800, color:'rgba(255,255,255,0.55)', textTransform:'uppercase', letterSpacing:'0.12em', margin:0, whiteSpace:'nowrap' }}>
+              {slideLabels[active] || 'SJCH'}
             </motion.p>
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Middle: thumbnails */}
+      {/* Thumbnails */}
       <div className="hero-thumbs" style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'5px 6px', flex:1, overflow:'hidden', justifyContent:'center', minWidth:0 }}>
-        {images.map((img,i)=>(
-          <motion.button key={i} onClick={()=>onDotClick(i)} whileTap={{ scale:0.95 }} animate={{ opacity:active===i?1:0.45, scale:active===i?1:0.92 }} transition={{ type:'spring', stiffness:300, damping:25 }} style={{ all:'unset', cursor:'pointer', position:'relative', width:active===i?40:26, height:28, borderRadius:8, overflow:'hidden', flexShrink:0, border:active===i?`2px solid ${theme.accent}`:'2px solid transparent', boxSizing:'border-box', transition:'width 0.35s cubic-bezier(.4,0,.2,1)', boxShadow:active===i?`0 0 10px ${theme.glow}`:'none' }}>
+        {images.map((img, i) => (
+          <motion.button key={i} onClick={() => onDotClick(i)} whileTap={{ scale:0.95 }}
+            animate={{ opacity:active===i?1:0.45, scale:active===i?1:0.92 }}
+            transition={{ type:'spring', stiffness:300, damping:25 }}
+            style={{ all:'unset', cursor:'pointer', position:'relative', width:active===i?40:26, height:28, borderRadius:8, overflow:'hidden', flexShrink:0, border:active===i?`2px solid ${theme.accent}`:'2px solid transparent', boxSizing:'border-box', transition:'width 0.35s cubic-bezier(.4,0,.2,1)', boxShadow:active===i?`0 0 10px ${theme.glow}`:'none' }}>
             <img src={img} alt={`slide ${i+1}`} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', pointerEvents:'none' }}/>
-            {active===i&&<motion.div key={`thumb-p-${active}`} initial={{ scaleX:0 }} animate={{ scaleX:1 }} transition={{ duration:4.5, ease:'linear' }} style={{ position:'absolute', bottom:0, left:0, right:0, height:2, background:theme.accent, transformOrigin:'left', borderRadius:99 }}/>}
+            {active === i && (
+              <motion.div key={`thumb-p-${active}`}
+                initial={{ scaleX:0 }} animate={{ scaleX:1 }}
+                transition={{ duration:4.5, ease:'linear' }}
+                style={{ position:'absolute', bottom:0, left:0, right:0, height:2, background:theme.accent, transformOrigin:'left', borderRadius:99 }}
+              />
+            )}
           </motion.button>
         ))}
       </div>
 
-      {/* Right: prev/next */}
+      {/* Prev / Next */}
       <div style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(0,0,0,0.35)', backdropFilter:'blur(14px)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'6px 8px', flexShrink:0 }}>
-        <motion.button whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }} onClick={onPrev} style={{ width:28, height:28, borderRadius:'50%', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:13 }}>
+        <motion.button whileHover={{ scale:1.1 }} whileTap={{ scale:0.9 }} onClick={onPrev}
+          style={{ width:28, height:28, borderRadius:'50%', background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:13 }}>
           <IoChevronBack/>
         </motion.button>
-        <motion.button whileHover={{ scale:1.06 }} whileTap={{ scale:0.92 }} onClick={onNext} style={{ position:'relative', width:RING_R*2, height:RING_R*2, borderRadius:'50%', background:'rgba(255,255,255,0.08)', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:13 }}>
+        <motion.button whileHover={{ scale:1.06 }} whileTap={{ scale:0.92 }} onClick={onNext}
+          style={{ position:'relative', width:RING_R*2, height:RING_R*2, borderRadius:'50%', background:'rgba(255,255,255,0.08)', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#fff', fontSize:13 }}>
           <ProgressRing radius={RING_R} stroke={2.5} progress={progress} color={theme.accent}/>
           <IoChevronForward style={{ position:'relative', zIndex:1 }}/>
         </motion.button>
@@ -268,20 +361,21 @@ const ModernPagination = ({ total, active, onDotClick, onPrev, onNext, theme, im
   );
 };
 
-/* ── HERO MAIN ── */
+/* ────────────────────────────────────────────
+   HERO MAIN
+──────────────────────────────────────────── */
 const Hero = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [query, setQuery]             = useState('');
   const swiperRef = useRef(null);
   const navigate  = useNavigate();
-  const { user }  = useSelector((state) => state.auth) || {};
   const { themeKey } = useSiteTheme();
   const theme = HERO_THEMES[themeKey] || HERO_THEMES.white;
 
-  const handleSearch   = (e) => { e.preventDefault(); if(query.trim()) navigate('/services',{state:{initialSearch:query}}); };
-  const handlePrev     = () => { if(swiperRef.current) swiperRef.current.slidePrev(); };
-  const handleNext     = () => { if(swiperRef.current) swiperRef.current.slideNext(); };
-  const handleDotClick = (i) => { if(swiperRef.current) swiperRef.current.slideToLoop(i); };
+  const handleSearch   = (e) => { e.preventDefault(); if (query.trim()) navigate('/services', { state:{ initialSearch:query } }); };
+  const handlePrev     = () => { if (swiperRef.current) swiperRef.current.slidePrev(); };
+  const handleNext     = () => { if (swiperRef.current) swiperRef.current.slideNext(); };
+  const handleDotClick = (i) => { if (swiperRef.current) swiperRef.current.slideToLoop(i); };
 
   return (
     <>
@@ -305,24 +399,12 @@ const Hero = () => {
           box-sizing: border-box;
         }
 
-        /* ── Mobile left content area: always readable ──
-           On mobile the layout is single-column. The star canvas sits
-           behind the whole section. We give the left (content) half
-           a semi-opaque background so text always reads clearly,
-           regardless of theme. */
         .hero-left {
           width: 100%;
           position: relative;
           z-index: 3;
         }
 
-        /* Light-theme mobile: white text areas stay white */
-        .hero-section.theme-light .hero-left {
-          /* light bg already set on section */
-        }
-
-        /* Dark-theme mobile: give content a frosted light panel so
-           dark headline text reads against the dark canvas */
         .hero-section.theme-dark .hero-left {
           background: rgba(255,255,255,0.82);
           backdrop-filter: blur(12px);
@@ -332,7 +414,6 @@ const Hero = () => {
           margin: 0 0 8px;
         }
 
-        /* On tablet+ the split handles contrast — remove the panel */
         @media (min-width: 768px) {
           .hero-section.theme-dark .hero-left {
             background: transparent;
@@ -342,58 +423,26 @@ const Hero = () => {
             padding: 0;
             padding-right: 2rem;
           }
-          /* On desktop dark themes, headline sits on light left bg — keep dark color */
         }
 
-        /* Badge hidden on mobile */
         .hero-badge { display: none !important; }
         .hero-right { width: 100%; height: 280px; position: relative; }
 
-        /* Mobile headline sizes */
         .hero-h1-small {
-          font-size: 1.05rem;
-          font-weight: 900;
-          letter-spacing: -0.02em;
-          line-height: 1.1;
-          margin: 0 0 2px;
-          /* color set inline via theme.headlineColor */
+          font-size: 1.05rem; font-weight: 900;
+          letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 2px;
         }
         .hero-h1-big {
-          font-size: 2rem;
-          font-weight: 900;
-          letter-spacing: -0.04em;
-          line-height: 1.0;
-          margin: 0;
+          font-size: 2rem; font-weight: 900;
+          letter-spacing: -0.04em; line-height: 1.0; margin: 0;
         }
 
-        /* ── Headline contrast helpers ──
-           On light themes (white/isLight=true): headlineColor is already dark → fine.
-           On dark themes (gold/blue isLight=false): leftBg is still a light tint,
-           so headlineColor (dark) stays readable.
-           But on very small screens where the top split-bg patch can bleed over
-           the text, add a subtle light text-shadow to lift it off dark patches. */
-        .hero-headline-light-bg .hero-h1-small {
-          text-shadow: none;
-        }
-        .hero-headline-dark-bg .hero-h1-small {
-          /* dark themes: ensure text reads on any bleed from the dark star canvas */
-          text-shadow: 0 1px 12px rgba(0,0,0,0.18);
-        }
+        .hero-headline-light-bg .hero-h1-small { text-shadow: none; }
+        .hero-headline-dark-bg  .hero-h1-small { text-shadow: 0 1px 12px rgba(0,0,0,0.18); }
 
-        .hero-sub-text {
-          font-size: 13px;
-          line-height: 1.65;
-          margin-bottom: 6px;
-        }
+        .hero-sub-text { font-size: 13px; line-height: 1.65; margin-bottom: 6px; }
+        .hero-quote    { font-size: 12px; font-weight: 900; font-style: italic; margin-bottom: 20px; }
 
-        .hero-quote {
-          font-size: 12px;
-          font-weight: 900;
-          font-style: italic;
-          margin-bottom: 20px;
-        }
-
-        /* Search bar */
         .hero-search-input {
           width: 100%; box-sizing: border-box;
           padding-left: 44px; padding-right: 90px;
@@ -402,41 +451,23 @@ const Hero = () => {
           outline: none; transition: all 0.3s ease;
         }
 
-        /* Quick searches */
         .hero-quick-btn {
-          font-size: 10px;
-          font-weight: 700;
-          padding: 5px 11px;
-          border-radius: 999px;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          font-size: 10px; font-weight: 700;
+          padding: 5px 11px; border-radius: 999px;
+          cursor: pointer; transition: all 0.2s ease;
         }
 
-        /* CTA buttons — stack on very small screens */
-        .hero-ctas {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
-        .hero-cta-primary {
-          flex: 1 1 auto;
-          min-width: 140px;
-          justify-content: center;
-        }
-        .hero-cta-secondary {
-          flex: 1 1 auto;
-          min-width: 110px;
-          justify-content: center;
-        }
+        .hero-ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+        .hero-cta-primary   { flex: 1 1 auto; min-width: 140px; justify-content: center; }
+        .hero-cta-secondary { flex: 1 1 auto; min-width: 110px; justify-content: center; }
 
-        /* Thumbnails hidden on very small screens */
         @media (max-width: 400px) {
           .hero-thumbs { display: none !important; }
           .hero-right  { height: 220px; }
           .hero-h1-big { font-size: 1.7rem; }
         }
 
-        /* Diagonal split overlay */
+        /* Split overlay */
         .hero-split { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
         .hero-split-bg {
           position: absolute; top: 0; right: 0;
@@ -451,8 +482,7 @@ const Hero = () => {
 
         /* Stats bar */
         .hero-stats-bar {
-          position: relative;
-          z-index: 10;
+          position: relative; z-index: 10;
           backdrop-filter: blur(16px);
           border-top: 1px solid rgba(255,255,255,0.06);
           transition: background 0.5s ease;
@@ -460,34 +490,26 @@ const Hero = () => {
         .hero-stats-inner {
           max-width: 1440px; margin: 0 auto;
           padding: 14px 20px;
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          align-items: center;
+          display: flex; flex-wrap: wrap;
+          justify-content: center; align-items: center;
           gap: 16px 24px;
         }
-        .hero-stats-item { display: flex; align-items: center; gap: 10px; }
-        .hero-stat-divider { display: none; }
+        .hero-stats-item    { display: flex; align-items: center; gap: 10px; }
+        .hero-stat-divider  { display: none; }
 
-        /* ── TABLET and up: two-column ── */
+        /* ── TABLET and up ── */
         @media (min-width: 768px) {
           .hero-inner {
-            flex-direction: row;
-            align-items: center;
-            padding: 100px 40px 100px;
-            gap: 32px;
+            flex-direction: row; align-items: center;
+            padding: 100px 40px 100px; gap: 32px;
           }
           .hero-left  { width: 50%; padding-right: 2rem; }
           .hero-right { width: 50%; height: 420px; }
-
           .hero-badge { display: flex !important; }
-
           .hero-h1-small { font-size: clamp(1.2rem, 2.5vw, 1.8rem); }
-          .hero-h1-big   { font-size: clamp(2.2rem, 4vw, 3.5rem); }
+          .hero-h1-big   { font-size: clamp(2.2rem, 4vw,  3.5rem); }
           .hero-sub-text { font-size: 14px; }
           .hero-quote    { font-size: 13px; }
-
-          /* Restore desktop split */
           .hero-split-bg {
             width: 55%; height: 100%;
             clip-path: polygon(12% 0, 100% 0, 100% 100%, 0% 100%);
@@ -496,7 +518,6 @@ const Hero = () => {
             width: 55%; height: 100%;
             clip-path: polygon(12% 0, 16% 0, 4% 100%, 0% 100%);
           }
-
           .hero-stats-inner {
             padding: 16px 40px;
             justify-content: space-between;
@@ -506,65 +527,57 @@ const Hero = () => {
         }
 
         @media (min-width: 1024px) {
-          .hero-inner { padding: 110px 64px 110px; gap: 40px; }
-          .hero-right { height: 560px; }
+          .hero-inner    { padding: 110px 64px 110px; gap: 40px; }
+          .hero-right    { height: 560px; }
           .hero-stats-inner { padding: 18px 64px; }
-          .hero-h1-small { font-size: clamp(1.3rem, 2vw, 2rem); }
+          .hero-h1-small { font-size: clamp(1.3rem, 2vw,   2rem); }
           .hero-h1-big   { font-size: clamp(2.8rem, 4.5vw, 4rem); }
         }
       `}</style>
 
-      <section className={`hero-section ${theme.isLight ? 'theme-light' : 'theme-dark'}`} style={{ background:theme.leftBg }}>
+      <section
+        className={`hero-section ${theme.isLight ? 'theme-light' : 'theme-dark'}`}
+        style={{ background: theme.leftBg }}
+      >
         <StarField theme={theme}/>
 
         {/* Split overlay */}
         <div className="hero-split">
-          <div className="hero-split-bg" style={{ background:theme.splitBg, opacity:theme.isLight?1:0.6 }}/>
+          <div className="hero-split-bg"   style={{ background:theme.splitBg, opacity:theme.isLight?1:0.6 }}/>
           <div className="hero-split-strip" style={{ background:theme.accentStrip, opacity:theme.isLight?0.9:0.85 }}/>
           {theme.isLight && (
-            <motion.div animate={{ scale:[1,1.15,1], opacity:[0.12,0.2,0.12] }} transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
-              style={{ position:'absolute', top:'25%', right:'10%', width:'clamp(150px,25vw,400px)', height:'clamp(150px,25vw,400px)', borderRadius:'50%', background:'#3b82f6', filter:'blur(120px)' }}/>
+            <motion.div
+              animate={{ scale:[1,1.15,1], opacity:[0.12,0.2,0.12] }}
+              transition={{ duration:6, repeat:Infinity, ease:'easeInOut' }}
+              style={{ position:'absolute', top:'25%', right:'10%', width:'clamp(150px,25vw,400px)', height:'clamp(150px,25vw,400px)', borderRadius:'50%', background:'#3b82f6', filter:'blur(120px)' }}
+            />
           )}
         </div>
 
+        {/* ── INNER ── */}
         <div className="hero-inner">
+
           {/* ── LEFT: Content ── */}
           <div className="hero-left">
-            {/* Badge */}
+
+            {/* Service badge */}
             <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.1 }}
               style={{ display:'inline-flex', alignItems:'center', gap:7, padding:'5px 13px', marginBottom:16, borderRadius:999, background:`${theme.accent}18`, border:`1px solid ${theme.accent}44` }}>
               <IoShieldCheckmark style={{ color:theme.accent, fontSize:12 }}/>
               <span style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', color:theme.accent }}>Serving Liberia since 1963</span>
             </motion.div>
 
-            {/* Headline
-                Mobile  (single col, light leftBg)  → headlineColor (dark)
-                Desktop (left col, still light bg)  → headlineColor (dark)
-                The right dark split never overlaps the left text column,
-                so headlineColor is always correct for the left side.
-                The .hero-h1-small class gets an extra rule below to force
-                white on very dark non-light themes so it pops on any bg. */}
+            {/* Headline */}
             <motion.div
               className={theme.isLight ? 'hero-headline-light-bg' : 'hero-headline-dark-bg'}
               initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
               style={{ marginBottom:12 }}
             >
-              <h1
-                className="hero-h1-small"
-                style={{ color: theme.headlineColor }}
-              >
+              <h1 className="hero-h1-small" style={{ color:theme.headlineColor }}>
                 ST. JOSEPH'S CATHOLIC
               </h1>
               <h1 className="hero-h1-big" style={{ margin:0 }}>
-                {/* "HOSPITAL" always uses the vivid accent gradient — readable on any bg */}
-                <span style={{
-                  background: theme.headlineAccent,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  /* Fallback for browsers that don't support bg-clip:text */
-                  color: theme.accent,
-                }}>
+                <span style={{ background:theme.headlineAccent, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', color:theme.accent }}>
                   HOSPITAL
                 </span>
               </h1>
@@ -581,17 +594,21 @@ const Hero = () => {
             </motion.p>
 
             {/* Search */}
-            <motion.form initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }} onSubmit={handleSearch}
+            <motion.form initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }}
+              onSubmit={handleSearch}
               style={{ position:'relative', maxWidth:460, marginBottom:10, width:'100%' }}>
               <div style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', color:theme.subText, zIndex:10 }}>
                 <IoSearchOutline size={17}/>
               </div>
-              <input type="text" value={query} onChange={e=>setQuery(e.target.value)}
+              <input
+                type="text" value={query}
+                onChange={e => setQuery(e.target.value)}
                 placeholder="Search services..."
                 className="hero-search-input"
                 style={{ background:theme.inputBg, border:`2px solid ${theme.inputBorder}`, color:theme.headlineColor, caretColor:theme.accent }}
               />
-              <button type="submit" style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, padding:'8px 12px', borderRadius:11, border:'none', cursor:'pointer', fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
+              <button type="submit"
+                style={{ position:'absolute', right:6, top:'50%', transform:'translateY(-50%)', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, padding:'8px 12px', borderRadius:11, border:'none', cursor:'pointer', fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
                 Find <IoArrowForward size={10}/>
               </button>
             </motion.form>
@@ -602,24 +619,27 @@ const Hero = () => {
               <span style={{ fontSize:9, fontWeight:900, color:theme.subText, textTransform:'uppercase', letterSpacing:'0.18em', display:'flex', alignItems:'center', gap:4 }}>
                 <IoFlashOutline style={{ color:'#f97316', fontSize:11 }}/> Popular:
               </span>
-              {quickSearches.map(item=>(
+              {quickSearches.map(item => (
                 <button key={item} className="hero-quick-btn"
-                  onClick={()=>navigate('/services',{state:{initialSearch:item}})}
+                  onClick={() => navigate('/services', { state:{ initialSearch:item } })}
                   style={{ color:theme.subText, background:`${theme.accent}14`, border:`1px solid ${theme.accent}33` }}
-                  onMouseEnter={e=>{e.currentTarget.style.background=theme.accent;e.currentTarget.style.color='#fff';}}
-                  onMouseLeave={e=>{e.currentTarget.style.background=`${theme.accent}14`;e.currentTarget.style.color=theme.subText;}}>
+                  onMouseEnter={e => { e.currentTarget.style.background = theme.accent; e.currentTarget.style.color = '#fff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = `${theme.accent}14`; e.currentTarget.style.color = theme.subText; }}>
                   {item}
                 </button>
               ))}
             </motion.div>
 
-            {/* CTAs */}
+            {/* ── CTAs ── */}
             <motion.div className="hero-ctas" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5 }}>
-              <Link to={user?'/dashboard':'/register'}
+
+              {/* ✅ FIX 1: "Journals" → /blog */}
+              <Link to="/blog"
                 className="hero-cta-primary"
                 style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 20px', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', borderRadius:14, textDecoration:'none', transition:'all 0.3s ease', boxShadow:theme.isLight?'0 4px 16px rgba(0,0,0,0.15)':`0 8px 24px ${theme.accent}33`, whiteSpace:'nowrap' }}>
-                {user?'Patient Portal':'Register Now'} <IoArrowForward size={11}/>
+                Journals <IoArrowForward size={11}/>
               </Link>
+
               <Link to="/services"
                 className="hero-cta-secondary"
                 style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 20px', background:theme.btnSecondary.bg, color:theme.btnSecondary.color, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', borderRadius:14, border:`2px solid ${theme.btnSecondary.border}`, textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
@@ -631,14 +651,22 @@ const Hero = () => {
           {/* ── RIGHT: Carousel ── */}
           <div className="hero-right">
             <TiltCard>
-              <motion.div initial={{ opacity:0, x:40, rotateY:-10 }} animate={{ opacity:1, x:0, rotateY:0 }} transition={{ delay:0.3, duration:0.8, type:'spring', stiffness:60 }}
+              <motion.div
+                initial={{ opacity:0, x:40, rotateY:-10 }}
+                animate={{ opacity:1, x:0,  rotateY:0  }}
+                transition={{ delay:0.3, duration:0.8, type:'spring', stiffness:60 }}
                 style={{ position:'relative', height:'100%', width:'100%', borderRadius:32, overflow:'hidden', boxShadow:'0 30px 80px rgba(0,0,0,0.3)', border:'2.5px solid rgba(255,255,255,0.15)', transformStyle:'preserve-3d' }}>
-                <Swiper modules={[Autoplay,EffectFade]} effect="fade" spaceBetween={0} slidesPerView={1} speed={1200} loop
+
+                <Swiper
+                  modules={[Autoplay, EffectFade]}
+                  effect="fade" spaceBetween={0} slidesPerView={1}
+                  speed={1200} loop
                   autoplay={{ delay:4500, disableOnInteraction:false }}
-                  onSwiper={(swiper)=>{swiperRef.current=swiper;}}
-                  onSlideChange={swiper=>setActiveIndex(swiper.realIndex)}
-                  style={{ height:'100%', width:'100%' }}>
-                  {images.map((img,i)=>(
+                  onSwiper={swiper => { swiperRef.current = swiper; }}
+                  onSlideChange={swiper => setActiveIndex(swiper.realIndex)}
+                  style={{ height:'100%', width:'100%' }}
+                >
+                  {images.map((img, i) => (
                     <SwiperSlide key={i}>
                       <div style={{ position:'relative', height:'100%', width:'100%' }}>
                         <img src={img} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="SJCH"/>
@@ -647,34 +675,50 @@ const Hero = () => {
                     </SwiperSlide>
                   ))}
                 </Swiper>
+
+                {/* SJCH label */}
                 <div style={{ position:'absolute', top:12, right:12, zIndex:20, padding:'4px 11px', borderRadius:999, background:'rgba(255,255,255,0.1)', backdropFilter:'blur(10px)', border:'1px solid rgba(255,255,255,0.2)' }}>
                   <p style={{ color:'#fff', fontSize:7, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', margin:0 }}>SJCH Facilities</p>
                 </div>
-                <ModernPagination total={images.length} active={activeIndex} onDotClick={handleDotClick} onPrev={handlePrev} onNext={handleNext} theme={theme} images={images}/>
+
+                <ModernPagination
+                  total={images.length} active={activeIndex}
+                  onDotClick={handleDotClick} onPrev={handlePrev} onNext={handleNext}
+                  theme={theme} images={images}
+                />
               </motion.div>
 
-              {/* Floating badges — desktop only via CSS */}
-              <FloatingBadge className="hero-badge" icon={<IoHeartOutline size={16}/>}   label="Emergency"   value="Open 24/7"    delay={0.8}  theme={theme} style={{ bottom:'14%', left:'-6%', transform:'translateZ(40px)' }}/>
-              <FloatingBadge className="hero-badge" icon={<IoPulseOutline size={16}/>}   label="Procedures"  value="12,000+"      delay={1.0}  theme={theme} style={{ top:'12%',   left:'-4%', transform:'translateZ(40px)' }}/>
+              {/* Floating badges — desktop only */}
+              <FloatingBadge className="hero-badge" icon={<IoHeartOutline size={16}/>}   label="Emergency"   value="Open 24/7"    delay={0.8}  theme={theme} style={{ bottom:'14%', left:'-6%',  transform:'translateZ(40px)' }}/>
+              <FloatingBadge className="hero-badge" icon={<IoPulseOutline size={16}/>}   label="Procedures"  value="12,000+"      delay={1.0}  theme={theme} style={{ top:'12%',   left:'-4%',  transform:'translateZ(40px)' }}/>
               <FloatingBadge className="hero-badge" icon={<IoMedicalOutline size={16}/>} label="Specialists" value="45+ Doctors"  delay={1.2}  theme={theme} style={{ top:'42%',   right:'-4%', transform:'translateZ(40px)' }}/>
             </TiltCard>
           </div>
         </div>
 
         {/* ── STATS BAR ── */}
-        <motion.div className="hero-stats-bar" initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.9 }}
+        <motion.div className="hero-stats-bar"
+          initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.9 }}
           style={{ background:theme.statsBg }}>
           <div className="hero-stats-inner">
-            {[{ label:'Founded', value:'1963' },{ label:'Hospital Beds', value:'150+' },{ label:'Years of Care', value:'60+' },{ label:'Specialists', value:'45+' }].map((item,i)=>(
+            {[
+              { label:'Founded',      value:'1963' },
+              { label:'Hospital Beds', value:'150+' },
+              { label:'Years of Care', value:'60+'  },
+              { label:'Specialists',   value:'45+'  },
+            ].map((item, i) => (
               <div key={i} className="hero-stats-item">
-                {i>0 && <div className="hero-stat-divider"/>}
+                {i > 0 && <div className="hero-stat-divider"/>}
                 <div style={{ textAlign:'center' }}>
                   <p style={{ fontSize:8, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:theme.statsMuted, margin:0 }}>{item.label}</p>
                   <p style={{ fontSize:18, fontWeight:900, color:theme.statsText, letterSpacing:'-0.03em', margin:0 }}>{item.value}</p>
                 </div>
               </div>
             ))}
-            <Link to="/about" style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 16px', background:theme.accent, color:theme.key==='gold'?'#0a0700':'#fff', borderRadius:11, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
+
+            {/* ✅ FIX 2: "Our Story" → /blog */}
+            <Link to="/blog"
+              style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 16px', background:theme.accent, color:theme.key==='gold'?'#0a0700':'#fff', borderRadius:11, fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.14em', textDecoration:'none', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
               Our Story <IoArrowForward size={10}/>
             </Link>
           </div>

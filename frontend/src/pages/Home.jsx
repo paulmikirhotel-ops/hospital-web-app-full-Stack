@@ -5,6 +5,11 @@ import {
   IoMedkitOutline, IoPeopleOutline, IoTimerOutline,
   IoPulseOutline, IoArrowForwardOutline, IoCalendarOutline,
   IoCallOutline, IoLocationOutline, IoTimeOutline,
+  IoHeartOutline, IoShieldCheckmarkOutline, IoRibbonOutline,
+  IoBookOutline, IoArrowForward, IoStarOutline,
+  IoCheckmarkCircleOutline, IoFlashOutline, IoEarthOutline,
+  IoLeafOutline, IoHandLeftOutline, IoWifiOutline,
+  IoBedOutline, IoFitnessOutline, IoNutritionOutline,
 } from 'react-icons/io5';
 import Hero from '../components/Hero';
 import API from '../api/axiosConfig';
@@ -96,10 +101,11 @@ const SPACE_THEMES = [
   },
 ];
 
+/* ── Star canvas ── */
 const StarField = ({ theme }) => {
-  const canvasRef = useRef(null);
-  const animRef = useRef(null);
-  const starsRef = useRef([]);
+  const canvasRef  = useRef(null);
+  const animRef    = useRef(null);
+  const starsRef   = useRef([]);
   const planetsRef = useRef(null);
 
   useEffect(() => {
@@ -157,35 +163,12 @@ const StarField = ({ theme }) => {
   return <canvas ref={canvasRef} style={{ position:'fixed', top:0, left:0, width:'100%', height:'100%', zIndex:0, display:'block' }}/>;
 };
 
-/* ── Inline theme switcher (NOT fixed-position) ── */
 const ThemeSwitcher = ({ themeIdx, theme, onCycle }) => (
-  <motion.button
-    onClick={onCycle}
-    whileTap={{ scale: 0.95 }}
-    style={{
-      display: 'flex', alignItems: 'center', gap: 8,
-      padding: '7px 14px',
-      background: theme.isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
-      backdropFilter: 'blur(14px)',
-      color: theme.text,
-      border: `1px solid ${theme.isLight ? 'rgba(0,0,0,0.12)' : theme.cardBorder}`,
-      borderRadius: 999,
-      cursor: 'pointer',
-      fontSize: 9, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase',
-      boxShadow: `0 0 16px ${theme.glow}`,
-      transition: 'all 0.3s ease',
-      whiteSpace: 'nowrap',
-    }}
-  >
-    <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-      {SPACE_THEMES.map((t, i) => (
-        <span key={i} style={{
-          width: i === themeIdx ? 10 : 6, height: i === themeIdx ? 10 : 6,
-          borderRadius: '50%', background: t.accent,
-          border: i === themeIdx ? `2px solid ${theme.isLight ? '#0f172a' : theme.text}` : '2px solid transparent',
-          boxShadow: i === themeIdx ? `0 0 6px ${t.accent}` : 'none',
-          transition: 'all 0.3s ease', display: 'inline-block', flexShrink: 0,
-        }} />
+  <motion.button onClick={onCycle} whileTap={{ scale:0.95 }}
+    style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 14px', background:theme.isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.07)', backdropFilter:'blur(14px)', color:theme.text, border:`1px solid ${theme.isLight?'rgba(0,0,0,0.12)':theme.cardBorder}`, borderRadius:999, cursor:'pointer', fontSize:9, fontWeight:900, letterSpacing:'0.14em', textTransform:'uppercase', boxShadow:`0 0 16px ${theme.glow}`, transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
+    <span style={{ display:'flex', gap:4, alignItems:'center' }}>
+      {SPACE_THEMES.map((t,i) => (
+        <span key={i} style={{ width:i===themeIdx?10:6, height:i===themeIdx?10:6, borderRadius:'50%', background:t.accent, border:i===themeIdx?`2px solid ${theme.isLight?'#0f172a':theme.text}`:'2px solid transparent', boxShadow:i===themeIdx?`0 0 6px ${t.accent}`:'none', transition:'all 0.3s ease', display:'inline-block', flexShrink:0 }} />
       ))}
     </span>
     <span className="theme-name-label">{theme.name}</span>
@@ -217,17 +200,12 @@ const ServiceCard = ({ service, idx, theme, onClick }) => {
   const [tilt, setTilt] = useState({ x:0, y:0 });
   const [hovered, setHovered] = useState(false);
   const ref = useRef(null);
-  const handleMouseMove = (e) => {
-    const rect = ref.current.getBoundingClientRect();
-    setTilt({ x:((e.clientX-rect.left)/rect.width-0.5)*15, y:((e.clientY-rect.top)/rect.height-0.5)*-15 });
-  };
   return (
     <motion.div ref={ref} initial={{ opacity:0, scale:0.9, y:20 }} whileInView={{ opacity:1, scale:1, y:0 }} viewport={{ once:true }}
       transition={{ delay:idx*0.1, type:'spring', stiffness:80 }}
-      onMouseMove={handleMouseMove} onMouseEnter={()=>setHovered(true)}
-      onMouseLeave={()=>{setTilt({x:0,y:0});setHovered(false);}}
-      animate={{ rotateX:tilt.y, rotateY:tilt.x, y:hovered?-8:0 }}
-      onClick={onClick}
+      onMouseMove={e=>{const r=ref.current.getBoundingClientRect();setTilt({x:((e.clientX-r.left)/r.width-0.5)*15,y:((e.clientY-r.top)/r.height-0.5)*-15});}}
+      onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>{setTilt({x:0,y:0});setHovered(false);}}
+      animate={{ rotateX:tilt.y, rotateY:tilt.x, y:hovered?-8:0 }} onClick={onClick}
       style={{ transformStyle:'preserve-3d', perspective:800, padding:'1.5rem', borderRadius:'2rem', cursor:'pointer', background:theme.cardBg, backdropFilter:'blur(16px)', border:`1.5px solid ${hovered?theme.accent:theme.cardBorder}`, display:'flex', flexDirection:'column', transition:'border 0.3s ease', boxShadow:hovered?`0 30px 60px ${theme.glow}, 6px 6px 0 ${theme.card3dHover}`:`3px 3px 0 ${theme.card3d}` }}>
       <div style={{ width:48, height:48, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', padding:8, marginBottom:20, background:hovered?theme.accent:theme.innerCard, transition:'background 0.3s ease', transform:'translateZ(20px)', boxShadow:hovered?`0 0 20px ${theme.glow}`:'none' }}>
         <img src={service.image} style={{ width:'100%', height:'100%', objectFit:'contain', filter:hovered?'brightness(0) invert(1)':(theme.isLight?'brightness(0.6) saturate(0)':'brightness(0.8) saturate(0)') }} alt=""/>
@@ -278,12 +256,283 @@ const ContactInfo = ({ icon, label, value, theme }) => (
   </div>
 );
 
+/* ─────────────────────────────────────────────
+   OUR STORY SECTION
+───────────────────────────────────────────── */
+const OurStorySection = ({ theme, navigate }) => {
+  const milestones = [
+    { year:'1956', title:'The Vision',    desc:'President Tubman requested Pope Pius XII to establish a hospital for Liberia\'s sick and needy during a historic visit to Rome.', icon:<IoBookOutline size={20}/>,            color:'#3b82f6' },
+    { year:'1963', title:'Doors Open',    desc:'On August 23rd, SJCH welcomed its first patients — a citadel waging war against death, built on donated land in Monrovia.',        icon:<IoHeartOutline size={20}/>,            color:'#ec4899' },
+    { year:'1990s', title:'Tested by War', desc:'Through Liberia\'s devastating civil war, the hospital stood firm — offering refuge to massacre survivors under Archbishop Francis.', icon:<IoShieldCheckmarkOutline size={20}/>,  color:'#f97316' },
+    { year:'2014', title:'Ebola Heroes',  desc:'Nine brave staffers gave their lives fighting Ebola. Their sacrifice across five nationalities is forever woven into our identity.',    icon:<IoRibbonOutline size={20}/>,           color:'#ef4444' },
+  ];
+
+  return (
+    <section style={{ padding:'clamp(3rem,6vw,6rem) clamp(1rem,4vw,3rem)', position:'relative', overflow:'hidden', borderTop:`1px solid ${theme.cardBorder}` }}>
+      <div style={{ position:'absolute', top:'-10%', right:'-5%', width:'clamp(200px,35vw,500px)', height:'clamp(200px,35vw,500px)', borderRadius:'50%', background:theme.orb1, filter:'blur(80px)', pointerEvents:'none', zIndex:0 }}/>
+      <div style={{ position:'absolute', bottom:'-5%', left:'-5%', width:'clamp(150px,25vw,350px)', height:'clamp(150px,25vw,350px)', borderRadius:'50%', background:theme.orb2, filter:'blur(60px)', pointerEvents:'none', zIndex:0 }}/>
+
+      <div style={{ position:'relative', zIndex:1 }}>
+        <div style={{ display:'flex', flexWrap:'wrap', alignItems:'flex-end', justifyContent:'space-between', gap:20, marginBottom:'clamp(2rem,5vw,4rem)' }}>
+          <div>
+            <motion.p initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }}
+              style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.3em', color:theme.sectionLabel, marginBottom:12 }}>
+              Since 1963
+            </motion.p>
+            <motion.h2 initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ delay:0.1 }}
+              style={{ fontSize:'clamp(1.8rem,4vw,3.2rem)', fontWeight:900, color:theme.text, letterSpacing:'-0.035em', lineHeight:1.1, margin:0 }}>
+              Six Decades of<br/>
+              <span style={{ background:`linear-gradient(135deg,${theme.accent},${theme.card3dHover})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
+                Compassionate Care
+              </span>
+            </motion.h2>
+          </div>
+          {/* ✅ FIX: Our Story button → /blog */}
+          <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }}
+            onClick={() => navigate('/blog')}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 22px', borderRadius:14, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.accent, color:'#fff', border:'none', cursor:'pointer', boxShadow:`0 8px 24px ${theme.glow}`, whiteSpace:'nowrap' }}>
+            Our Story <IoArrowForwardOutline size={13}/>
+          </motion.button>
+        </div>
+
+        <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+          style={{ background:theme.innerCard, backdropFilter:'blur(16px)', border:`1px solid ${theme.cardBorder}`, borderRadius:'clamp(16px,3vw,28px)', padding:'clamp(20px,4vw,36px)', marginBottom:'clamp(2rem,4vw,3rem)', position:'relative', overflow:'hidden' }}>
+          <div style={{ position:'absolute', top:-20, left:'clamp(16px,3vw,32px)', fontSize:'clamp(80px,12vw,140px)', color:theme.accent, opacity:0.08, fontFamily:'Georgia,serif', lineHeight:1, userSelect:'none', fontWeight:900 }}>"</div>
+          <p style={{ fontSize:'clamp(14px,2vw,18px)', color:theme.text, lineHeight:1.8, fontStyle:'italic', fontWeight:500, margin:'0 0 16px', position:'relative', zIndex:1, fontFamily:'Georgia,serif' }}>
+            This hospital should be a citadel waging war against the enemy of our commonality — Death.
+          </p>
+          <p style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:theme.accent, margin:0 }}>— President William V.S. Tubman, 1963</p>
+        </motion.div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:'clamp(12px,2vw,20px)', marginBottom:'clamp(2rem,4vw,3rem)' }}>
+          {milestones.map((m, i) => (
+            <motion.div key={i}
+              initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+              transition={{ delay:i*0.1, type:'spring', stiffness:80 }}
+              whileHover={{ y:-6, boxShadow:`0 20px 40px ${theme.glow}` }}
+              style={{ background:theme.cardBg, backdropFilter:'blur(16px)', border:`1px solid ${theme.cardBorder}`, borderRadius:'clamp(16px,3vw,24px)', padding:'clamp(18px,3vw,28px)', transition:'all 0.3s ease' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
+                <div style={{ width:42, height:42, borderRadius:14, background:`${m.color}20`, display:'flex', alignItems:'center', justifyContent:'center', color:m.color, flexShrink:0 }}>{m.icon}</div>
+                <span style={{ fontSize:'clamp(1.1rem,2.5vw,1.4rem)', fontWeight:900, color:theme.accent }}>{m.year}</span>
+              </div>
+              <h4 style={{ fontSize:'clamp(0.95rem,1.8vw,1.1rem)', fontWeight:900, color:theme.text, margin:'0 0 8px' }}>{m.title}</h4>
+              <p style={{ fontSize:'clamp(11px,1.5vw,13px)', color:theme.muted, lineHeight:1.7, margin:0 }}>{m.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+          style={{ background:`linear-gradient(135deg,${theme.accent}18,${theme.card3d}12)`, border:`1px solid ${theme.accent}30`, borderRadius:'clamp(16px,3vw,28px)', padding:'clamp(20px,4vw,32px)', display:'flex', flexWrap:'wrap', gap:'clamp(16px,3vw,32px)', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ flex:1, minWidth:220 }}>
+            <p style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.25em', color:theme.sectionLabel, margin:'0 0 8px' }}>Our Mission</p>
+            <p style={{ fontSize:'clamp(13px,1.8vw,16px)', color:theme.text, fontWeight:600, lineHeight:1.7, margin:0 }}>
+              Providing holistic, affordable, quality health services to all people in Liberia — guided by faith, compassion and excellence.
+            </p>
+          </div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
+            {['Compassion','Excellence','Faith','Community'].map((v,i) => (
+              <span key={i} style={{ padding:'6px 16px', borderRadius:999, background:theme.innerCard, border:`1px solid ${theme.cardBorder}`, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', color:theme.accent }}>{v}</span>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   ✨ BEAUTIFUL FEATURES SECTION (new)
+───────────────────────────────────────────── */
+const FeaturesSection = ({ theme, navigate }) => {
+  const features = [
+    {
+      icon: <IoBedOutline size={28} />,
+      title: '150+ Hospital Beds',
+      desc: 'Modern inpatient facilities across specialized wards including ICU, maternity, pediatrics, and surgical recovery.',
+      badge: 'Infrastructure',
+      color: '#3b82f6',
+    },
+    {
+      icon: <IoFlashOutline size={28} />,
+      title: '24/7 Emergency Care',
+      desc: 'Round-the-clock emergency response with trained trauma specialists and fully equipped resuscitation units.',
+      badge: 'Emergency',
+      color: '#ef4444',
+    },
+    {
+      icon: <IoFitnessOutline size={28} />,
+      title: 'Advanced Diagnostics',
+      desc: 'State-of-the-art imaging, laboratory, and pathology services enabling fast, accurate clinical decisions.',
+      badge: 'Technology',
+      color: '#8b5cf6',
+    },
+    {
+      icon: <IoHeartOutline size={28} />,
+      title: 'Maternity & Neonatal',
+      desc: 'Dedicated maternity wing with expert midwives, obstetricians, and a neonatal intensive care unit for newborns.',
+      badge: 'Maternity',
+      color: '#ec4899',
+    },
+    {
+      icon: <IoLeafOutline size={28} />,
+      title: 'Holistic Wellness',
+      desc: 'Integrating physical, mental and spiritual wellbeing into every patient journey — body, mind and soul.',
+      badge: 'Wellness',
+      color: '#22c55e',
+    },
+    {
+      icon: <IoEarthOutline size={28} />,
+      title: 'Community Outreach',
+      desc: 'Free mobile clinics, vaccination drives, and health education programs reaching underserved communities across Liberia.',
+      badge: 'Outreach',
+      color: '#f97316',
+    },
+    {
+      icon: <IoHandLeftOutline size={28} />,
+      title: 'Faith-Based Care',
+      desc: 'Rooted in Catholic values, every patient receives compassionate, dignified, non-discriminatory care regardless of background.',
+      badge: 'Values',
+      color: '#d4a017',
+    },
+    {
+      icon: <IoWifiOutline size={28} />,
+      title: 'Telemedicine Ready',
+      desc: 'Virtual consultations and digital health records enabling seamless specialist access from anywhere in Liberia.',
+      badge: 'Digital',
+      color: '#0ea5e9',
+    },
+  ];
+
+  const highlights = [
+    { label: 'Accredited',       value: 'JCI Standards',   icon: <IoCheckmarkCircleOutline size={18}/> },
+    { label: 'Patient Rating',   value: '4.8 / 5.0',       icon: <IoStarOutline size={18}/> },
+    { label: 'Staff Members',    value: '300+ Heroes',      icon: <IoPeopleOutline size={18}/> },
+    { label: 'Nationalities',    value: '5 Nations',        icon: <IoEarthOutline size={18}/> },
+  ];
+
+  return (
+    <section style={{ padding:'clamp(3rem,6vw,6rem) clamp(1rem,4vw,3rem)', position:'relative', overflow:'hidden', borderTop:`1px solid ${theme.cardBorder}` }}>
+
+      {/* Background orbs */}
+      <div style={{ position:'absolute', top:'20%', left:'-8%',  width:'clamp(200px,30vw,450px)', height:'clamp(200px,30vw,450px)', borderRadius:'50%', background:theme.orb1, filter:'blur(90px)', pointerEvents:'none', zIndex:0 }}/>
+      <div style={{ position:'absolute', bottom:'10%', right:'-5%', width:'clamp(180px,25vw,380px)', height:'clamp(180px,25vw,380px)', borderRadius:'50%', background:theme.orb2, filter:'blur(70px)', pointerEvents:'none', zIndex:0 }}/>
+
+      <div style={{ position:'relative', zIndex:1 }}>
+
+        {/* Section header */}
+        <div style={{ textAlign:'center', marginBottom:'clamp(2.5rem,5vw,4rem)' }}>
+          <motion.div initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+            style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'6px 18px', borderRadius:999, background:`${theme.accent}18`, border:`1px solid ${theme.accent}44`, marginBottom:16 }}>
+            <IoStarOutline style={{ color:theme.accent, fontSize:13 }}/>
+            <span style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.25em', color:theme.accent }}>Why Choose SJCH</span>
+          </motion.div>
+          <motion.h2 initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.1 }}
+            style={{ fontSize:'clamp(1.8rem,4vw,3.2rem)', fontWeight:900, color:theme.text, letterSpacing:'-0.035em', lineHeight:1.1, margin:'0 0 16px' }}>
+            World-Class Care,<br/>
+            <span style={{ background:`linear-gradient(135deg,${theme.accent},${theme.card3dHover})`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
+              Right Here in Liberia
+            </span>
+          </motion.h2>
+          <motion.p initial={{ opacity:0 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }} transition={{ delay:0.2 }}
+            style={{ fontSize:'clamp(13px,1.8vw,16px)', color:theme.muted, maxWidth:560, margin:'0 auto', lineHeight:1.8, fontWeight:500 }}>
+            For over 60 years, Saint Joseph's Catholic Hospital has been Liberia's most trusted name in healthcare — combining clinical excellence with heartfelt compassion.
+          </motion.p>
+        </div>
+
+        {/* Highlights strip */}
+        <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+          style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:'clamp(10px,2vw,16px)', marginBottom:'clamp(2rem,4vw,3.5rem)' }}>
+          {highlights.map((h, i) => (
+            <motion.div key={i}
+              initial={{ opacity:0, scale:0.9 }} whileInView={{ opacity:1, scale:1 }} viewport={{ once:true }}
+              transition={{ delay:i*0.08, type:'spring' }}
+              whileHover={{ y:-4, boxShadow:`0 16px 32px ${theme.glow}` }}
+              style={{ background:theme.innerCard, backdropFilter:'blur(16px)', border:`1px solid ${theme.cardBorder}`, borderRadius:'clamp(14px,2vw,20px)', padding:'clamp(16px,3vw,24px)', textAlign:'center', transition:'all 0.3s ease' }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:`${theme.accent}22`, display:'flex', alignItems:'center', justifyContent:'center', color:theme.accent, margin:'0 auto 12px' }}>
+                {h.icon}
+              </div>
+              <p style={{ fontSize:'clamp(1rem,2vw,1.3rem)', fontWeight:900, color:theme.text, margin:'0 0 4px', letterSpacing:'-0.02em' }}>{h.value}</p>
+              <p style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', color:theme.muted, margin:0 }}>{h.label}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Feature cards grid */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:'clamp(12px,2vw,20px)', marginBottom:'clamp(2rem,4vw,3rem)' }}>
+          {features.map((f, i) => (
+            <motion.div key={i}
+              initial={{ opacity:0, y:28 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+              transition={{ delay:i*0.07, type:'spring', stiffness:80 }}
+              whileHover={{ y:-8, boxShadow:`0 24px 48px ${theme.glow}` }}
+              style={{ background:theme.cardBg, backdropFilter:'blur(16px)', border:`1px solid ${theme.cardBorder}`, borderRadius:'clamp(16px,3vw,24px)', padding:'clamp(20px,3vw,28px)', transition:'all 0.3s ease', cursor:'default', position:'relative', overflow:'hidden' }}>
+
+              {/* Subtle background accent glow */}
+              <div style={{ position:'absolute', top:-20, right:-20, width:80, height:80, borderRadius:'50%', background:`${f.color}18`, filter:'blur(20px)', pointerEvents:'none' }}/>
+
+              {/* Badge */}
+              <div style={{ display:'inline-flex', alignItems:'center', padding:'3px 10px', borderRadius:999, background:`${f.color}18`, border:`1px solid ${f.color}40`, marginBottom:16 }}>
+                <span style={{ fontSize:8, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', color:f.color }}>{f.badge}</span>
+              </div>
+
+              {/* Icon */}
+              <div style={{ width:52, height:52, borderRadius:16, background:`${f.color}18`, display:'flex', alignItems:'center', justifyContent:'center', color:f.color, marginBottom:16, boxShadow:`0 8px 20px ${f.color}22` }}>
+                {f.icon}
+              </div>
+
+              <h4 style={{ fontSize:'clamp(0.95rem,1.8vw,1.05rem)', fontWeight:900, color:theme.text, margin:'0 0 10px', letterSpacing:'-0.01em' }}>{f.title}</h4>
+              <p style={{ fontSize:'clamp(11px,1.4vw,13px)', color:theme.muted, lineHeight:1.75, margin:0 }}>{f.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* CTA banner */}
+        <motion.div initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}
+          style={{ background:`linear-gradient(135deg,${theme.accent}22,${theme.card3d}14)`, border:`1.5px solid ${theme.accent}35`, borderRadius:'clamp(20px,3vw,32px)', padding:'clamp(24px,4vw,48px)', display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:'clamp(20px,3vw,32px)', position:'relative', overflow:'hidden' }}>
+
+          {/* Decorative blobs */}
+          <div style={{ position:'absolute', top:'-30%', right:'-5%', width:220, height:220, borderRadius:'50%', background:`${theme.accent}14`, filter:'blur(50px)', pointerEvents:'none' }}/>
+          <div style={{ position:'absolute', bottom:'-40%', left:'5%', width:160, height:160, borderRadius:'50%', background:`${theme.card3d}18`, filter:'blur(40px)', pointerEvents:'none' }}/>
+
+          <div style={{ position:'relative', zIndex:1, flex:1, minWidth:240 }}>
+            <p style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.3em', color:theme.sectionLabel, margin:'0 0 10px' }}>
+              Ready to Experience the Difference?
+            </p>
+            <h3 style={{ fontSize:'clamp(1.4rem,3vw,2.2rem)', fontWeight:900, color:theme.text, letterSpacing:'-0.03em', lineHeight:1.15, margin:'0 0 12px' }}>
+              Book Your Appointment Today
+            </h3>
+            <p style={{ fontSize:'clamp(12px,1.6vw,15px)', color:theme.muted, lineHeight:1.7, margin:0, maxWidth:440 }}>
+              Join thousands of patients who trust Saint Joseph's Catholic Hospital for their healthcare journey.
+            </p>
+          </div>
+
+          <div style={{ position:'relative', zIndex:1, display:'flex', flexWrap:'wrap', gap:12 }}>
+            <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }}
+              onClick={() => navigate('/appointment')}
+              style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 28px', borderRadius:16, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.accent, color:'#fff', border:'none', cursor:'pointer', boxShadow:`0 10px 28px ${theme.glow}`, whiteSpace:'nowrap' }}>
+              <IoCalendarOutline size={16}/> Book Appointment
+            </motion.button>
+            <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }}
+              onClick={() => navigate('/blog')}
+              style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 28px', borderRadius:16, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.btnSecondary.bg, color:theme.btnSecondary.color, border:`1.5px solid ${theme.btnSecondary.border}`, cursor:'pointer', backdropFilter:'blur(8px)', whiteSpace:'nowrap' }}>
+              <IoBookOutline size={16}/> Read Our Journal
+            </motion.button>
+          </div>
+        </motion.div>
+
+      </div>
+    </section>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   MAIN HOME
+───────────────────────────────────────────── */
 const Home = () => {
   const navigate = useNavigate();
-  const [themeIdx, setThemeIdx] = useState(0);
-  const [latestBlogs, setLatestBlogs] = useState([]);
+  const [themeIdx, setThemeIdx]         = useState(0);
+  const [latestBlogs, setLatestBlogs]   = useState([]);
   const [liveServices, setLiveServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]           = useState(true);
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0,400], [0,-60]);
   const theme = SPACE_THEMES[themeIdx];
@@ -322,18 +571,17 @@ const Home = () => {
   return (
     <div style={{ minHeight:'100vh', position:'relative' }}>
       <style>{`
-        .theme-name-label { display: inline; }
-        .home-section-pad { padding: clamp(3rem,6vw,6rem) clamp(1rem,4vw,3rem); }
-        .home-services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 20px; }
-        .home-blog-grid    { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 20px; }
-        .home-stats-grid   { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px; }
+        .theme-name-label  { display: inline; }
+        .home-section-pad  { padding: clamp(3rem,6vw,6rem) clamp(1rem,4vw,3rem); }
+        .home-services-grid{ display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 20px; }
+        .home-blog-grid    { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 20px; }
+        .home-stats-grid   { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 14px; }
         .home-contact-bar  { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; }
         .home-section-hdr  { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; gap: 20px; }
         .home-top-bar      { display: flex; justify-content: flex-end; padding: clamp(0.75rem,2vw,1rem) clamp(1rem,4vw,1.5rem); }
-
         @media (max-width: 600px) {
-          .theme-name-label { display: none !important; }
-          .home-contact-bar { justify-content: flex-start; gap: 16px; }
+          .theme-name-label   { display: none !important; }
+          .home-contact-bar   { justify-content: flex-start; gap: 16px; }
           .home-contact-divider { display: none !important; }
         }
       `}</style>
@@ -346,17 +594,17 @@ const Home = () => {
           <div style={{ maxWidth:1440, margin:'0 auto', padding:'0 clamp(8px,2vw,24px)' }}>
             <div style={{ borderRadius:'clamp(1rem,3vw,3rem)', overflow:'hidden', border:`1px solid ${theme.cardBorder}`, background:theme.cardBg, backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', boxShadow:theme.glowBox }}>
 
-              {/* ── Top bar with theme switcher ── */}
+              {/* Top bar */}
               <div className="home-top-bar" style={{ borderBottom:`1px solid ${theme.cardBorder}`, background:theme.contactBg }}>
                 <ThemeSwitcher themeIdx={themeIdx} theme={theme} onCycle={cycleTheme} />
               </div>
 
-              {/* ── Hero ── */}
+              {/* Hero */}
               <motion.div style={{ y:heroY }}>
                 <Hero />
               </motion.div>
 
-              {/* ── Contact bar ── */}
+              {/* Contact bar */}
               <motion.section initial={{ opacity:0, y:40 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4, type:'spring', stiffness:80, damping:18 }}
                 style={{ padding:'clamp(1rem,3vw,1.5rem) clamp(1rem,4vw,3rem)', borderBottom:`1px solid ${theme.cardBorder}`, background:theme.contactBg, backdropFilter:'blur(10px)' }}>
                 <div className="home-contact-bar">
@@ -368,19 +616,19 @@ const Home = () => {
                 </div>
               </motion.section>
 
-              {/* ── Stats ── */}
+              {/* Stats */}
               <section style={{ padding:'0 clamp(0.75rem,3vw,1.5rem)', marginTop:'-2rem' }}>
                 <div className="home-stats-grid" style={{ padding:'1.5rem', borderRadius:'2rem', background:theme.cardBg, backdropFilter:'blur(16px)', border:`1px solid ${theme.cardBorder}`, boxShadow:'0 25px 50px rgba(0,0,0,0.1)', perspective:'1200px' }}>
                   {stats.map((stat,idx) => <StatCard key={idx} stat={stat} idx={idx} theme={theme}/>)}
                 </div>
               </section>
 
-              {/* ── Services ── */}
+              {/* Services */}
               <section className="home-section-pad">
                 <div className="home-section-hdr">
                   <div style={{ maxWidth:480 }}>
                     <motion.p initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }}
-                      style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:12, color:theme.sectionLabel, textShadow:theme.isLight?'none':`0 0 12px ${theme.glow}` }}>
+                      style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:12, color:theme.sectionLabel }}>
                       Core Units
                     </motion.p>
                     <motion.h3 initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }} viewport={{ once:true }} transition={{ delay:0.1 }}
@@ -389,7 +637,7 @@ const Home = () => {
                     </motion.h3>
                   </div>
                   <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }} onClick={()=>navigate('/services')}
-                    style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 22px', borderRadius:14, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, border:'none', cursor:'pointer', boxShadow:theme.isLight?'0 4px 16px rgba(0,0,0,0.15)':`0 0 20px ${theme.glow}`, transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
+                    style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 22px', borderRadius:14, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.btnPrimary.bg, color:theme.btnPrimary.color, border:'none', cursor:'pointer', whiteSpace:'nowrap' }}>
                     All Departments <IoArrowForwardOutline/>
                   </motion.button>
                 </div>
@@ -402,23 +650,35 @@ const Home = () => {
                 </div>
               </section>
 
-              {/* ── Blog ── */}
+              {/* Our Story */}
+              <OurStorySection theme={theme} navigate={navigate} />
+
+              {/* ✨ NEW: Features Section — before footer */}
+              <FeaturesSection theme={theme} navigate={navigate} />
+
+              {/* Journal / Blog */}
               <section style={{ padding:'clamp(3rem,6vw,6rem) clamp(1rem,4vw,3rem)', borderRadius:'3rem 3rem 0 0', background:theme.isLight?'rgba(241,245,249,0.8)':'rgba(0,0,0,0.3)', backdropFilter:'blur(16px)', position:'relative', overflow:'hidden', borderTop:`1px solid ${theme.cardBorder}` }}>
                 <div style={{ position:'absolute', top:0, right:0, width:'clamp(150px,30vw,400px)', height:'clamp(150px,30vw,400px)', borderRadius:'50%', background:theme.orb1, filter:'blur(60px)', pointerEvents:'none', marginRight:'-3rem', marginTop:'-3rem' }}/>
                 <div style={{ position:'absolute', bottom:0, left:0, width:'clamp(120px,25vw,300px)', height:'clamp(120px,25vw,300px)', borderRadius:'50%', background:theme.orb2, filter:'blur(60px)', pointerEvents:'none', marginLeft:'-3rem', marginBottom:'-3rem' }}/>
+
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'2.5rem', position:'relative', zIndex:1, flexWrap:'wrap', gap:14 }}>
                   <div>
                     <p style={{ fontSize:11, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.3em', marginBottom:10, color:theme.sectionLabel }}>Medical Journal</p>
-                    <motion.h3 onClick={()=>navigate('/blog')} whileHover={{ opacity:0.75 }}
+                    {/* ✅ FIX: "Our Story" heading in journal section → /blog */}
+                    <motion.h3
+                      onClick={() => navigate('/blog')}
+                      whileHover={{ opacity:0.75 }}
                       style={{ fontSize:'clamp(1.4rem,3.5vw,2.5rem)', fontWeight:900, letterSpacing:'-0.03em', fontStyle:'italic', color:theme.accent, margin:0, cursor:'pointer', display:'flex', alignItems:'center', gap:8 }}>
                       Our Story <span style={{ fontSize:'clamp(0.9rem,2vw,1.4rem)', opacity:0.7 }}>↗</span>
                     </motion.h3>
                   </div>
-                  <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }} onClick={()=>navigate('/blog')}
-                    style={{ padding:'10px 18px', borderRadius:12, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.btnSecondary.bg, color:theme.btnSecondary.color, border:`1px solid ${theme.btnSecondary.border}`, cursor:'pointer', backdropFilter:'blur(8px)', transition:'all 0.3s ease', whiteSpace:'nowrap' }}>
+                  <motion.button whileHover={{ scale:1.05 }} whileTap={{ scale:0.97 }}
+                    onClick={() => navigate('/blog')}
+                    style={{ padding:'10px 18px', borderRadius:12, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', background:theme.btnSecondary.bg, color:theme.btnSecondary.color, border:`1px solid ${theme.btnSecondary.border}`, cursor:'pointer', backdropFilter:'blur(8px)', whiteSpace:'nowrap' }}>
                     Read All Posts
                   </motion.button>
                 </div>
+
                 <div className="home-blog-grid" style={{ position:'relative', zIndex:1 }}>
                   {latestBlogs.length > 0 ? latestBlogs.map((blog,idx) => (
                     <BlogCard key={blog._id} blog={blog} idx={idx} theme={theme} onClick={()=>navigate(`/blog/${blog._id}`)}/>
@@ -428,7 +688,7 @@ const Home = () => {
                 </div>
               </section>
 
-              {/* ── Footer ── */}
+              {/* Footer */}
               <footer style={{ padding:'1.5rem', textAlign:'center', borderTop:`1px solid ${theme.footerBorder}`, background:theme.isLight?'rgba(248,250,252,0.9)':'rgba(0,0,0,0.2)' }}>
                 <p style={{ fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.4em', color:theme.muted, margin:0 }}>Saint Joseph's Catholic Hospital Portal © 2026</p>
               </footer>

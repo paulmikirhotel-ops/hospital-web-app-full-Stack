@@ -21,26 +21,40 @@ function AppContent() {
     initializeAuth();
   }, [dispatch]);
 
+  // ── App loading screen ──────────────────────────────────────────────────────
   if (!appReady) {
     return (
-      <div
-        style={{ background: siteTheme.siteBg, transition: 'background 0.5s ease' }}
-        className="h-screen w-full flex flex-col items-center justify-center"
-      >
-        <div className="relative flex items-center justify-center">
-          <div
-            className="w-16 h-16 rounded-full animate-spin"
-            style={{
-              border: `4px solid ${siteTheme.siteBorder}`,
-              borderTopColor: siteTheme.siteAccent,
-            }}
-          />
-          <div className="absolute animate-pulse text-xl" style={{ color: siteTheme.siteAccent }}>✚</div>
+      <div style={{
+        height: '100vh', width: '100%',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: siteTheme?.siteBg || '#fff',
+        transition: 'background 0.5s ease',
+      }}>
+        <style>{`
+          @keyframes spin  { to { transform: rotate(360deg); } }
+          @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        `}</style>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            border: `4px solid ${siteTheme?.siteBorder || '#e2e8f0'}`,
+            borderTopColor: siteTheme?.siteAccent || '#2563eb',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <div style={{
+            position: 'absolute', fontSize: 20,
+            color: siteTheme?.siteAccent || '#2563eb',
+            animation: 'pulse 1.4s ease-in-out infinite',
+          }}>
+            ✚
+          </div>
         </div>
-        <p
-          className="mt-4 text-[10px] font-black uppercase tracking-[0.3em]"
-          style={{ color: siteTheme.siteMuted }}
-        >
+        <p style={{
+          marginTop: 16, fontSize: 10, fontWeight: 900,
+          textTransform: 'uppercase', letterSpacing: '0.3em',
+          color: siteTheme?.siteMuted || '#94a3b8',
+        }}>
           Syncing Health Portal...
         </p>
       </div>
@@ -48,34 +62,50 @@ function AppContent() {
   }
 
   return (
-    <div
-      style={{
-        background: siteTheme.siteBg,
-        color: siteTheme.siteText,
-        transition: 'background 0.5s ease, color 0.5s ease',
-      }}
-      className="flex flex-col min-h-screen selection:bg-blue-100 selection:text-blue-600"
-    >
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      background: siteTheme?.siteBg || '#fff',
+      color: siteTheme?.siteText || '#0f172a',
+      transition: 'background 0.5s ease, color 0.5s ease',
+    }}>
       <Toaster
         position="top-center"
         reverseOrder={false}
         toastOptions={{
           style: {
             borderRadius: '1rem',
-            background: siteTheme.siteCard,
-            color: siteTheme.siteText,
-            border: `1px solid ${siteTheme.siteBorder}`,
+            background: siteTheme?.siteCard || '#fff',
+            color: siteTheme?.siteText || '#0f172a',
+            border: `1px solid ${siteTheme?.siteBorder || '#e2e8f0'}`,
             fontWeight: '600',
           },
         }}
       />
+
       <Navbar />
-      <main
-        className="flex-grow max-w-screen-2xl mx-auto w-full pt-24 px-4 sm:px-6 lg:px-8"
-        style={{ color: siteTheme.siteText }}
-      >
+
+      {/*
+        ── IMPORTANT: main is intentionally a neutral passthrough ──
+
+        Do NOT add padding, max-width, or margin here.
+        Reasons:
+          1. Full-bleed pages (Home, History, Programs, Hero etc.) manage
+             their own layout. A wrapper with pt-24 or max-w pushes them
+             down and causes the browser to jump to the bottom on render.
+          2. Constrained pages (Profile, EditProfile, MyAppointments etc.)
+             already include their own top padding to clear the fixed 68px
+             navbar (using paddingTop: 'clamp(80px,12vw,112px)' or similar).
+          3. flex-grow: 1 keeps the footer pinned to the bottom on short pages.
+
+        If you need padding on a specific page, add it inside that page's
+        own root element — not here.
+      */}
+      <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <AppRouter />
       </main>
+
       <Footer />
     </div>
   );
