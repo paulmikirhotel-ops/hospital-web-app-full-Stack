@@ -33,7 +33,10 @@ const HERO_THEMES = {
     rings: 'rgba(147,197,253,0.4)',
     accent: '#2563eb', accentDark: '#1e3a8a',
     glow: 'rgba(37,99,235,0.25)', splitBg: '#0f172a', accentStrip: '#2563eb',
-    leftBg: '#ffffff', headlineColor: '#0f172a',
+    leftBg: '#ffffff',
+    // headline: dark on white bg, white on the dark split side
+    headlineColor: '#0f172a',       // "ST. JOSEPH'S CATHOLIC" — sits on light bg
+    headlineColorDark: '#ffffff',   // same line when it overlaps the dark split (desktop)
     headlineAccent: 'linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%)',
     subText: '#3d5068', quoteColor: '#2563eb',
     inputBg: '#f8fafc', inputBorder: '#e2e8f0',
@@ -51,7 +54,9 @@ const HERO_THEMES = {
     rings: 'rgba(245,200,66,0.3)',
     accent: '#d4a017', accentDark: '#3d2800',
     glow: 'rgba(212,160,23,0.4)', splitBg: '#1a0f00', accentStrip: '#d4a017',
-    leftBg: '#fef9e7', headlineColor: '#1a0f00',
+    leftBg: '#fef9e7',
+    headlineColor: '#1a0f00',       // dark amber on light cream bg
+    headlineColorDark: '#f5e6c0',   // warm white on dark split
     headlineAccent: 'linear-gradient(135deg, #d4a017 0%, #f5c842 100%)',
     subText: '#6b4f10', quoteColor: '#b8820f',
     inputBg: '#fffbf0', inputBorder: '#f0d080',
@@ -69,7 +74,9 @@ const HERO_THEMES = {
     rings: 'rgba(186,230,253,0.3)',
     accent: '#0ea5e9', accentDark: '#082f49',
     glow: 'rgba(14,165,233,0.4)', splitBg: '#00090f', accentStrip: '#0ea5e9',
-    leftBg: '#f0f9ff', headlineColor: '#0c1a2e',
+    leftBg: '#f0f9ff',
+    headlineColor: '#0c1a2e',       // deep navy on ice-blue bg
+    headlineColorDark: '#e0f2fe',   // pale blue-white on dark split
     headlineAccent: 'linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%)',
     subText: '#334e6b', quoteColor: '#0ea5e9',
     inputBg: '#f0f9ff', inputBorder: '#bae6fd',
@@ -298,11 +305,49 @@ const Hero = () => {
           box-sizing: border-box;
         }
 
-        .hero-left  { width: 100%; }
-        .hero-right { width: 100%; height: 280px; position: relative; }
+        /* ── Mobile left content area: always readable ──
+           On mobile the layout is single-column. The star canvas sits
+           behind the whole section. We give the left (content) half
+           a semi-opaque background so text always reads clearly,
+           regardless of theme. */
+        .hero-left {
+          width: 100%;
+          position: relative;
+          z-index: 3;
+        }
+
+        /* Light-theme mobile: white text areas stay white */
+        .hero-section.theme-light .hero-left {
+          /* light bg already set on section */
+        }
+
+        /* Dark-theme mobile: give content a frosted light panel so
+           dark headline text reads against the dark canvas */
+        .hero-section.theme-dark .hero-left {
+          background: rgba(255,255,255,0.82);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-radius: 20px;
+          padding: 20px 16px;
+          margin: 0 0 8px;
+        }
+
+        /* On tablet+ the split handles contrast — remove the panel */
+        @media (min-width: 768px) {
+          .hero-section.theme-dark .hero-left {
+            background: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border-radius: 0;
+            padding: 0;
+            padding-right: 2rem;
+          }
+          /* On desktop dark themes, headline sits on light left bg — keep dark color */
+        }
 
         /* Badge hidden on mobile */
         .hero-badge { display: none !important; }
+        .hero-right { width: 100%; height: 280px; position: relative; }
 
         /* Mobile headline sizes */
         .hero-h1-small {
@@ -311,6 +356,7 @@ const Hero = () => {
           letter-spacing: -0.02em;
           line-height: 1.1;
           margin: 0 0 2px;
+          /* color set inline via theme.headlineColor */
         }
         .hero-h1-big {
           font-size: 2rem;
@@ -318,6 +364,20 @@ const Hero = () => {
           letter-spacing: -0.04em;
           line-height: 1.0;
           margin: 0;
+        }
+
+        /* ── Headline contrast helpers ──
+           On light themes (white/isLight=true): headlineColor is already dark → fine.
+           On dark themes (gold/blue isLight=false): leftBg is still a light tint,
+           so headlineColor (dark) stays readable.
+           But on very small screens where the top split-bg patch can bleed over
+           the text, add a subtle light text-shadow to lift it off dark patches. */
+        .hero-headline-light-bg .hero-h1-small {
+          text-shadow: none;
+        }
+        .hero-headline-dark-bg .hero-h1-small {
+          /* dark themes: ensure text reads on any bleed from the dark star canvas */
+          text-shadow: 0 1px 12px rgba(0,0,0,0.18);
         }
 
         .hero-sub-text {
@@ -454,7 +514,7 @@ const Hero = () => {
         }
       `}</style>
 
-      <section className="hero-section" style={{ background:theme.leftBg }}>
+      <section className={`hero-section ${theme.isLight ? 'theme-light' : 'theme-dark'}`} style={{ background:theme.leftBg }}>
         <StarField theme={theme}/>
 
         {/* Split overlay */}
@@ -477,13 +537,34 @@ const Hero = () => {
               <span style={{ fontSize:9, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.18em', color:theme.accent }}>Serving Liberia since 1963</span>
             </motion.div>
 
-            {/* Headline */}
-            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }} style={{ marginBottom:12 }}>
-              <h1 className="hero-h1-small" style={{ color:theme.headlineColor }}>
+            {/* Headline
+                Mobile  (single col, light leftBg)  → headlineColor (dark)
+                Desktop (left col, still light bg)  → headlineColor (dark)
+                The right dark split never overlaps the left text column,
+                so headlineColor is always correct for the left side.
+                The .hero-h1-small class gets an extra rule below to force
+                white on very dark non-light themes so it pops on any bg. */}
+            <motion.div
+              className={theme.isLight ? 'hero-headline-light-bg' : 'hero-headline-dark-bg'}
+              initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
+              style={{ marginBottom:12 }}
+            >
+              <h1
+                className="hero-h1-small"
+                style={{ color: theme.headlineColor }}
+              >
                 ST. JOSEPH'S CATHOLIC
               </h1>
               <h1 className="hero-h1-big" style={{ margin:0 }}>
-                <span style={{ background:theme.headlineAccent, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>
+                {/* "HOSPITAL" always uses the vivid accent gradient — readable on any bg */}
+                <span style={{
+                  background: theme.headlineAccent,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  /* Fallback for browsers that don't support bg-clip:text */
+                  color: theme.accent,
+                }}>
                   HOSPITAL
                 </span>
               </h1>
