@@ -1,225 +1,742 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  IoMedkitOutline, IoShieldCheckmarkOutline, IoGlobeOutline, 
-  IoRibbonOutline, IoFitnessOutline,
-  IoReaderOutline, IoOpenOutline
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion';
+import {
+  IoMedkitOutline, IoShieldCheckmarkOutline, IoGlobeOutline,
+  IoRibbonOutline, IoFitnessOutline, IoReaderOutline, IoOpenOutline,
+  IoChevronDownOutline, IoArrowUpOutline
 } from 'react-icons/io5';
 
-const History = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+/* ─── DATA ─────────────────────────────────────────────────── */
+const timelineData = [
+  {
+    year: '1956',
+    title: 'The Visionary Request',
+    content:
+      'During a state visit to Rome, President William V.S. Tubman requested Pope Pius XII for the Catholic Church to establish a hospital and medical teaching school in Liberia for the benefit of the sick and needy.',
+    icon: <IoGlobeOutline />,
+    accent: '#c9a84c',
+  },
+  {
+    year: '1963',
+    title: 'The Citadel Opens',
+    content:
+      "Opened on August 23rd, 1963. President Tubman dedicated it as a 'Citadel waging war against the enemy of our commonality—Death.' Built on land donated by Mrs. M. Eva McGill Hilton.",
+    icon: <IoMedkitOutline />,
+    accent: '#4c9bc9',
+  },
+  {
+    year: '1990s',
+    title: 'The Civil War Test',
+    content:
+      'At the peak of the war, the hospital relocated to Gbarnga for safety. It famously served as a place of refuge for victims of the Lutheran Church Massacre under the support of Archbishop Michael K. Francis.',
+    icon: <IoShieldCheckmarkOutline />,
+    accent: '#c94c4c',
+  },
+  {
+    year: '2014',
+    title: 'The Ebola Sacrifice',
+    content:
+      'Nine staffers lost their lives serving humanity during the outbreak. These brothers and sisters from Liberia, Ghana, Cameroon, Equatorial Guinea, and Spain are remembered as heroes.',
+    icon: <IoRibbonOutline />,
+    accent: '#c97c4c',
+  },
+  {
+    year: '2019',
+    title: 'Defeating COVID-19',
+    content:
+      'Unlike 2014, a prepared staff stood firm. Through a robust triaging system and partners like CRS, the hospital defeated the virus with no lives lost.',
+    icon: <IoFitnessOutline />,
+    accent: '#4cc97c',
+  },
+];
 
-  const timelineData = [
-    { year:'1956', title:'The Visionary Request',  content:'During a state visit to Rome, President William V.S. Tubman requested Pope Pius XII for the Catholic Church to establish a hospital and medical teaching school in Liberia for the benefit of the sick and needy.', icon:<IoGlobeOutline/> },
-    { year:'1963', title:'The Citadel Opening',    content:"Opened on August 23rd, 1963. President Tubman dedicated it as a 'Citadel waging war against the enemy of our commonality—Death.' Built on land donated by Mrs. M. Eva McGill Hilton.", icon:<IoMedkitOutline/> },
-    { year:'1990s',title:'The Civil War Test',     content:'At the peak of the war, the hospital relocated to Gbarnga for safety. It famously served as a place of refuge for victims of the Lutheran Church Massacre under the support of Archbishop Michael K. Francis.', icon:<IoShieldCheckmarkOutline/> },
-    { year:'2014', title:'The Ebola Sacrifice',    content:'Nine staffers lost their lives serving humanity during the outbreak. These brothers and sisters from Liberia, Ghana, Cameroon, Equatorial Guinea, and Spain are remembered as heroes.', icon:<IoRibbonOutline/> },
-    { year:'2019', title:'Defeating COVID-19',     content:'Unlike 2014, a prepared staff stood firm. Through a robust triaging system and partners like CRS, the hospital defeated the virus with no lives lost.', icon:<IoFitnessOutline/> },
-  ];
+/* ─── TIMELINE ITEM ─────────────────────────────────────────── */
+const TimelineItem = ({ item, index }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const isEven = index % 2 === 0;
 
   return (
-    <div style={{ background:'#fff', minHeight:'100vh', paddingBottom:80, overflow:'hidden' }}>
+    <div
+      ref={ref}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 64px 1fr',
+        gap: 0,
+        marginBottom: 0,
+        position: 'relative',
+      }}
+    >
+      {/* Left content */}
+      <motion.div
+        initial={{ opacity: 0, x: -48 }}
+        animate={inView ? { opacity: 1, x: 0 } : {}}
+        transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          padding: 'clamp(24px,4vw,48px)',
+          textAlign: 'right',
+          display: isEven ? 'flex' : 'none',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+        }}
+      >
+        {isEven && <TimelineContent item={item} align="right" />}
+      </motion.div>
+
+      {/* Center spine */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+        <div style={{ width: 1, flex: 1, background: 'linear-gradient(to bottom, transparent, rgba(201,168,76,0.3), rgba(201,168,76,0.3))' }} />
+        <motion.div
+          initial={{ scale: 0, rotate: -45 }}
+          animate={inView ? { scale: 1, rotate: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.3, type: 'spring', stiffness: 200 }}
+          style={{
+            width: 48, height: 48, borderRadius: 14,
+            background: '#0d1b2e',
+            border: `2px solid ${item.accent}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, color: item.accent,
+            boxShadow: `0 0 24px ${item.accent}40`,
+            flexShrink: 0, zIndex: 2,
+          }}
+        >
+          {item.icon}
+        </motion.div>
+        <div style={{ width: 1, flex: 1, background: 'linear-gradient(to bottom, rgba(201,168,76,0.3), transparent)' }} />
+      </div>
+
+      {/* Right content */}
+      <motion.div
+        initial={{ opacity: 0, x: 48 }}
+        animate={inView ? { opacity: 1, x: 0 } : {}}
+        transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          padding: 'clamp(24px,4vw,48px)',
+          textAlign: 'left',
+          display: !isEven ? 'flex' : 'none',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+        }}
+      >
+        {!isEven && <TimelineContent item={item} align="left" />}
+      </motion.div>
+
+      {/* mobile full-width */}
       <style>{`
-        /* ── Hero ── */
-        .hist-hero {
-          position:relative; height:clamp(320px,70vw,90vh);
-          display:flex; align-items:center; justify-content:center; overflow:hidden;
-        }
-        .hist-hero-title {
-          font-size:clamp(2.5rem,10vw,10rem);
-          font-weight:900; color:#fff;
-          letter-spacing:-0.05em; line-height:0.85;
-          margin:0 0 clamp(16px,3vw,32px);
-        }
-        .hist-hero-sub {
-          font-size:clamp(9px,1.5vw,11px);
-          font-weight:900; text-transform:uppercase;
-          letter-spacing:0.5em; color:rgba(255,255,255,0.8);
-        }
-
-        /* ── Card ── */
-        .hist-card {
-          max-width:900px; margin:0 auto;
-          background:#fff;
-          border-radius:clamp(20px,4vw,48px);
-          box-shadow:0 32px 80px rgba(15,23,42,0.1);
-          border:1px solid #f1f5f9;
-          padding:clamp(24px,5vw,64px);
-        }
-        .hist-card-header {
-          display:flex; flex-wrap:wrap;
-          justify-content:space-between; align-items:flex-start;
-          gap:16px; margin-bottom:clamp(24px,4vw,40px);
-        }
-        .hist-card-title { font-size:clamp(1.5rem,4vw,2.5rem); font-weight:900; color:#0f172a; margin:0 0 8px; }
-
-        /* ── Timeline ── */
-        .hist-timeline-item {
-          display:flex; flex-direction:column;
-          align-items:center; gap:clamp(20px,4vw,48px);
-          margin-bottom:clamp(48px,8vw,128px);
-        }
-        .hist-timeline-text { text-align:center; }
-        .hist-timeline-year {
-          display:inline-block; padding:6px 18px; border-radius:999px;
-          background:#eff6ff; color:#2563eb; font-weight:900;
-          font-size:clamp(11px,1.5vw,14px); margin-bottom:clamp(12px,2vw,24px);
-        }
-        .hist-timeline-h3 {
-          font-size:clamp(1.3rem,3vw,2rem);
-          font-weight:900; color:#0f172a;
-          margin:0 0 clamp(8px,1.5vw,16px); letter-spacing:-0.025em;
-        }
-        .hist-timeline-p {
-          color:#64748b; font-weight:500; line-height:1.7;
-          font-size:clamp(13px,1.5vw,16px); margin:0;
-        }
-        .hist-timeline-icon {
-          flex-shrink:0; width:clamp(60px,10vw,96px); height:clamp(60px,10vw,96px);
-          border-radius:clamp(16px,3vw,40px); background:#fff;
-          border:4px solid #f8fafc;
-          display:flex; align-items:center; justify-content:center;
-          font-size:clamp(1.5rem,3vw,2.5rem); color:#2563eb;
-          box-shadow:0 8px 32px rgba(0,0,0,0.1);
-        }
-
-        /* ── CTA ── */
-        .hist-cta {
-          border-radius:clamp(24px,5vw,64px);
-          padding:clamp(40px,6vw,96px) clamp(24px,5vw,96px);
-          text-align:center;
-        }
-        .hist-cta-title {
-          font-size:clamp(1.5rem,4vw,3.5rem);
-          font-weight:900; margin-bottom:clamp(20px,3vw,32px); line-height:1.15;
-        }
-
-        /* ── Desktop: alternate timeline ── */
-        @media (min-width:768px) {
-          .hist-timeline-item { flex-direction:row; align-items:center; }
-          .hist-timeline-item.reverse { flex-direction:row-reverse; }
-          .hist-timeline-text { text-align:left; flex:1; }
-          .hist-timeline-spacer { flex:1; }
-          .hist-timeline-line {
-            position:absolute; left:50%; top:0; bottom:0;
-            width:1px; background:#f1f5f9;
-          }
+        @media (max-width: 640px) {
+          .tl-left, .tl-right { display: none !important; }
+          .tl-mobile { display: flex !important; }
         }
       `}</style>
+    </div>
+  );
+};
 
-      {/* Hero */}
-      <section className="hist-hero">
-        <motion.div initial={{ scale:1.1 }} animate={{ scale:1 }} transition={{ duration:10, repeat:Infinity, repeatType:'reverse' }}
-          style={{ position:'absolute', inset:0, zIndex:0 }}>
-          <img src="https://images.ctfassets.net/jwk3944w4k64/3GLL9aLkmNoL49nOF2H1M4/d5f5abb6ec19845a5e125719d85fdfd7/About_Us.jpg"
-            alt="SJCH Building" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-          <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(15,23,42,0.8), rgba(15,23,42,0.4), #fff)' }}/>
-        </motion.div>
+const TimelineContent = ({ item, align }) => (
+  <div style={{ maxWidth: 380 }}>
+    <span style={{
+      display: 'inline-block',
+      fontFamily: '"DM Serif Display", Georgia, serif',
+      fontSize: 'clamp(2rem,4vw,3rem)',
+      fontWeight: 400,
+      color: item.accent,
+      lineHeight: 1,
+      marginBottom: 8,
+      letterSpacing: '-0.02em',
+    }}>
+      {item.year}
+    </span>
+    <h3 style={{
+      fontFamily: '"DM Serif Display", Georgia, serif',
+      fontSize: 'clamp(1.1rem,2vw,1.5rem)',
+      color: '#f0e9d6',
+      fontWeight: 400,
+      margin: '0 0 12px',
+      letterSpacing: '-0.02em',
+    }}>
+      {item.title}
+    </h3>
+    <p style={{
+      fontFamily: '"Lora", Georgia, serif',
+      fontSize: 'clamp(13px,1.3vw,15px)',
+      color: '#8a9bb0',
+      lineHeight: 1.8,
+      margin: 0,
+    }}>
+      {item.content}
+    </p>
+  </div>
+);
 
-        <div style={{ position:'relative', zIndex:10, textAlign:'center', padding:'0 clamp(16px,5vw,40px)' }}>
-          <motion.h1 className="hist-hero-title" initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }}>
-            HISTORY OF <br/><span style={{ color:'#60a5fa' }}>EXCELLENCE</span>
-          </motion.h1>
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.5 }}
-            style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
-            <p className="hist-hero-sub">Monrovia, Liberia • Est. 1963</p>
-            <div style={{ height:60, width:1, background:'linear-gradient(to bottom, #3b82f6, transparent)' }}/>
+/* ─── STAT CARD ─────────────────────────────────────────────── */
+const StatCard = ({ number, label, delay }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        padding: 'clamp(24px,3vw,40px)',
+        borderTop: '1px solid rgba(201,168,76,0.4)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      <div style={{
+        fontFamily: '"DM Serif Display", Georgia, serif',
+        fontSize: 'clamp(2.5rem,6vw,5rem)',
+        color: '#c9a84c',
+        lineHeight: 1,
+        marginBottom: 8,
+        letterSpacing: '-0.03em',
+      }}>
+        {number}
+      </div>
+      <div style={{
+        fontFamily: '"Lora", Georgia, serif',
+        fontSize: 'clamp(11px,1.2vw,13px)',
+        color: '#8a9bb0',
+        textTransform: 'uppercase',
+        letterSpacing: '0.2em',
+      }}>
+        {label}
+      </div>
+    </motion.div>
+  );
+};
+
+/* ─── MAIN COMPONENT ────────────────────────────────────────── */
+const History = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <>
+      {/* Google Fonts */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .hist-root {
+          background: #060f1a;
+          min-height: 100vh;
+          font-family: "Lora", Georgia, serif;
+          color: #f0e9d6;
+          overflow-x: hidden;
+        }
+
+        /* Grain overlay */
+        .hist-root::before {
+          content: '';
+          position: fixed; inset: 0; z-index: 0;
+          pointer-events: none;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+          background-size: 200px 200px;
+          opacity: 0.35;
+          mix-blend-mode: overlay;
+        }
+
+        /* Scroll indicator */
+        .scroll-line {
+          position: fixed; top: 0; left: 0; height: 2px; z-index: 100;
+          background: linear-gradient(to right, #c9a84c, #e8c96b);
+          transform-origin: left;
+        }
+
+        /* Back to top */
+        .back-top {
+          position: fixed; bottom: 32px; right: 32px; z-index: 50;
+          width: 48px; height: 48px; border-radius: 50%;
+          background: #c9a84c; color: #060f1a;
+          border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+          box-shadow: 0 8px 32px rgba(201,168,76,0.4);
+          transition: transform 0.2s, opacity 0.3s;
+        }
+        .back-top:hover { transform: translateY(-4px) scale(1.08); }
+
+        /* Mobile timeline */
+        @media (max-width: 640px) {
+          .tl-desktop { display: none !important; }
+          .tl-mobile-list { display: flex !important; }
+        }
+        @media (min-width: 641px) {
+          .tl-mobile-list { display: none !important; }
+        }
+
+        /* Expand button */
+        .expand-btn {
+          display: inline-flex; align-items: center; gap: 10px;
+          padding: 14px 28px;
+          background: transparent;
+          border: 1px solid rgba(201,168,76,0.5);
+          color: #c9a84c;
+          border-radius: 4px;
+          font-family: "Lora", serif;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          cursor: pointer;
+          transition: background 0.25s, color 0.25s, border-color 0.25s;
+        }
+        .expand-btn:hover {
+          background: #c9a84c;
+          color: #060f1a;
+          border-color: #c9a84c;
+        }
+
+        /* Source link */
+        .source-link {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 16px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #8a9bb0;
+          border-radius: 4px;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.2em;
+          text-decoration: none;
+          transition: border-color 0.2s, color 0.2s;
+          white-space: nowrap;
+        }
+        .source-link:hover { border-color: rgba(201,168,76,0.6); color: #c9a84c; }
+
+        /* Divider line */
+        .gold-rule { height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent); margin: 0; border: none; }
+      `}</style>
+
+      <div className="hist-root">
+        {/* Scroll progress bar */}
+        <motion.div
+          className="scroll-line"
+          style={{ scaleX: scrollYProgress }}
+        />
+
+        {/* Back to top */}
+        <AnimatePresence>
+          {scrollY > 400 && (
+            <motion.button
+              className="back-top"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <IoArrowUpOutline />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* ══════════════════ HERO ══════════════════ */}
+        <section
+          ref={heroRef}
+          style={{ position: 'relative', height: 'clamp(520px,100vh,100vh)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          {/* Parallax image */}
+          <motion.div style={{ position: 'absolute', inset: '-10%', y: heroY }}>
+            <img
+              src="https://images.ctfassets.net/jwk3944w4k64/3GLL9aLkmNoL49nOF2H1M4/d5f5abb6ec19845a5e125719d85fdfd7/About_Us.jpg"
+              alt="St. Joseph's Catholic Hospital"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.35) saturate(0.6)' }}
+            />
           </motion.div>
-        </div>
-      </section>
 
-      {/* Story card */}
-      <section style={{ padding:'0 clamp(12px,4vw,24px)', marginTop:'-clamp(60px,8vw,128px)', position:'relative', zIndex:20 }}>
-        <div className="hist-card">
-          <div className="hist-card-header">
-            <div>
-              <h2 className="hist-card-title">Brief History & Background</h2>
-              <div style={{ height:6, width:64, background:'#2563eb', borderRadius:999 }}/>
+          {/* Gradient vignette */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1,
+            background: 'radial-gradient(ellipse at center, transparent 20%, rgba(6,15,26,0.7) 80%), linear-gradient(to bottom, rgba(6,15,26,0.2) 0%, rgba(6,15,26,0.0) 50%, rgba(6,15,26,1) 100%)',
+          }} />
+
+          {/* Hero copy */}
+          <motion.div
+            style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '0 clamp(20px,6vw,48px)', opacity: heroOpacity }}
+          >
+            {/* Eyebrow */}
+            <motion.p
+              initial={{ opacity: 0, letterSpacing: '0.8em' }}
+              animate={{ opacity: 1, letterSpacing: '0.4em' }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+              style={{
+                fontFamily: '"Lora", serif',
+                fontSize: 'clamp(9px,1.2vw,11px)',
+                color: '#c9a84c',
+                textTransform: 'uppercase',
+                letterSpacing: '0.4em',
+                marginBottom: 'clamp(16px,3vw,28px)',
+              }}
+            >
+              Monrovia, Liberia &nbsp;·&nbsp; Est. 1963
+            </motion.p>
+
+            {/* Main title */}
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 'clamp(3.5rem,12vw,11rem)',
+                fontWeight: 400,
+                color: '#f0e9d6',
+                lineHeight: 0.88,
+                letterSpacing: '-0.04em',
+                marginBottom: 'clamp(12px,2vw,20px)',
+              }}
+            >
+              A History<br />
+              <span style={{ color: '#c9a84c', fontStyle: 'italic' }}>of Grace</span>
+            </motion.h1>
+
+            {/* Sub-title */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              style={{
+                fontFamily: '"Lora", serif',
+                fontSize: 'clamp(13px,1.8vw,18px)',
+                color: 'rgba(240,233,214,0.6)',
+                maxWidth: 520,
+                margin: '0 auto clamp(32px,5vw,56px)',
+                lineHeight: 1.7,
+                fontStyle: 'italic',
+              }}
+            >
+              Six decades of compassionate care, sacrifice, and resilience in the heart of West Africa.
+            </motion.p>
+
+            {/* Scroll cue */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
+            >
+              <span style={{ fontFamily: '"Lora", serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.3em', color: 'rgba(201,168,76,0.7)' }}>Scroll</span>
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+                style={{ color: '#c9a84c', fontSize: 20 }}
+              >
+                <IoChevronDownOutline />
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </section>
+
+        {/* ══════════════════ STATS BAR ══════════════════ */}
+        <section style={{ position: 'relative', zIndex: 10, background: '#0a1525', borderTop: '1px solid rgba(201,168,76,0.2)', borderBottom: '1px solid rgba(201,168,76,0.2)' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+            <StatCard number="60+" label="Years of Service" delay={0} />
+            <StatCard number="1963" label="Year Founded" delay={0.1} />
+            <StatCard number="9" label="Heroes of 2014" delay={0.2} />
+            <StatCard number="0" label="Covid Lives Lost" delay={0.3} />
+          </div>
+        </section>
+
+        {/* ══════════════════ STORY CARD ══════════════════ */}
+        <section style={{ padding: 'clamp(64px,10vw,128px) clamp(16px,5vw,40px)', position: 'relative', zIndex: 5 }}>
+          <div style={{ maxWidth: 900, margin: '0 auto' }}>
+
+            {/* Section label */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 40 }}
+            >
+              <div style={{ width: 40, height: 1, background: '#c9a84c' }} />
+              <span style={{ fontFamily: '"Lora", serif', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#c9a84c' }}>
+                Brief History
+              </span>
+            </motion.div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap', marginBottom: 40 }}>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                style={{
+                  fontFamily: '"DM Serif Display", Georgia, serif',
+                  fontSize: 'clamp(2rem,5vw,3.5rem)',
+                  fontWeight: 400,
+                  color: '#f0e9d6',
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.03em',
+                  maxWidth: 560,
+                }}
+              >
+                Waging War Against<br />
+                <span style={{ color: '#c9a84c', fontStyle: 'italic' }}>the Enemy of Life</span>
+              </motion.h2>
+
+              <motion.a
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="source-link"
+                href="https://www.sjchmonrovialiberia.com/about"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Verified Source <IoOpenOutline size={12} />
+              </motion.a>
             </div>
-            <a href="https://www.sjchmonrovialiberia.com/about" target="_blank" rel="noopener noreferrer"
-              style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 16px', background:'#f8fafc', color:'#64748b', borderRadius:999, fontSize:10, fontWeight:900, textTransform:'uppercase', letterSpacing:'0.15em', border:'1px solid #f1f5f9', textDecoration:'none', transition:'all 0.2s', whiteSpace:'nowrap' }}
-              onMouseEnter={e=>{e.currentTarget.style.background='#eff6ff';e.currentTarget.style.color='#2563eb';}}
-              onMouseLeave={e=>{e.currentTarget.style.background='#f8fafc';e.currentTarget.style.color='#64748b';}}>
-              Verified Source <IoOpenOutline size={13}/>
-            </a>
+
+            <hr className="gold-rule" style={{ marginBottom: 40 }} />
+
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              style={{
+                fontFamily: '"Lora", serif',
+                fontSize: 'clamp(15px,2vw,20px)',
+                color: '#b0bec8',
+                lineHeight: 1.85,
+                marginBottom: 32,
+                fontStyle: 'italic',
+              }}
+            >
+              The St. Joseph's Catholic Hospital has provided high-quality and compassionate healthcare
+              services to the people of Liberia for 60 years, having opened its doors to the public on the
+              23rd of August, 1963…
+            </motion.p>
+
+            {/* Expandable body */}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingTop: 8 }}>
+                    <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(13px,1.5vw,16px)', color: '#8a9bb0', lineHeight: 1.85 }}>
+                      In 1956, during a state visit to Rome, the late President William V.S. Tubman made a request that the Holy Father Pope Pius XII grant permission for the Catholic Church to establish a hospital and medical teaching school in the country.
+                    </p>
+
+                    {/* Pull quote */}
+                    <blockquote style={{
+                      margin: '8px 0',
+                      paddingLeft: 28,
+                      borderLeft: '3px solid #c9a84c',
+                    }}>
+                      <p style={{
+                        fontFamily: '"DM Serif Display", serif',
+                        fontSize: 'clamp(1.1rem,2.5vw,1.6rem)',
+                        fontStyle: 'italic',
+                        color: '#c9a84c',
+                        lineHeight: 1.5,
+                        margin: 0,
+                      }}>
+                        "This hospital should be a citadel waging war against the enemy of our commonality — Death."
+                      </p>
+                      <cite style={{ display: 'block', marginTop: 12, fontFamily: '"Lora", serif', fontSize: 12, color: '#8a9bb0', letterSpacing: '0.1em', textTransform: 'uppercase', fontStyle: 'normal' }}>
+                        — President William V.S. Tubman
+                      </cite>
+                    </blockquote>
+
+                    <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(13px,1.5vw,16px)', color: '#8a9bb0', lineHeight: 1.85 }}>
+                      The Liberian Civil War was a test to those words. At the peak of the war, the hospital relocated all patients and some staffers to Phebe Hospital in Gbarnga, Bong County, for safety. In the midst of the fierce battle, Archbishop Michael K. Francis supported the hospital to care for all victims of the Lutheran Church Massacre.
+                    </p>
+
+                    {/* Crisis cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, margin: '8px 0' }}>
+                      <div style={{
+                        padding: 'clamp(20px,3vw,32px)',
+                        background: 'rgba(201, 76, 76, 0.06)',
+                        borderRadius: 8,
+                        border: '1px solid rgba(201,76,76,0.2)',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: '#c94c4c' }} />
+                        <h4 style={{ fontFamily: '"Lora", serif', color: '#c94c4c', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 10 }}>
+                          2014 Ebola Outbreak
+                        </h4>
+                        <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(12px,1.4vw,14px)', color: '#8a9bb0', lineHeight: 1.75 }}>
+                          Nine able staffers gave their lives. Seven others were contaminated but gracefully recovered. Their sacrifice is forever remembered.
+                        </p>
+                      </div>
+                      <div style={{
+                        padding: 'clamp(20px,3vw,32px)',
+                        background: 'rgba(76,201,124, 0.06)',
+                        borderRadius: 8,
+                        border: '1px solid rgba(76,201,124,0.2)',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: '#4cc97c' }} />
+                        <h4 style={{ fontFamily: '"Lora", serif', color: '#4cc97c', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 10 }}>
+                          2019 Covid-19
+                        </h4>
+                        <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(12px,1.4vw,14px)', color: '#8a9bb0', lineHeight: 1.75 }}>
+                          A prepared staff stood firm. Through a robust triaging system and CRS partnership, the virus was defeated — no lives lost.
+                        </p>
+                      </div>
+                    </div>
+
+                    <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(13px,1.5vw,16px)', color: '#8a9bb0', lineHeight: 1.85 }}>
+                      Over the years, the hospital has encountered many challenges that could have crippled her operations — but through the hardworking effort of staffers, donors, the Government, and the Catholic Church of Liberia, it has always remained open in serving humanity.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div style={{ marginTop: 40, display: 'flex', alignItems: 'center', gap: 16 }}>
+              <button className="expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
+                <IoReaderOutline size={16} />
+                {isExpanded ? 'Show Less' : 'Read Full Background'}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════ TIMELINE ══════════════════ */}
+        <section style={{ padding: 'clamp(64px,10vw,120px) clamp(16px,5vw,40px)', position: 'relative', zIndex: 5, background: 'rgba(10,21,37,0.6)' }}>
+          {/* Background text */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%,-50%)',
+            fontFamily: '"DM Serif Display", serif',
+            fontSize: 'clamp(80px,20vw,240px)',
+            fontWeight: 400, color: 'rgba(201,168,76,0.03)',
+            whiteSpace: 'nowrap', userSelect: 'none', pointerEvents: 'none',
+            letterSpacing: '-0.05em',
+          }}>
+            LEGACY
           </div>
 
-          <p style={{ fontSize:'clamp(14px,2vw,20px)', color:'#475569', lineHeight:1.75, fontWeight:500, marginBottom:24 }}>
-            The St. Joseph's Catholic Hospital has provided high-quality and compassionate healthcare services to the people of Liberia for 60 years now as it opened its doors to the public on the 23rd August, 1963...
-          </p>
-
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }}
-                style={{ overflow:'hidden', display:'flex', flexDirection:'column', gap:20, color:'#475569', lineHeight:1.8 }}>
-                <p style={{ fontSize:'clamp(13px,1.5vw,16px)', margin:0 }}>
-                  In 1956, during a state visit to Rome, the late President William V.S. Tubman, made a request that the Holy Father Pope Pius XII, grant permission for the Catholic Church to establish a hospital and medical teaching school in the country...
-                </p>
-                <p style={{ fontSize:'clamp(13px,1.5vw,16px)', margin:0 }}>
-                  The Hospital was dedicated to humanity as Late President Tubman made an appeal: <span style={{ color:'#2563eb', fontWeight:700, fontStyle:'italic' }}>"this hospital should be citadel waging war against the enemy of our commonality-Death."</span>
-                </p>
-                <p style={{ fontSize:'clamp(13px,1.5vw,16px)', margin:0 }}>
-                  The Liberian Civil War was a test to his words. At the peak of the war, the hospital had to relocate all patients and some staffers to Phebe Hospital in Gbarnga at Bong County for safety. In the midst of the fierce battle, the Late Archbishop Michael K. Francis supported the hospital to care for all victims of the Lutheran Church Massacre.
-                </p>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:20, margin:'8px 0' }}>
-                  <div style={{ padding:'clamp(20px,3vw,32px)', background:'#fef2f2', borderRadius:'clamp(16px,3vw,24px)', border:'1px solid #fecaca' }}>
-                    <h4 style={{ color:'#dc2626', fontWeight:900, textTransform:'uppercase', fontSize:10, letterSpacing:'0.2em', marginBottom:10 }}>2014 Ebola Outbreak</h4>
-                    <p style={{ fontSize:'clamp(12px,1.5vw,14px)', color:'#475569', margin:0, lineHeight:1.7 }}>Took away the lives of nine (9) able staffers while seven (7) others were contaminated but gracefully recovered. These nine staffers were Liberian, Ghanaian, Cameroonian, Equatorial Guinean and Spanish Nationals.</p>
-                  </div>
-                  <div style={{ padding:'clamp(20px,3vw,32px)', background:'#f0fdf4', borderRadius:'clamp(16px,3vw,24px)', border:'1px solid #bbf7d0' }}>
-                    <h4 style={{ color:'#16a34a', fontWeight:900, textTransform:'uppercase', fontSize:10, letterSpacing:'0.2em', marginBottom:10 }}>2019 Covid-19</h4>
-                    <p style={{ fontSize:'clamp(12px,1.5vw,14px)', color:'#475569', margin:0, lineHeight:1.7 }}>Met a well prepared staff who solidly stood to their feet and defeated it. Through the resilience of the staffers and support of partners like CRS, NCHC, and God's grace, no life was lost.</p>
-                  </div>
-                </div>
-                <p style={{ fontSize:'clamp(13px,1.5vw,16px)', margin:0 }}>
-                  Over the years, the hospital has encountered many challenges that could have crippled her operations but through the hardworking effort of staffers, donors, the Government, and the Catholic Church of Liberia, it has always remained opened in serving humanity.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <button onClick={()=>setIsExpanded(!isExpanded)}
-            style={{ marginTop:clamp, display:'flex', alignItems:'center', gap:9, padding:'clamp(12px,2vw,16px) clamp(20px,3vw,32px)', background:'#0f172a', color:'#fff', borderRadius:18, fontWeight:900, fontSize:10, textTransform:'uppercase', letterSpacing:'0.2em', border:'none', cursor:'pointer', boxShadow:'0 8px 24px #e2e8f0', transition:'background 0.2s', marginTop:clamp(24,'3vw',32) }}
-            onMouseEnter={e=>e.currentTarget.style.background='#2563eb'}
-            onMouseLeave={e=>e.currentTarget.style.background='#0f172a'}>
-            <IoReaderOutline size={17}/> {isExpanded ? 'Show Less' : 'Read Full Background'}
-          </button>
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section style={{ padding:'clamp(48px,8vw,128px) clamp(12px,4vw,24px)', position:'relative' }}>
-        <div className="hist-timeline-line" style={{ display:'none' }}/>
-        <div style={{ maxWidth:900, margin:'0 auto' }}>
-          {timelineData.map((item, idx) => (
-            <motion.div key={idx} className={`hist-timeline-item${idx%2!==0?' reverse':''}`}
-              initial={{ opacity:0, y:40 }} whileInView={{ opacity:1, y:0 }} viewport={{ once:true }}>
-              <div className="hist-timeline-text">
-                <span className="hist-timeline-year">{item.year}</span>
-                <h3 className="hist-timeline-h3">{item.title}</h3>
-                <p className="hist-timeline-p">{item.content}</p>
+          <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 2 }}>
+            {/* Label */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              style={{ textAlign: 'center', marginBottom: 'clamp(48px,8vw,96px)' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 20 }}>
+                <div style={{ flex: 1, maxWidth: 80, height: 1, background: 'linear-gradient(to left, rgba(201,168,76,0.6), transparent)' }} />
+                <span style={{ fontFamily: '"Lora", serif', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#c9a84c' }}>
+                  Milestones
+                </span>
+                <div style={{ flex: 1, maxWidth: 80, height: 1, background: 'linear-gradient(to right, rgba(201,168,76,0.6), transparent)' }} />
               </div>
-              <div className="hist-timeline-icon">{item.icon}</div>
-              <div className="hist-timeline-spacer"/>
+              <h2 style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 'clamp(2rem,5vw,3.5rem)',
+                fontWeight: 400, color: '#f0e9d6',
+                letterSpacing: '-0.03em', lineHeight: 1.1,
+              }}>
+                Six Decades of Milestones
+              </h2>
             </motion.div>
-          ))}
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section style={{ padding:'0 clamp(12px,4vw,24px)', marginBottom:clamp(48,8,80) }}>
-        <div className="hist-cta" style={{ background:'#2563eb', color:'#fff', position:'relative', overflow:'hidden', boxShadow:'0 32px 80px rgba(37,99,235,0.25)' }}>
-          <div style={{ position:'absolute', top:0, right:0, width:'clamp(120px,25vw,256px)', height:'clamp(120px,25vw,256px)', background:'rgba(255,255,255,0.1)', borderRadius:'50%', marginRight:'-clamp(40px,5vw,80px)', marginTop:'-clamp(40px,5vw,80px)', filter:'blur(40px)', pointerEvents:'none' }}/>
-          <h2 className="hist-cta-title">Continuing the warfare <br/> against death.</h2>
-          <button onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}
-            style={{ padding:'clamp(12px,2vw,16px) clamp(24px,4vw,40px)', background:'#fff', color:'#2563eb', borderRadius:999, fontWeight:900, fontSize:10, textTransform:'uppercase', letterSpacing:'0.2em', border:'none', cursor:'pointer', transition:'all 0.2s' }}
-            onMouseEnter={e=>{e.currentTarget.style.background='#0f172a';e.currentTarget.style.color='#fff';}}
-            onMouseLeave={e=>{e.currentTarget.style.background='#fff';e.currentTarget.style.color='#2563eb';}}>
-            Back to Top
-          </button>
-        </div>
-      </section>
-    </div>
+            {/* Desktop timeline */}
+            <div className="tl-desktop" style={{ position: 'relative' }}>
+              {timelineData.map((item, i) => (
+                <TimelineItem key={i} item={item} index={i} />
+              ))}
+            </div>
+
+            {/* Mobile timeline */}
+            <div className="tl-mobile-list" style={{ flexDirection: 'column', gap: 32 }}>
+              {timelineData.map((item, i) => {
+                const ref = useRef(null);
+                const inView = useInView(ref, { once: true });
+                return (
+                  <motion.div
+                    key={i}
+                    ref={ref}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={inView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ delay: i * 0.08, duration: 0.6 }}
+                    style={{
+                      display: 'flex', gap: 20,
+                      paddingLeft: 16,
+                      borderLeft: `2px solid ${item.accent}40`,
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontFamily: '"DM Serif Display", serif', fontSize: '2rem', color: item.accent, display: 'block', lineHeight: 1 }}>{item.year}</span>
+                      <h3 style={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.1rem', color: '#f0e9d6', fontWeight: 400, margin: '6px 0 8px' }}>{item.title}</h3>
+                      <p style={{ fontFamily: '"Lora", serif', fontSize: 13, color: '#8a9bb0', lineHeight: 1.8 }}>{item.content}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════ CTA ══════════════════ */}
+        <section style={{ padding: 'clamp(64px,10vw,128px) clamp(16px,5vw,40px) 100px', position: 'relative', zIndex: 5 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              maxWidth: 900, margin: '0 auto',
+              background: 'linear-gradient(135deg, #0d1b2e 0%, #0a1525 100%)',
+              border: '1px solid rgba(201,168,76,0.3)',
+              borderRadius: 8,
+              padding: 'clamp(40px,7vw,96px) clamp(24px,6vw,96px)',
+              textAlign: 'center',
+              position: 'relative', overflow: 'hidden',
+            }}
+          >
+            {/* Corner ornament */}
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 60, height: 60, borderTop: '2px solid rgba(201,168,76,0.6)', borderLeft: '2px solid rgba(201,168,76,0.6)', borderTopLeftRadius: 8 }} />
+            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 60, height: 60, borderBottom: '2px solid rgba(201,168,76,0.6)', borderRight: '2px solid rgba(201,168,76,0.6)', borderBottomRightRadius: 8 }} />
+
+            <p style={{ fontFamily: '"Lora", serif', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#c9a84c', marginBottom: 24 }}>
+              Since 1963
+            </p>
+            <h2 style={{
+              fontFamily: '"DM Serif Display", Georgia, serif',
+              fontSize: 'clamp(2rem,5vw,4rem)',
+              fontWeight: 400, color: '#f0e9d6',
+              letterSpacing: '-0.03em', lineHeight: 1.1,
+              marginBottom: 24,
+            }}>
+              Continuing the warfare<br />
+              <span style={{ color: '#c9a84c', fontStyle: 'italic' }}>against death.</span>
+            </h2>
+            <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(13px,1.5vw,16px)', color: '#8a9bb0', lineHeight: 1.8, maxWidth: 440, margin: '0 auto 40px' }}>
+              St. Joseph's Catholic Hospital remains committed to compassionate, high-quality care for every person who walks through its doors.
+            </p>
+            <button
+              className="expand-btn"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              style={{ background: '#c9a84c', color: '#060f1a', borderColor: '#c9a84c' }}
+            >
+              <IoArrowUpOutline size={16} /> Back to Top
+            </button>
+          </motion.div>
+        </section>
+
+      </div>
+    </>
   );
 };
 

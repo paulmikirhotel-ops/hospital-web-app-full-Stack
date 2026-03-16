@@ -1,15 +1,17 @@
-// ─── LOGIN.JSX ────────────────────────────────────────────────────────────────
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../../redux/features/auth/authSlice';
 import { toast } from 'react-hot-toast';
-import { IoMailOutline, IoLockClosedOutline, IoEyeOutline, IoEyeOffOutline, IoMedicalOutline } from 'react-icons/io5';
+import {
+  IoMailOutline, IoLockClosedOutline,
+  IoEyeOutline, IoEyeOffOutline, IoMedicalOutline,
+} from 'react-icons/io5';
 
 const Login = () => {
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [showPass, setShowPass]   = useState(false);
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -21,7 +23,9 @@ const Login = () => {
     if (loginUser.fulfilled.match(result)) {
       const user = result.payload.user;
       toast.success(`Welcome back, ${user.name}`);
-      navigate(user.role === 'admin' ? '/admin/dashboard' : '/');
+      if (user.role === 'admin')  return navigate('/admin/dashboard');
+      if (user.role === 'doctor') return navigate('/doctor/dashboard');
+      navigate('/');
     } else {
       toast.error(result.payload || 'Login failed');
     }
@@ -61,7 +65,7 @@ const Login = () => {
           background: #f8fafc;
           border: 1.5px solid #e2e8f0;
           border-radius: 14px;
-          font-size: 16px;       /* prevents iOS zoom */
+          font-size: 16px;
           font-weight: 600;
           color: #0f172a;
           outline: none;
@@ -107,6 +111,7 @@ const Login = () => {
 
       <div className="login-root">
         <div className="login-card">
+
           {/* Logo mark */}
           <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:28 }}>
             <div style={{ width:44, height:44, borderRadius:14, background:'linear-gradient(135deg,#1e3a8a,#0ea5e9)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -118,10 +123,15 @@ const Login = () => {
             </div>
           </div>
 
-          <h2 style={{ fontSize:'clamp(1.6rem,4vw,2rem)', fontWeight:900, color:'#0f172a', letterSpacing:'-0.03em', margin:'0 0 6px' }}>Portal Login</h2>
-          <p style={{ fontSize:13, color:'#64748b', margin:'0 0 28px' }}>Welcome back. Sign in to your account.</p>
+          <h2 style={{ fontSize:'clamp(1.6rem,4vw,2rem)', fontWeight:900, color:'#0f172a', letterSpacing:'-0.03em', margin:'0 0 6px' }}>
+            Portal Login
+          </h2>
+          <p style={{ fontSize:13, color:'#64748b', margin:'0 0 28px' }}>
+            Welcome back. Sign in to your account.
+          </p>
 
           <form onSubmit={handleLogin} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+
             {/* Email */}
             <div className="login-input-wrap">
               <IoMailOutline size={18} className="icon" />
@@ -131,7 +141,7 @@ const Login = () => {
                 required
                 className="login-input"
                 value={email}
-                onChange={e=>setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
               />
             </div>
 
@@ -139,22 +149,25 @@ const Login = () => {
             <div className="login-input-wrap">
               <IoLockClosedOutline size={18} className="icon" />
               <input
-                type={showPass?'text':'password'}
+                type={showPass ? 'text' : 'password'}
                 placeholder="Password"
                 required
                 className="login-input"
                 style={{ paddingRight:46 }}
                 value={password}
-                onChange={e=>setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
               />
-              <button type="button" className="login-toggle-pass" onClick={()=>setShowPass(s=>!s)}>
-                {showPass?<IoEyeOffOutline size={18}/>:<IoEyeOutline size={18}/>}
+              <button type="button" className="login-toggle-pass" onClick={() => setShowPass(s => !s)}>
+                {showPass ? <IoEyeOffOutline size={18}/> : <IoEyeOutline size={18}/>}
               </button>
             </div>
 
-            {/* Forgot */}
+            {/* ── Forgot password link ── */}
             <div style={{ textAlign:'right', marginTop:-4 }}>
-              <Link to="/forgot-password" style={{ fontSize:12, fontWeight:700, color:'#2563eb', textDecoration:'none' }}>
+              <Link to="/forgot-password"
+                style={{ fontSize:12, fontWeight:700, color:'#2563eb', textDecoration:'none' }}
+                onMouseEnter={e => e.target.style.textDecoration='underline'}
+                onMouseLeave={e => e.target.style.textDecoration='none'}>
                 Forgot password?
               </Link>
             </div>
@@ -181,6 +194,7 @@ const Login = () => {
           }}>
             Create an Account
           </Link>
+
         </div>
       </div>
     </>

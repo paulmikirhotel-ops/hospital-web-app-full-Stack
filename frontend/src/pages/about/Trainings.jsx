@@ -1,172 +1,530 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  IoSchoolOutline, IoRibbonOutline, IoFlaskOutline, 
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import {
+  IoSchoolOutline, IoRibbonOutline, IoFlaskOutline,
   IoPeopleOutline, IoArrowForwardOutline, IoCheckmarkCircle,
-  IoReaderOutline, IoStatsChartOutline, IoCloseOutline
+  IoReaderOutline, IoStatsChartOutline, IoCloseOutline,
+  IoChevronDownOutline,
 } from 'react-icons/io5';
 
+/* ─── DATA ─────────────────────────────────────────────────── */
 const TRAIN_COLORS = {
-  blue:   '#2563eb',
-  teal:   '#14b8a6',
-  indigo: '#4f46e5',
-  orange: '#f97316',
+  blue:   { bg: '#1d4ed8', light: '#eff6ff', border: '#bfdbfe' },
+  teal:   { bg: '#0d9488', light: '#f0fdfa', border: '#99f6e4' },
+  indigo: { bg: '#4338ca', light: '#eef2ff', border: '#c7d2fe' },
+  orange: { bg: '#c2410c', light: '#fff7ed', border: '#fed7aa' },
 };
 
 const trainingPrograms = [
-  { id:1, title:'Medical Internships',  category:'Professional Development', description:'Hands-on clinical rotations for medical students and graduates, providing exposure to diverse pathologies in a mission-driven environment.', details:'Our internship program is accredited and follows the national curriculum, focusing on Internal Medicine, Surgery, Pediatrics, and OBGYN. Interns work alongside senior consultants in a high-volume clinical setting.', stats:'12 Spots Available', icon:<IoSchoolOutline/>,  colorKey:'blue' },
-  { id:2, title:'Nursing Excellence',   category:'Specialized Training',     description:'Advanced clinical training for registered nurses, focusing on critical care, maternal health, and emergency response protocols.',                details:'This program enhances the capacity of nurses to handle specialized equipment, manage intensive care units, and implement modern patient safety protocols.',                                                        stats:'Last 4 Seats',      icon:<IoRibbonOutline/>,  colorKey:'teal' },
-  { id:3, title:'Laboratory Sciences',  category:'Technical Training',       description:'Specialized workshops in diagnostic pathology, microbiology, and blood bank management using modern laboratory standards.',                      details:'Participants gain proficiency in automated diagnostic systems, quality control measures, and biosafety regulations in a clinical laboratory environment.',                                                         stats:'Registration Open',  icon:<IoFlaskOutline/>,   colorKey:'indigo' },
-  { id:4, title:'Community Health',     category:'Outreach Program',         description:'Training for community health workers to bridge the gap between hospital care and rural Liberian communities.',                                   details:'Focuses on preventative medicine, maternal health education, and disease surveillance at the community level.',                                                                                                      stats:'Coming Soon',        icon:<IoPeopleOutline/>,  colorKey:'orange' },
+  {
+    id: 1, title: 'Medical Internships', category: 'Professional Development',
+    description: 'Hands-on clinical rotations for medical students and graduates, providing exposure to diverse pathologies in a mission-driven environment.',
+    details: 'Our internship program is accredited and follows the national curriculum, focusing on Internal Medicine, Surgery, Pediatrics, and OBGYN. Interns work alongside senior consultants in a high-volume clinical setting.',
+    stats: '12 Spots Available', icon: <IoSchoolOutline />, colorKey: 'blue',
+  },
+  {
+    id: 2, title: 'Nursing Excellence', category: 'Specialized Training',
+    description: 'Advanced clinical training for registered nurses, focusing on critical care, maternal health, and emergency response protocols.',
+    details: 'This program enhances the capacity of nurses to handle specialized equipment, manage intensive care units, and implement modern patient safety protocols.',
+    stats: 'Last 4 Seats', icon: <IoRibbonOutline />, colorKey: 'teal',
+  },
+  {
+    id: 3, title: 'Laboratory Sciences', category: 'Technical Training',
+    description: 'Specialized workshops in diagnostic pathology, microbiology, and blood bank management using modern laboratory standards.',
+    details: 'Participants gain proficiency in automated diagnostic systems, quality control measures, and biosafety regulations in a clinical laboratory environment.',
+    stats: 'Registration Open', icon: <IoFlaskOutline />, colorKey: 'indigo',
+  },
+  {
+    id: 4, title: 'Community Health', category: 'Outreach Program',
+    description: 'Training for community health workers to bridge the gap between hospital care and rural Liberian communities.',
+    details: 'Focuses on preventative medicine, maternal health education, and disease surveillance at the community level.',
+    stats: 'Coming Soon', icon: <IoPeopleOutline />, colorKey: 'orange',
+  },
 ];
 
-const Trainings = () => {
-  const [expanded, setExpanded]   = useState(false);
-  const [selected, setSelected]   = useState(null);
+const checkFeatures = ['Accredited Internships', 'International Mentors', 'Modern Clinical Labs', 'Research Opportunities'];
+
+/* ─── TRAINING CARD ─────────────────────────────────────────── */
+const TrainingCard = ({ prog, onClick, index }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const c = TRAIN_COLORS[prog.colorKey];
 
   return (
-    <div style={{ background:'#fff', minHeight:'100vh' }}>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      onClick={onClick}
+      style={{
+        background: '#fff', border: '1px solid #f0f0f0',
+        borderRadius: 16, padding: 'clamp(24px,3vw,36px)',
+        cursor: 'pointer', display: 'flex', flexDirection: 'column',
+        position: 'relative', overflow: 'hidden',
+        transition: 'all 0.3s',
+      }}
+      whileHover={{ y: -6, boxShadow: '0 24px 60px rgba(0,0,0,0.09)' }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {/* Left accent bar */}
+      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: c.bg, borderRadius: '16px 0 0 16px' }} />
+
+      {/* Icon */}
+      <div style={{
+        width: 52, height: 52, borderRadius: 14,
+        background: c.light, border: `1px solid ${c.border}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 22, color: c.bg, marginBottom: 20, flexShrink: 0,
+      }}>
+        {prog.icon}
+      </div>
+
+      {/* Category */}
+      <span style={{
+        fontFamily: '"Lora", serif', fontSize: 10,
+        textTransform: 'uppercase', letterSpacing: '0.2em',
+        color: c.bg, marginBottom: 8, display: 'block',
+      }}>
+        {prog.category}
+      </span>
+
+      {/* Title */}
+      <h3 style={{
+        fontFamily: '"DM Serif Display", Georgia, serif',
+        fontSize: 'clamp(1.1rem,2.2vw,1.4rem)',
+        fontWeight: 400, color: '#0f172a',
+        margin: '0 0 12px', lineHeight: 1.2,
+        letterSpacing: '-0.02em',
+      }}>
+        {prog.title}
+      </h3>
+
+      {/* Desc */}
+      <p style={{
+        fontFamily: '"Lora", serif',
+        fontSize: 'clamp(13px,1.3vw,14px)', color: '#64748b',
+        lineHeight: 1.75, margin: '0 0 24px', flexGrow: 1,
+        display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+      }}>
+        {prog.description}
+      </p>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+        <span style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          fontFamily: '"Lora", serif', fontSize: 10,
+          color: c.bg, textTransform: 'uppercase', letterSpacing: '0.15em',
+        }}>
+          <IoStatsChartOutline size={12} /> {prog.stats}
+        </span>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          background: c.light, color: c.bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16,
+        }}>
+          <IoArrowForwardOutline />
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+/* ─── MODAL ──────────────────────────────────────────────────── */
+const TrainingModal = ({ prog, onClose }) => {
+  const c = TRAIN_COLORS[prog.colorKey];
+  return (
+    <motion.div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 'clamp(12px,3vw,24px)',
+        background: 'rgba(10,15,30,0.85)', backdropFilter: 'blur(12px)',
+      }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 24 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{
+          background: '#fff', width: '100%', maxWidth: 560,
+          borderRadius: 20, overflow: 'hidden',
+          position: 'relative', maxHeight: '90vh', overflowY: 'auto',
+          boxShadow: '0 40px 100px rgba(0,0,0,0.3)',
+        }}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 12, right: 12, zIndex: 10,
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.2)', border: 'none',
+            color: '#fff', fontSize: 20, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.4)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+        >
+          <IoCloseOutline />
+        </button>
+
+        {/* Header */}
+        <div style={{
+          padding: 'clamp(28px,5vw,48px)',
+          background: c.bg,
+          minHeight: 140,
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+        }}>
+          <span style={{ fontFamily: '"Lora", serif', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'rgba(255,255,255,0.65)', marginBottom: 8, display: 'block' }}>
+            {prog.category}
+          </span>
+          <h3 style={{
+            fontFamily: '"DM Serif Display", Georgia, serif',
+            fontSize: 'clamp(1.5rem,4vw,2.2rem)',
+            fontWeight: 400, color: '#fff', margin: 0,
+            lineHeight: 1.1, letterSpacing: '-0.03em',
+          }}>
+            {prog.title}
+          </h3>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: 'clamp(24px,4vw,40px)' }}>
+          <h4 style={{ fontFamily: '"Lora", serif', fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', fontSize: 10, letterSpacing: '0.2em', marginBottom: 16 }}>
+            Detailed Overview
+          </h4>
+          <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(13px,1.5vw,16px)', color: '#475569', lineHeight: 1.85, margin: '0 0 28px' }}>
+            {prog.details}
+          </p>
+
+          <div style={{ background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0', padding: 'clamp(16px,3vw,24px)', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 14, marginBottom: 0 }}>
+            <div>
+              <p style={{ fontFamily: '"Lora", serif', fontSize: 9, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 6px' }}>
+                Current Status
+              </p>
+              <p style={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.2rem', color: c.bg, margin: 0 }}>
+                {prog.stats}
+              </p>
+            </div>
+            <button style={{
+              padding: 'clamp(10px,2vw,14px) clamp(18px,3vw,28px)',
+              background: '#0f172a', color: '#fff', borderRadius: 8,
+              fontFamily: '"Lora", serif', fontWeight: 700, fontSize: 11,
+              textTransform: 'uppercase', letterSpacing: '0.15em',
+              border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+              transition: 'background 0.2s',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = c.bg}
+              onMouseLeave={e => e.currentTarget.style.background = '#0f172a'}
+            >
+              Request Syllabus
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+/* ─── MAIN ───────────────────────────────────────────────────── */
+const Trainings = () => {
+  const [expanded, setExpanded] = useState(false);
+  const [selected, setSelected] = useState(null);
+
+  return (
+    <>
       <style>{`
-        .train-hero { position:relative; height:clamp(280px,55vw,80vh); display:flex; align-items:center; overflow:hidden; background:#0f172a; }
-        .train-hero-title { font-size:clamp(2.5rem,10vw,9rem); font-weight:900; color:#fff; line-height:0.85; letter-spacing:-0.05em; margin:0 0 clamp(12px,2vw,32px); }
-        .train-hero-sub { font-size:clamp(13px,1.5vw,20px); color:#cbd5e1; font-weight:500; max-width:480px; line-height:1.65; border-left:4px solid #2563eb; padding-left:clamp(12px,2vw,24px); margin:0; }
-        .train-intro-card { background:#fff; border-radius:clamp(20px,4vw,48px); padding:clamp(24px,5vw,64px); box-shadow:0 20px 60px rgba(0,0,0,0.08); border:1px solid #f1f5f9; margin-top:-clamp(40px,6vw,80px); position:relative; z-index:20; }
-        .train-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:clamp(14px,2vw,32px); }
-        .train-card { background:#f8fafc; border-radius:clamp(20px,4vw,40px); padding:clamp(20px,3vw,32px); border:1px solid transparent; cursor:pointer; transition:all 0.25s; }
-        .train-card:hover { border-color:#bfdbfe; background:#fff; box-shadow:0 16px 48px rgba(0,0,0,0.08); }
-        .train-modal-overlay { position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:clamp(12px,3vw,24px); background:rgba(15,23,42,0.9); backdrop-filter:blur(12px); }
-        .train-modal { background:#fff; width:100%; max-width:580px; border-radius:clamp(20px,4vw,48px); overflow:hidden; position:relative; max-height:90vh; overflow-y:auto; }
-        .train-modal-header { padding:clamp(24px,4vw,40px); display:flex; flex-direction:column; justify-content:flex-end; min-height:clamp(110px,15vw,160px); }
-        .train-section-hdr { display:flex; flex-direction:column; gap:12px; margin-bottom:clamp(36px,5vw,64px); }
-        @media (min-width:640px) {
-          .train-section-hdr { flex-direction:row; align-items:flex-end; justify-content:space-between; }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+        *, *::before, *::after { box-sizing: border-box; }
+
+        .train-root {
+          background: #fff;
+          min-height: 100vh;
+          font-family: "Lora", Georgia, serif;
         }
-        .train-checks { display:grid; grid-template-columns:1fr; gap:10px; margin-top:24px; }
-        @media (min-width:480px) { .train-checks { grid-template-columns:1fr 1fr; } }
+
+        .train-root::before {
+          content: '';
+          position: fixed; inset: 0; z-index: 0; pointer-events: none;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+          background-size: 200px; opacity: 0.18; mix-blend-mode: multiply;
+        }
+
+        .train-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+          gap: clamp(16px, 2vw, 28px);
+        }
+        @media (max-width: 480px) {
+          .train-grid { grid-template-columns: 1fr; }
+        }
+
+        .train-checks {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          margin-top: 24px;
+        }
+        @media (max-width: 400px) {
+          .train-checks { grid-template-columns: 1fr; }
+        }
+
+        .gold-rule { height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); border: none; margin: 0; }
+
+        .train-expand-btn {
+          display: inline-flex; align-items: center; gap: 10px;
+          background: none; border: none; cursor: pointer; padding: 0;
+          font-family: "Lora", serif; font-size: 11px; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.2em;
+          color: #1d4ed8; transition: color 0.2s;
+        }
+        .train-expand-btn:hover { color: #0d9488; }
+
+        @keyframes subtlePulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
       `}</style>
 
-      {/* Hero */}
-      <section className="train-hero">
-        <motion.div initial={{ scale:1.2, opacity:0 }} animate={{ scale:1, opacity:0.4 }} transition={{ duration:1.5 }}
-          style={{ position:'absolute', inset:0 }}>
-          <img src="https://images.ctfassets.net/jwk3944w4k64/QgPvuGAn9OQO90yLSCfQV/256b0b91ea3137a7a1fa8de209acef28/post5-10-scaled.jpg"
-            alt="Medical Education" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-        </motion.div>
-        <div style={{ position:'relative', zIndex:10, padding:'0 clamp(16px,5vw,40px)', maxWidth:900 }}>
-          <motion.div initial={{ opacity:0, y:50 }} animate={{ opacity:1, y:0 }}>
-            <h1 className="train-hero-title">
-              TRAIN TO <br/>
-              <span style={{ color:'#3b82f6' }}>TRANSFORM.</span>
-            </h1>
-            <p className="train-hero-sub">
-              Advancing medical knowledge at the heart of Monrovia. We don't just teach medicine; we cultivate compassion.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <div className="train-root">
 
-      {/* Intro */}
-      <section style={{ padding:'0 clamp(12px,4vw,24px)' }}>
-        <div className="train-intro-card">
-          <div style={{ maxWidth:700 }}>
-            <h2 style={{ fontSize:'clamp(1.4rem,3vw,2rem)', fontWeight:900, color:'#0f172a', marginBottom:20 }}>Our Educational Mission</h2>
-            <p style={{ fontSize:'clamp(13px,1.5vw,17px)', color:'#475569', lineHeight:1.75, marginBottom:16 }}>
-              Saint Joseph's Catholic Hospital is recognized as a center of clinical excellence. We provide a rigorous training environment where academic theory meets real-world clinical challenges...
+        {/* ══════════ HERO ══════════ */}
+        <section style={{
+          position: 'relative', height: 'clamp(380px,62vh,80vh)',
+          display: 'flex', alignItems: 'center', overflow: 'hidden',
+          background: '#0a0f1e',
+        }}>
+          <motion.div
+            initial={{ scale: 1.08 }} animate={{ scale: 1 }}
+            transition={{ duration: 8, ease: 'easeOut' }}
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            <img
+              src="https://images.ctfassets.net/jwk3944w4k64/QgPvuGAn9OQO90yLSCfQV/256b0b91ea3137a7a1fa8de209acef28/post5-10-scaled.jpg"
+              alt="Medical Education"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.28) saturate(0.7)' }}
+            />
+          </motion.div>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, #fff 100%)' }} />
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 clamp(20px,6vw,64px)', maxWidth: 820 }}>
+            <motion.p
+              initial={{ opacity: 0, letterSpacing: '1em' }}
+              animate={{ opacity: 1, letterSpacing: '0.4em' }}
+              transition={{ duration: 1.2 }}
+              style={{ fontFamily: '"Lora", serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.4em', color: '#1d4ed8', marginBottom: 20 }}
+            >
+              Academic Catalog
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 'clamp(3rem,11vw,9rem)',
+                fontWeight: 400, color: '#fff',
+                lineHeight: 0.88, letterSpacing: '-0.04em',
+                margin: '0 0 28px',
+              }}
+            >
+              Train to<br />
+              <span style={{ fontStyle: 'italic', color: '#93c5fd' }}>Transform.</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              style={{
+                fontFamily: '"Lora", serif',
+                fontSize: 'clamp(13px,1.6vw,17px)', color: 'rgba(255,255,255,0.7)',
+                lineHeight: 1.75, margin: 0, maxWidth: 480,
+                paddingLeft: 20, borderLeft: '2px solid #1d4ed8',
+              }}
+            >
+              Advancing medical knowledge at the heart of Monrovia. We don't just teach medicine — we cultivate compassion.
+            </motion.p>
+          </div>
+        </section>
+
+        {/* ══════════ INTRO ══════════ */}
+        <section style={{ padding: '0 clamp(16px,5vw,48px)', marginTop: 'clamp(-48px,-6vw,-80px)', position: 'relative', zIndex: 20 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            style={{
+              maxWidth: 900, margin: '0 auto',
+              background: '#fff', borderRadius: 16,
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 16px 56px rgba(0,0,0,0.07)',
+              padding: 'clamp(28px,5vw,60px)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+              <div style={{ width: 36, height: 1, background: '#1d4ed8' }} />
+              <span style={{ fontFamily: '"Lora", serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#1d4ed8' }}>
+                Educational Mission
+              </span>
+            </div>
+            <h2 style={{
+              fontFamily: '"DM Serif Display", Georgia, serif',
+              fontSize: 'clamp(1.6rem,4vw,2.8rem)',
+              fontWeight: 400, color: '#0f172a',
+              letterSpacing: '-0.03em', lineHeight: 1.1,
+              margin: '0 0 20px',
+            }}>
+              Where Theory Meets<br />
+              <span style={{ color: '#1d4ed8', fontStyle: 'italic' }}>Real Clinical Practice</span>
+            </h2>
+            <hr className="gold-rule" style={{ margin: '0 0 24px' }} />
+            <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(14px,1.6vw,17px)', color: '#475569', lineHeight: 1.85, margin: 0 }}>
+              Saint Joseph's Catholic Hospital is recognized as a center of clinical excellence. We provide a rigorous training environment where academic theory meets real-world clinical challenges.
             </p>
+
             <AnimatePresence>
               {expanded && (
-                <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:'auto' }} exit={{ opacity:0, height:0 }} style={{ overflow:'hidden' }}>
-                  <p style={{ fontSize:'clamp(13px,1.5vw,16px)', color:'#475569', lineHeight:1.8, marginBottom:0, marginTop:4 }}>
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <p style={{ fontFamily: '"Lora", serif', fontSize: 'clamp(13px,1.4vw,16px)', color: '#64748b', lineHeight: 1.85, marginTop: 20, marginBottom: 0 }}>
                     In alignment with our 60-year heritage, our training programs focus on both technical proficiency and the ethical dimensions of healthcare. We partner with the Ministry of Health and global NGOs to ensure our curriculum remains at the cutting edge of modern medicine in West Africa.
                   </p>
                   <div className="train-checks">
-                    {['Accredited Internships','International Mentors','Modern Clinical Labs','Research Opportunities'].map(t=>(
-                      <div key={t} style={{ display:'flex', alignItems:'center', gap:10, fontWeight:700, color:'#0f172a', fontSize:'clamp(12px,1.5vw,15px)' }}>
-                        <IoCheckmarkCircle style={{ color:'#2563eb', flexShrink:0 }} size={18}/> {t}
+                    {checkFeatures.map(t => (
+                      <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: '"Lora", serif', fontWeight: 600, color: '#0f172a', fontSize: 'clamp(12px,1.4vw,14px)' }}>
+                        <IoCheckmarkCircle style={{ color: '#1d4ed8', flexShrink: 0 }} size={18} /> {t}
                       </div>
                     ))}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-            <button onClick={()=>setExpanded(!expanded)}
-              style={{ marginTop:24, display:'flex', alignItems:'center', gap:8, color:'#2563eb', background:'none', border:'none', cursor:'pointer', fontWeight:900, fontSize:10, textTransform:'uppercase', letterSpacing:'0.2em', padding:0 }}>
-              <IoReaderOutline size={18}/> {expanded ? 'Collapse Text' : 'Read Full Philosophy'}
-              <motion.span animate={{ x:expanded?0:4 }} style={{ marginLeft:2 }}>→</motion.span>
+
+            <button className="train-expand-btn" onClick={() => setExpanded(!expanded)} style={{ marginTop: 28 }}>
+              <IoReaderOutline size={16} />
+              {expanded ? 'Collapse Text' : 'Read Full Philosophy'}
+              <motion.span animate={{ rotate: expanded ? 180 : 0 }} style={{ display: 'inline-flex' }}>
+                <IoChevronDownOutline size={14} />
+              </motion.span>
             </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Grid */}
-      <section style={{ padding:'clamp(40px,7vw,128px) clamp(12px,4vw,24px)' }}>
-        <div className="train-section-hdr">
-          <div>
-            <span style={{ color:'#2563eb', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.3em', fontSize:10 }}>Academic Catalog</span>
-            <h2 style={{ fontSize:'clamp(1.6rem,4vw,3.5rem)', fontWeight:900, color:'#0f172a', marginTop:6, letterSpacing:'-0.03em' }}>Specialized Pathways</h2>
-          </div>
-          <p style={{ color:'#94a3b8', maxWidth:240, fontSize:'clamp(12px,1.5vw,14px)', textAlign:'right', display:'none' }} className="train-hdr-note">Click on any program to view full curriculum details and requirements.</p>
-        </div>
-        <div className="train-grid">
-          {trainingPrograms.map(prog => {
-            const color = TRAIN_COLORS[prog.colorKey];
-            return (
-              <motion.div key={prog.id} className="train-card" whileTap={{ scale:0.98 }} onClick={()=>setSelected(prog)}>
-                <div style={{ width:'clamp(44px,8vw,56px)', height:'clamp(44px,8vw,56px)', borderRadius:14, background:color, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'clamp(18px,3vw,24px)', marginBottom:'clamp(18px,3vw,24px)', boxShadow:`0 8px 20px ${color}44` }}>
-                  {prog.icon}
-                </div>
-                <h3 style={{ fontSize:'clamp(1rem,2vw,1.3rem)', fontWeight:900, color:'#0f172a', marginBottom:8 }}>{prog.title}</h3>
-                <p style={{ fontSize:'clamp(12px,1.5vw,14px)', color:'#64748b', lineHeight:1.7, marginBottom:20, display:'-webkit-box', WebkitLineClamp:3, WebkitBoxOrient:'vertical', overflow:'hidden' }}>{prog.description}</p>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'auto' }}>
-                  <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:9, fontWeight:900, color:'#2563eb', textTransform:'uppercase', letterSpacing:'0.15em' }}>
-                    <IoStatsChartOutline size={12}/> {prog.stats}
-                  </span>
-                  <div style={{ width:32, height:32, borderRadius:'50%', background:'#e2e8f0', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b', fontSize:15, transition:'all 0.2s' }}>
-                    <IoArrowForwardOutline/>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Modal */}
-      <AnimatePresence>
-        {selected && (
-          <motion.div className="train-modal-overlay" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-            onClick={e=>{if(e.target===e.currentTarget)setSelected(null);}}>
-            <motion.div className="train-modal" initial={{ opacity:0, scale:0.95, y:16 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.95, y:16 }}>
-              <button onClick={()=>setSelected(null)}
-                style={{ position:'absolute', top:12, right:12, padding:8, background:'#f1f5f9', border:'none', borderRadius:'50%', cursor:'pointer', fontSize:22, display:'flex', alignItems:'center', transition:'all 0.2s' }}
-                onMouseEnter={e=>{e.currentTarget.style.background='#fef2f2';e.currentTarget.style.color='#dc2626';}}
-                onMouseLeave={e=>{e.currentTarget.style.background='#f1f5f9';e.currentTarget.style.color='inherit';}}>
-                <IoCloseOutline/>
-              </button>
-              <div className="train-modal-header" style={{ background:TRAIN_COLORS[selected.colorKey] }}>
-                <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.2em', color:'rgba(255,255,255,0.75)', marginBottom:6, display:'block' }}>{selected.category}</span>
-                <h3 style={{ fontSize:'clamp(1.4rem,4vw,2rem)', fontWeight:900, color:'#fff', margin:0 }}>{selected.title}</h3>
-              </div>
-              <div style={{ padding:'clamp(24px,4vw,40px)' }}>
-                <h4 style={{ fontWeight:900, color:'#0f172a', textTransform:'uppercase', fontSize:10, letterSpacing:'0.2em', marginBottom:14 }}>Detailed Overview</h4>
-                <p style={{ fontSize:'clamp(13px,1.5vw,17px)', color:'#475569', lineHeight:1.8, marginBottom:'clamp(24px,4vw,32px)' }}>{selected.details}</p>
-                <div style={{ background:'#f8fafc', borderRadius:18, padding:'clamp(14px,3vw,24px)', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:14, marginBottom:'clamp(24px,3vw,40px)' }}>
-                  <div>
-                    <p style={{ fontSize:9, fontWeight:900, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.2em', margin:'0 0 4px' }}>Current Status</p>
-                    <p style={{ fontWeight:700, color:'#2563eb', margin:0, fontSize:'clamp(12px,1.5vw,15px)' }}>{selected.stats}</p>
-                  </div>
-                  <button style={{ padding:'clamp(10px,2vw,14px) clamp(16px,3vw,24px)', background:'#0f172a', color:'#fff', borderRadius:12, fontWeight:900, fontSize:10, textTransform:'uppercase', letterSpacing:'0.15em', border:'none', cursor:'pointer', whiteSpace:'nowrap', transition:'background 0.2s' }}
-                    onMouseEnter={e=>e.currentTarget.style.background='#2563eb'}
-                    onMouseLeave={e=>e.currentTarget.style.background='#0f172a'}>
-                    Request Syllabus
-                  </button>
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        </section>
+
+        {/* ══════════ GRID ══════════ */}
+        <section style={{ padding: 'clamp(64px,10vw,120px) clamp(16px,5vw,48px)', position: 'relative', zIndex: 5 }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 'clamp(32px,5vw,56px)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+                  <div style={{ width: 36, height: 1, background: '#1d4ed8' }} />
+                  <span style={{ fontFamily: '"Lora", serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#1d4ed8' }}>
+                    Academic Catalog
+                  </span>
+                </div>
+                <h2 style={{
+                  fontFamily: '"DM Serif Display", Georgia, serif',
+                  fontSize: 'clamp(1.8rem,4vw,3rem)',
+                  fontWeight: 400, color: '#0f172a',
+                  letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0,
+                }}>
+                  Specialized<br />
+                  <span style={{ color: '#1d4ed8', fontStyle: 'italic' }}>Pathways</span>
+                </h2>
+              </div>
+            </div>
+            <div className="train-grid">
+              {trainingPrograms.map((prog, i) => (
+                <TrainingCard key={prog.id} prog={prog} index={i} onClick={() => setSelected(prog)} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════ CTA ══════════ */}
+        <section style={{ padding: '0 clamp(16px,5vw,48px)', paddingBottom: 'clamp(64px,10vw,128px)' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            style={{
+              maxWidth: 1100, margin: '0 auto',
+              background: '#0a0f1e', borderRadius: 16,
+              padding: 'clamp(52px,8vw,96px) clamp(24px,5vw,80px)',
+              display: 'flex', flexWrap: 'wrap',
+              alignItems: 'center', justifyContent: 'space-between', gap: 40,
+              position: 'relative', overflow: 'hidden',
+            }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(to right, #1d4ed8, #0d9488, #4338ca)' }} />
+            <div style={{
+              position: 'absolute', bottom: '-20%', left: '-5%',
+              width: 'clamp(160px,30vw,320px)', height: 'clamp(160px,30vw,320px)',
+              background: 'rgba(29,78,216,0.12)', borderRadius: '50%',
+              filter: 'blur(80px)', pointerEvents: 'none',
+              animation: 'subtlePulse 5s ease-in-out infinite',
+            }} />
+
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <p style={{ fontFamily: '"Lora", serif', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.3em', color: '#93c5fd', margin: '0 0 16px' }}>
+                Apply Today
+              </p>
+              <h2 style={{
+                fontFamily: '"DM Serif Display", Georgia, serif',
+                fontSize: 'clamp(1.8rem,4vw,3rem)',
+                fontWeight: 400, color: '#fff',
+                letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0,
+              }}>
+                Begin your journey<br />
+                <span style={{ fontStyle: 'italic', color: '#93c5fd' }}>in excellence.</span>
+              </h2>
+            </div>
+
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+              <button style={{
+                padding: 'clamp(14px,2vw,18px) clamp(28px,4vw,48px)',
+                background: '#fff', color: '#0f172a',
+                border: 'none', borderRadius: 8,
+                fontFamily: '"Lora", serif', fontWeight: 700,
+                fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em',
+                cursor: 'pointer', transition: 'all 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#1d4ed8'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#0f172a'; }}
+              >
+                Apply Now
+              </button>
+              <button style={{
+                padding: 'clamp(14px,2vw,18px) clamp(28px,4vw,48px)',
+                background: 'transparent', color: '#fff',
+                border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8,
+                fontFamily: '"Lora", serif', fontWeight: 700,
+                fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.15em',
+                cursor: 'pointer', transition: 'border-color 0.2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
+              >
+                Download Catalog
+              </button>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* ══════════ MODAL ══════════ */}
+        <AnimatePresence>
+          {selected && <TrainingModal prog={selected} onClose={() => setSelected(null)} />}
+        </AnimatePresence>
+
+      </div>
+    </>
   );
 };
 

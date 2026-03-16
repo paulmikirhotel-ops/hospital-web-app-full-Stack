@@ -8,6 +8,7 @@ import {
   IoSearchOutline, IoChevronDownOutline, IoImageOutline,
   IoCalendarOutline, IoWalletOutline, IoPeopleOutline,
   IoShieldCheckmarkOutline, IoCloseCircleOutline, IoAlertCircleOutline,
+  IoMailOutline, IoLinkOutline,
 } from 'react-icons/io5';
 import API from '../../../api/axiosConfig';
 
@@ -46,6 +47,134 @@ const StatMini = ({ icon, label, value, color='blue' }) => {
 };
 
 /* ─────────────────────────────────────────────
+   INVITE MODAL — shows setup link after invite
+───────────────────────────────────────────── */
+const InviteModal = ({ doctor, onClose }) => {
+  const [sending,  setSending]  = useState(false);
+  const [setupUrl, setSetupUrl] = useState('');
+  const [sent,     setSent]     = useState(false);
+  const [copied,   setCopied]   = useState(false);
+
+  const handleSend = async () => {
+    setSending(true);
+    try {
+      const { data } = await API.post('/auth/invite-doctor', { doctorId: doctor._id });
+      setSetupUrl(data.setupUrl || '');
+      setSent(true);
+      if (data.success) {
+        toast.success(`Setup email sent to Dr. ${doctor.name}!`);
+      } else {
+        toast.error('Email failed — share the link manually below.');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send invite');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(setupUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success('Link copied!');
+  };
+
+  return (
+    <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}>
+      <motion.div initial={{ scale:0.92, opacity:0, y:24 }} animate={{ scale:1, opacity:1, y:0 }}
+        transition={{ type:'spring', stiffness:280, damping:26 }}
+        className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tighter">Send Doctor Invite</h3>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">
+              Dr. {doctor.name}
+            </p>
+          </div>
+          <button onClick={onClose}
+            className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-all">
+            <IoCloseOutline size={20}/>
+          </button>
+        </div>
+
+        {!sent ? (
+          <>
+            {/* Doctor info */}
+            <div className="bg-slate-50 rounded-2xl p-4 mb-6 flex items-center gap-3 border border-slate-100">
+              {doctor.image
+                ? <img src={doctor.image} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0"/>
+                : <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0"><IoPersonOutline size={20} className="text-blue-500"/></div>
+              }
+              <div className="min-w-0">
+                <p className="font-black text-slate-900 text-sm truncate">Dr. {doctor.name}</p>
+                <p className="text-[11px] text-slate-400 truncate">{doctor.email}</p>
+                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest">{doctor.specialization}</p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6">
+              <p className="text-sm text-blue-800 font-medium leading-relaxed">
+                This will send an email to <strong>{doctor.email}</strong> with a secure link to set their password and activate their account.
+              </p>
+            </div>
+
+            <button onClick={handleSend} disabled={sending}
+              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-100">
+              {sending
+                ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/> Sending Email...</>
+                : <><IoMailOutline size={16}/> Send Setup Email</>
+              }
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Success state */}
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <IoCheckmarkCircleOutline size={28} className="text-emerald-500"/>
+              </div>
+              <p className="font-black text-slate-900">Email Sent!</p>
+              <p className="text-sm text-slate-400 mt-1">
+                Dr. {doctor.name} will receive a setup link valid for 48 hours.
+              </p>
+            </div>
+
+            {/* Manual link backup */}
+            {setupUrl && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Backup Link (share manually if email fails):
+                </p>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-2">
+                  <p className="text-xs text-slate-600 flex-1 truncate font-mono">{setupUrl}</p>
+                  <button onClick={handleCopy}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600 hover:bg-blue-500 hover:text-white'}`}>
+                    {copied ? '✓ Copied' : 'Copy'}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400 text-center">
+                  Link expires in 48 hours
+                </p>
+              </div>
+            )}
+
+            <button onClick={onClose}
+              className="w-full mt-4 py-3 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">
+              Done
+            </button>
+          </>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+};
+
+/* ─────────────────────────────────────────────
    ANALYTICS PANEL
 ───────────────────────────────────────────── */
 const AnalyticsPanel = ({ data, loading }) => {
@@ -54,10 +183,8 @@ const AnalyticsPanel = ({ data, loading }) => {
       <div className="w-8 h-8 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"/>
     </div>
   );
-
   const { sessionsByDate=[], sessionsByDoctor=[] } = data;
   const maxSessions = Math.max(...sessionsByDate.map(d => d.totalSessions), 1);
-
   return (
     <div className="space-y-8">
       <div>
@@ -85,7 +212,6 @@ const AnalyticsPanel = ({ data, loading }) => {
           </div>
         )}
       </div>
-
       <div>
         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
           <IoPeopleOutline/> Sessions per Doctor
@@ -157,11 +283,9 @@ const DoctorModal = ({ mode, doctor, onClose, onSaved }) => {
       const fd = new FormData();
       Object.entries(form).forEach(([k,v]) => { if (v) fd.append(k,v); });
       if (imgFile) fd.append('image', imgFile);
-
       const res = mode==='add'
         ? await API.post('/doctors/add-doctor-direct', fd, { headers:{ 'Content-Type':'multipart/form-data' } })
         : await API.put(`/doctors/edit/${doctor._id}`, fd, { headers:{ 'Content-Type':'multipart/form-data' } });
-
       if (res.data.success) {
         toast.success(mode==='add' ? 'Doctor added!' : 'Doctor updated!');
         onSaved(); onClose();
@@ -184,16 +308,18 @@ const DoctorModal = ({ mode, doctor, onClose, onSaved }) => {
     <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}>
-      <motion.div initial={{ scale:0.92, opacity:0, y:24 }} animate={{ scale:1, opacity:1, y:0 }} exit={{ scale:0.92, opacity:0, y:24 }}
+      <motion.div initial={{ scale:0.92, opacity:0, y:24 }} animate={{ scale:1, opacity:1, y:0 }}
         transition={{ type:'spring', stiffness:280, damping:26 }}
         className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-center justify-between p-6 lg:p-8 border-b border-slate-100 sticky top-0 bg-white z-10 rounded-t-[2rem]">
           <div>
-            <h3 className="text-xl font-black text-slate-900 tracking-tighter">{mode==='add'?'Add New Doctor':'Edit Doctor'}</h3>
+            <h3 className="text-xl font-black text-slate-900 tracking-tighter">
+              {mode==='add' ? 'Add New Doctor' : 'Edit Doctor'}
+            </h3>
             <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">
-              {mode==='add'?'Create a new specialist profile':`Editing: ${doctor.name}`}
+              {mode==='add' ? 'Create a new specialist profile' : `Editing: ${doctor.name}`}
             </p>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-all">
@@ -228,7 +354,7 @@ const DoctorModal = ({ mode, doctor, onClose, onSaved }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {field('Full Name *',     'name',          'text',     'Dr. John Smith')}
             {field('Email *',         'email',         'email',    'doctor@sjch.com')}
-            {mode==='add' && field('Password *', 'password', 'password', '••••••••')}
+            {mode==='add' && field('Temp Password *', 'password', 'password', 'Doctor will change this')}
             {field('Fee ($) *',       'fee',           'number',   '50')}
             {field('Experience *',    'experience',    'text',     'e.g. 5 Years')}
             {field('Qualification *', 'qualification', 'text',     'e.g. MBBS, MD')}
@@ -252,6 +378,14 @@ const DoctorModal = ({ mode, doctor, onClose, onSaved }) => {
               className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:border-blue-500 transition-all resize-none"/>
           </div>
 
+          {/* Info banner */}
+          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
+            <IoMailOutline size={18} className="text-amber-500 flex-shrink-0 mt-0.5"/>
+            <p className="text-sm text-amber-800 leading-relaxed">
+              After adding the doctor, go to their card and click <strong>"Invite"</strong> to send them a secure email link to set their own password and activate their account.
+            </p>
+          </div>
+
           <button onClick={handleSubmit} disabled={saving}
             className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-blue-100">
             {saving
@@ -270,7 +404,6 @@ const DoctorModal = ({ mode, doctor, onClose, onSaved }) => {
 ───────────────────────────────────────────── */
 const DeleteModal = ({ doctor, onClose, onDeleted }) => {
   const [deleting, setDeleting] = useState(false);
-
   const handleDelete = async () => {
     setDeleting(true);
     try {
@@ -280,7 +413,6 @@ const DeleteModal = ({ doctor, onClose, onDeleted }) => {
       toast.error(err.response?.data?.message || 'Delete failed');
     } finally { setDeleting(false); }
   };
-
   return (
     <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -292,7 +424,7 @@ const DeleteModal = ({ doctor, onClose, onDeleted }) => {
         </div>
         <h3 className="text-xl font-black text-slate-900 text-center mb-2">Delete Doctor?</h3>
         <p className="text-sm text-slate-400 text-center mb-2">
-          This will permanently delete <span className="font-bold text-slate-600">{doctor.name}</span> and their linked account.
+          This will permanently delete <span className="font-bold text-slate-600">{doctor.name}</span>.
         </p>
         <p className="text-[10px] font-black text-red-400 uppercase tracking-widest text-center mb-8">This action cannot be undone.</p>
         <div className="flex gap-3">
@@ -312,18 +444,18 @@ const DeleteModal = ({ doctor, onClose, onDeleted }) => {
    MAIN — ManageDoctors
 ───────────────────────────────────────────── */
 const ManageDoctors = () => {
-  const [doctors,        setDoctors]        = useState([]);
-  const [pendingDoctors, setPendingDoctors] = useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [approvalLoading,setApprovalLoading]= useState(false);
-  const [search,         setSearch]         = useState('');
-  const [activeTab,      setActiveTab]      = useState('list');
-  const [modal,          setModal]          = useState(null);
-  const [deleteTarget,   setDeleteTarget]   = useState(null);
-  const [analytics,      setAnalytics]      = useState({});
-  const [analyticsLoading,setAnalyticsLoading] = useState(false);
+  const [doctors,         setDoctors]         = useState([]);
+  const [pendingDoctors,  setPendingDoctors]  = useState([]);
+  const [loading,         setLoading]         = useState(true);
+  const [approvalLoading, setApprovalLoading] = useState(false);
+  const [search,          setSearch]          = useState('');
+  const [activeTab,       setActiveTab]       = useState('list');
+  const [modal,           setModal]           = useState(null);
+  const [deleteTarget,    setDeleteTarget]    = useState(null);
+  const [inviteTarget,    setInviteTarget]    = useState(null);
+  const [analytics,       setAnalytics]       = useState({});
+  const [analyticsLoading,setAnalyticsLoading]= useState(false);
 
-  /* Fetch all doctors */
   const fetchDoctors = useCallback(async () => {
     try {
       setLoading(true);
@@ -333,7 +465,6 @@ const ManageDoctors = () => {
     finally { setLoading(false); }
   }, []);
 
-  /* Fetch pending doctors */
   const fetchPendingDoctors = useCallback(async () => {
     try {
       setApprovalLoading(true);
@@ -343,7 +474,6 @@ const ManageDoctors = () => {
     finally { setApprovalLoading(false); }
   }, []);
 
-  /* Fetch analytics */
   const fetchAnalytics = useCallback(async () => {
     try {
       setAnalyticsLoading(true);
@@ -379,13 +509,12 @@ const ManageDoctors = () => {
     d.specialization?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalRevenue  = (analytics.sessionsByDoctor||[]).reduce((a,b) => a+(b.revenue||0), 0);
-  const totalSessions = (analytics.sessionsByDate||[]).reduce((a,b)  => a+(b.totalSessions||0), 0);
+  const totalSessions = (analytics.sessionsByDate||[]).reduce((a,b) => a+(b.totalSessions||0), 0);
 
   const tabs = [
-    { id:'list',      label:'Doctor List',  icon:<IoPeopleOutline/>          },
-    { id:'analytics', label:'Analytics',    icon:<IoStatsChartOutline/>      },
-    { id:'approvals', label:`Approvals ${pendingDoctors.length>0?`(${pendingDoctors.length})`:''}`, icon:<IoShieldCheckmarkOutline/> },
+    { id:'list',      label:'Doctor List', icon:<IoPeopleOutline/>     },
+    { id:'analytics', label:'Analytics',   icon:<IoStatsChartOutline/> },
+    { id:'approvals', label:`Approvals${pendingDoctors.length>0?` (${pendingDoctors.length})`:''}`, icon:<IoShieldCheckmarkOutline/> },
   ];
 
   return (
@@ -407,10 +536,10 @@ const ManageDoctors = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-        <StatMini icon={<IoPeopleOutline/>}             label="Total Doctors"    value={doctors.length}                                              color="blue"/>
-        <StatMini icon={<IoCheckmarkCircleOutline/>}    label="Approved"         value={doctors.filter(d=>d.isApproved==='approved').length}         color="green"/>
-        <StatMini icon={<IoAlertCircleOutline/>}        label="Pending Approval" value={pendingDoctors.length}                                       color="amber"/>
-        <StatMini icon={<IoCalendarOutline/>}           label="Total Sessions"   value={activeTab==='analytics'?totalSessions:'—'}                  color="slate"/>
+        <StatMini icon={<IoPeopleOutline/>}          label="Total Doctors"    value={doctors.length}                                      color="blue"/>
+        <StatMini icon={<IoCheckmarkCircleOutline/>} label="Approved"         value={doctors.filter(d=>d.isApproved==='approved').length}  color="green"/>
+        <StatMini icon={<IoAlertCircleOutline/>}     label="Pending"          value={pendingDoctors.length}                               color="amber"/>
+        <StatMini icon={<IoCalendarOutline/>}        label="Total Sessions"   value={activeTab==='analytics'?totalSessions:'—'}           color="slate"/>
       </div>
 
       {/* Tabs */}
@@ -455,12 +584,13 @@ const ManageDoctors = () => {
                   <motion.div key={doc._id}
                     initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:i*0.04 }}
                     className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-lg hover:shadow-slate-200/60 transition-all group">
+
+                    {/* Image */}
                     <div className="relative h-40 bg-gradient-to-br from-blue-50 to-slate-100 overflow-hidden">
                       {doc.image
                         ? <img src={doc.image} alt={doc.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"/>
                         : <div className="w-full h-full flex items-center justify-center"><IoPersonOutline size={48} className="text-slate-300"/></div>
                       }
-                      {/* Approval badge */}
                       <div className={`absolute top-3 right-3 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest backdrop-blur-md border ${
                         doc.isApproved==='approved' ? 'bg-emerald-500/90 text-white border-emerald-400/50'
                         : doc.isApproved==='pending' ? 'bg-amber-500/90 text-white border-amber-400/50'
@@ -468,10 +598,10 @@ const ManageDoctors = () => {
                       }`}>
                         {doc.isApproved==='approved' ? '✓ Approved' : doc.isApproved==='pending' ? '⏳ Pending' : '✕ Rejected'}
                       </div>
-                      {/* Available dot */}
                       <div className={`absolute top-3 left-3 w-3 h-3 rounded-full border-2 border-white ${doc.available?'bg-emerald-400':'bg-slate-400'}`}/>
                     </div>
 
+                    {/* Info */}
                     <div className="p-5">
                       <p className="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-1">{doc.specialization}</p>
                       <h3 className="text-lg font-black text-slate-900 tracking-tighter mb-0.5 truncate">{doc.name||'Unknown Doctor'}</h3>
@@ -484,14 +614,22 @@ const ManageDoctors = () => {
                           <IoWalletOutline size={12} className="text-emerald-500"/> ${doc.fee}
                         </span>
                       </div>
+
+                      {/* Action buttons — 3 buttons: Edit, Invite, Delete */}
                       <div className="flex gap-2">
                         <button onClick={() => setModal({ mode:'edit', doctor:doc })}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 hover:border-blue-200">
-                          <IoPencilOutline size={14}/> Edit
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 hover:border-blue-200">
+                          <IoPencilOutline size={13}/> Edit
+                        </button>
+                        {/* ── INVITE button — sends setup email to doctor ── */}
+                        <button onClick={() => setInviteTarget(doc)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-blue-100 hover:border-blue-600"
+                          title="Send setup email so doctor can set their own password">
+                          <IoMailOutline size={13}/> Invite
                         </button>
                         <button onClick={() => setDeleteTarget(doc)}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-500 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 hover:border-red-200">
-                          <IoTrashOutline size={14}/> Delete
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-500 text-slate-500 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-slate-100 hover:border-red-200">
+                          <IoTrashOutline size={13}/> Delete
                         </button>
                       </div>
                     </div>
@@ -522,7 +660,6 @@ const ManageDoctors = () => {
         {/* ══ APPROVALS TAB ══ */}
         {activeTab === 'approvals' && (
           <motion.div key="approvals" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-12 }}>
-
             <div className="flex items-center gap-3 mb-6">
               <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl border ${pendingDoctors.length>0?'bg-amber-50 border-amber-100':'bg-emerald-50 border-emerald-100'}`}>
                 <div className={`w-2 h-2 rounded-full ${pendingDoctors.length>0?'bg-amber-500 animate-pulse':'bg-emerald-500'}`}/>
@@ -565,7 +702,7 @@ const ManageDoctors = () => {
                       <p className="text-[9px] text-slate-300 font-bold mb-4">
                         Registered: {new Date(doc.createdAt).toLocaleDateString('en-US',{ month:'short', day:'numeric', year:'numeric' })}
                       </p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mb-2">
                         <button onClick={() => handleApprove(doc._id, doc.name)}
                           className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-emerald-100 hover:border-emerald-600">
                           <IoCheckmarkCircleOutline size={15}/> Approve
@@ -575,6 +712,11 @@ const ManageDoctors = () => {
                           <IoCloseCircleOutline size={15}/> Reject
                         </button>
                       </div>
+                      {/* Invite from approvals tab too */}
+                      <button onClick={() => setInviteTarget(doc)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-blue-100 hover:border-blue-600">
+                        <IoMailOutline size={15}/> Send Setup Email
+                      </button>
                     </div>
                   </motion.div>
                 ))}
@@ -585,10 +727,11 @@ const ManageDoctors = () => {
 
       </AnimatePresence>
 
-      {/* Modals */}
+      {/* All modals */}
       <AnimatePresence>
-        {modal && <DoctorModal mode={modal.mode} doctor={modal.doctor} onClose={() => setModal(null)} onSaved={fetchDoctors}/>}
-        {deleteTarget && <DeleteModal doctor={deleteTarget} onClose={() => setDeleteTarget(null)} onDeleted={fetchDoctors}/>}
+        {modal        && <DoctorModal  mode={modal.mode} doctor={modal.doctor} onClose={() => setModal(null)}        onSaved={fetchDoctors}/>}
+        {deleteTarget && <DeleteModal  doctor={deleteTarget}                   onClose={() => setDeleteTarget(null)}  onDeleted={fetchDoctors}/>}
+        {inviteTarget && <InviteModal  doctor={inviteTarget}                   onClose={() => setInviteTarget(null)}/>}
       </AnimatePresence>
     </div>
   );
