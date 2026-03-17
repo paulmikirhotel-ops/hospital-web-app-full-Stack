@@ -33,6 +33,7 @@ app.use(cors({
            'https://hospital-web-app-8slq.onrender.com',         // ✅ your frontend
            'https://hospital-web-app-full-stack-1.onrender.com', // ✅ your backend
            'https://sjch-hospital.netlify.app', // ✅ your frontend
+           'https://sjchliberia.vercel.app'
 
          ], 
   credentials: true,               
