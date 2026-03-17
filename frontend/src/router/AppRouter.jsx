@@ -46,7 +46,7 @@ const AddAdmin       = lazy(() => import('../pages/hospital/admin/AddAdmin'));
 const AdminServices  = lazy(() => import('../pages/hospital/admin/AdminServices'));
 const AdminInquiries = lazy(() => import('../pages/hospital/admin/AdminInquiries'));
 const AdminSettings  = lazy(() => import('../pages/hospital/admin/AdminSettings'));
-const ManageDoctors  = lazy(() => import('../pages/hospital/admin/ManageDoctors'));
+const ManageDoctors = lazy(() => import('../pages/hospital/admin/ManageDoctors'));
 
 /* ── Loading spinner ── */
 const PageLoader = () => (

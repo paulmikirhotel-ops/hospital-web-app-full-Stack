@@ -200,4 +200,5 @@ const PendingDoctors = () => {
   );
 };
 
+
 export default PendingDoctors;
