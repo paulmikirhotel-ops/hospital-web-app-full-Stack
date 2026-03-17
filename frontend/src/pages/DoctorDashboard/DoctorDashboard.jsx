@@ -6,7 +6,7 @@ import {
   IoCalendarOutline, IoPersonOutline, IoCheckmarkCircle,
 } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
-import API from '../../api/axiosInstance'; // ✅ FIXED: was axiosConfig
+import API from '../../api/axiosConfig'; // ✅ FIXED: was axiosConfig
 
 const STATUS_STYLES = {
   Pending:   { bg: 'bg-amber-50',   text: 'text-amber-600',   border: 'border-amber-100',  dot: 'bg-amber-400'   },

@@ -21,6 +21,7 @@ const paymentRoutes = require('./src/routes/paymentRoutes'); // 🆕 Added
 const commentRoutes = require('./src/routes/commentRoutes'); // 🆕 Added
 const inquiryRoutes = require('./src/routes/inquiryRoutes');
 const settingsRoutes = require('./src/routes/settingsRoutes');
+const loginActivityRoutes = require('./src/routes/loginActivityRoutes');
 
 const app = express();
 
@@ -70,6 +71,7 @@ app.use('/api/payments', paymentRoutes); // 🆕 Mounted
 app.use('/api/comments', commentRoutes); // 🆕 Mounted
 app.use('/api/inquiries', inquiryRoutes); // 🆕 Mounted
 app.use('/api/settings', settingsRoutes);
+app.use('/api/login-activity', loginActivityRoutes);
 
 // --- 6. HEALTH CHECK (Optional but recommended) ---
 app.get('/', (req, res) => {

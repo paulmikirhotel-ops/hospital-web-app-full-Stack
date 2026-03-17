@@ -9,21 +9,40 @@ const LoginActivity = require('../models/LoginActivity');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
 /* ─────────────────────────────────────────────
-   EMAIL TRANSPORTER (Gmail SMTP)
+   EMAIL TRANSPORTER
+   ─ Local  : set MAILTRAP_USER + MAILTRAP_PASS in .env
+   ─ Prod   : uses Gmail (GMAIL_USER + GMAIL_APP_PASSWORD)
 ───────────────────────────────────────────── */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const isMailtrap = process.env.MAILTRAP_USER && process.env.NODE_ENV !== 'production';
+
+const transporter = nodemailer.createTransport(
+  isMailtrap
+    ? {
+        host: 'sandbox.smtp.mailtrap.io',
+        port: 2525,
+        auth: {
+          user: process.env.MAILTRAP_USER,
+          pass: process.env.MAILTRAP_PASS,
+        },
+      }
+    : {
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD,
+        },
+      }
+);
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
     await transporter.sendMail({
-      from: `"St. Joseph's Catholic Hospital" <${process.env.GMAIL_USER}>`,
-      to, subject, html,
+      from: `"St. Joseph's Catholic Hospital" <${
+        isMailtrap ? process.env.MAILTRAP_USER : process.env.GMAIL_USER
+      }>`,
+      to,
+      subject,
+      html,
     });
     return true;
   } catch (err) {
@@ -48,7 +67,7 @@ const forgotPasswordEmail = (name, resetUrl) => `
         This link expires in <strong>1 hour</strong>.
       </p>
       <div style="text-align:center;margin:32px 0;">
-        <a href="${resetUrl}" 
+        <a href="${resetUrl}"
            style="display:inline-block;padding:14px 32px;background:#2563eb;color:#fff;
                   font-weight:900;font-size:14px;text-decoration:none;border-radius:14px;
                   letter-spacing:0.05em;">
@@ -164,11 +183,12 @@ router.post('/login', async (req, res) => {
       maxAge:   24 * 60 * 60 * 1000,
     });
 
-    // ── Track this login (don't block login if this fails) ──
+    // ── Track login (non-blocking) ──
     try {
       await LoginActivity.create({
         userId:    user._id,
         role:      user.role,
+        event:     'login',
         loginAt:   new Date(),
         ipAddress: req.ip || req.headers['x-forwarded-for'] || '',
         userAgent: req.headers['user-agent'] || '',
@@ -219,9 +239,27 @@ router.get('/me', verifyToken, async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   4. LOGOUT
+   4. LOGOUT (with activity tracking)
+   ─ verifyToken added so we know who is logging out
 ───────────────────────────────────────────── */
-router.post('/logout', (req, res) => {
+router.post('/logout', verifyToken, async (req, res) => {
+  // Track logout — non-blocking, never fails the request
+  try {
+    const user = await User.findById(req.user.id).select('role');
+    if (user) {
+      await LoginActivity.create({
+        userId:    req.user.id,
+        role:      user.role,
+        event:     'logout',
+        loginAt:   new Date(),
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '',
+        userAgent: req.headers['user-agent'] || '',
+      });
+    }
+  } catch (trackErr) {
+    console.error('Logout tracking error:', trackErr.message);
+  }
+
   res.clearCookie('token', {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
@@ -251,7 +289,6 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
-    // Generate secure token
     const resetToken  = crypto.randomBytes(32).toString('hex');
     const resetExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
 
@@ -337,10 +374,9 @@ router.post('/reset-password/:token', async (req, res) => {
       });
     }
 
-    // Update password — model pre-save hook will hash it
-    user.password             = password;
-    user.resetPasswordToken   = undefined;
-    user.resetPasswordExpiry  = undefined;
+    user.password            = password;
+    user.resetPasswordToken  = undefined;
+    user.resetPasswordExpiry = undefined;
     await user.save();
 
     res.status(200).json({
@@ -377,7 +413,6 @@ router.post('/invite-doctor', verifyToken, isAdmin, async (req, res) => {
       });
     }
 
-    // Generate 48-hour setup token
     const setupToken  = crypto.randomBytes(32).toString('hex');
     const setupExpiry = Date.now() + 48 * 60 * 60 * 1000;
 
@@ -395,7 +430,6 @@ router.post('/invite-doctor', verifyToken, isAdmin, async (req, res) => {
     });
 
     if (!sent) {
-      // Return setup URL anyway so admin can share manually
       return res.status(200).json({
         success:  false,
         message:  'Email failed to send. Share this link manually with the doctor:',
@@ -406,10 +440,63 @@ router.post('/invite-doctor', verifyToken, isAdmin, async (req, res) => {
     res.json({
       success:  true,
       message:  `Setup link sent to ${user.email}`,
-      setupUrl, // also return so admin can copy if needed
+      setupUrl,
     });
   } catch (err) {
     console.error('Invite doctor error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/* ─────────────────────────────────────────────
+   8b. ADMIN SET DOCTOR PASSWORD DIRECTLY
+   POST /api/auth/admin-set-password
+───────────────────────────────────────────── */
+router.post('/admin-set-password', verifyToken, isAdmin, async (req, res) => {
+  try {
+    const { doctorId, password } = req.body;
+
+    if (!doctorId || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'doctorId and password are required',
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters',
+      });
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: 'Doctor not found' });
+    }
+
+    const user = await User.findById(doctor.userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Linked user account not found',
+      });
+    }
+
+    user.password            = password;
+    user.isProfileComplete   = true;
+    user.resetPasswordToken  = undefined;
+    user.resetPasswordExpiry = undefined;
+    await user.save();
+
+    await Doctor.findByIdAndUpdate(doctorId, { isApproved: 'approved' });
+
+    res.json({
+      success: true,
+      message: `Password set successfully for Dr. ${doctor.name}. Account is now active.`,
+    });
+  } catch (err) {
+    console.error('Admin set password error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -473,14 +560,12 @@ router.post('/doctor-setup/:token', async (req, res) => {
       });
     }
 
-    // Set password, mark profile complete
-    user.password             = password;
-    user.isProfileComplete    = true;
-    user.resetPasswordToken   = undefined;
-    user.resetPasswordExpiry  = undefined;
+    user.password            = password;
+    user.isProfileComplete   = true;
+    user.resetPasswordToken  = undefined;
+    user.resetPasswordExpiry = undefined;
     await user.save();
 
-    // Auto-approve the doctor
     await Doctor.findOneAndUpdate(
       { userId: user._id },
       { isApproved: 'approved' }
@@ -497,7 +582,7 @@ router.post('/doctor-setup/:token', async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   11. GET USERS (existing)
+   11. GET USERS
 ───────────────────────────────────────────── */
 router.get('/users', verifyToken, isAdmin, async (req, res) => {
   try {
@@ -512,7 +597,7 @@ router.get('/users', verifyToken, isAdmin, async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   12. AVAILABLE FOR PROMOTION (existing)
+   12. AVAILABLE FOR PROMOTION
 ───────────────────────────────────────────── */
 router.get('/available-for-promotion', verifyToken, isAdmin, async (req, res) => {
   try {
